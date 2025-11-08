@@ -29,6 +29,11 @@ export async function loginService(user) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
+    // If the user is a student, ensure their account is approved before allowing login
+    if (userFound.rol === 'estudiante' && userFound.status !== 'approved') {
+      return [null, createErrorMessage("status", "Cuenta pendiente de aprobación")];
+    }
+
     const payload = {
       nombreCompleto: userFound.nombreCompleto,
       email: userFound.email,

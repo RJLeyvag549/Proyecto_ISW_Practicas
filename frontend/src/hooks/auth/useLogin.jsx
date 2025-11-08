@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 const useLogin = () => {
     const [errorEmail, setErrorEmail] = useState('');
     const [errorPassword, setErrorPassword] = useState('');
+    const [errorGeneral, setErrorGeneral] = useState('');
     const [inputData, setInputData] = useState({ email: '', password: '' });
 
     useEffect(() => {
@@ -15,6 +16,8 @@ const useLogin = () => {
             setErrorEmail(dataMessage.message);
         } else if (dataMessage.dataInfo === 'password') {
             setErrorPassword(dataMessage.message);
+        } else if (dataMessage.dataInfo === 'status') {
+            setErrorGeneral(dataMessage.message);
         }
     };
 
@@ -28,6 +31,7 @@ const useLogin = () => {
     return {
         errorEmail,
         errorPassword,
+        errorGeneral,
         inputData,
         errorData,
         handleInputChange,

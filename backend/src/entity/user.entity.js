@@ -10,6 +10,24 @@ const UserSchema = new EntitySchema({
       primary: true,
       generated: true,
     },
+    status: {
+      type: "varchar",
+      length: 20,
+      default: 'pending',
+      nullable: false,
+    },
+    rejectionReason: {
+      type: "text",
+      nullable: true,
+    },
+    approvedBy: {
+      type: "int",
+      nullable: true,
+    },
+    approvalDate: {
+      type: "timestamp with time zone",
+      nullable: true,
+    },
     nombreCompleto: {
       type: "varchar",
       length: 255,

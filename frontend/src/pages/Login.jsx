@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { login } from '@services/auth.service.js';
+import { showErrorAlert } from '@helpers/sweetAlert.js';
 import Form from '@components/Form';
 import useLogin from '@hooks/auth/useLogin.jsx';
 import '@styles/form.css';
@@ -19,7 +20,12 @@ const Login = () => {
             if (response.status === 'Success') {
                 navigate('/home');
             } else if (response.status === 'Client error') {
-                errorData(response.details);
+                // If the error is about account status (pending), show a user-friendly alert
+                if (response.details && response.details.dataInfo === 'status') {
+                    showErrorAlert('Acceso restringido', response.details.message);
+                } else {
+                    errorData(response.details);
+                }
             }
         } catch (error) {
             console.log(error);
@@ -42,7 +48,7 @@ const Login = () => {
                         maxLength: 30,
                         errorMessageData: errorEmail,
                         validate: {
-                            emailDomain: (value) => value.endsWith('@gmail.cl') || 'El correo debe terminar en @gmail.cl'
+                            emailDomain: (value) => value.endsWith('@gmail.cl') || 'El correo debe ser institucional (@gmail.cl)'
                         },
                         onChange: (e) => handleInputChange('email', e.target.value),
                     },

@@ -18,3 +18,13 @@ export const PASSWORD = process.env.PASSWORD;
 export const DATABASE = process.env.DATABASE;
 export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 export const cookieKey = process.env.cookieKey;
+
+export const config = {
+  PORT,
+  HOST,
+  DB_USERNAME,
+  PASSWORD,
+  DATABASE,
+  ACCESS_TOKEN_SECRET,
+  cookieKey
+};
