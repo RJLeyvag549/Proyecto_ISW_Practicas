@@ -13,7 +13,7 @@ const UserSchema = new EntitySchema({
     status: {
       type: "varchar",
       length: 20,
-      default: 'pending',
+      default: "pending",
       nullable: false,
     },
     rejectionReason: {
