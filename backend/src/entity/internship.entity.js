@@ -7,10 +7,10 @@ const InternshipEntity = new EntitySchema({
 
   columns: {
     id: { type: "int", primary: true, generated: true },
-    title: { type: "varchar", length: 255, nullable: false },
+    title: { type: "varchar", length: 100, nullable: false, unique: true },
     description: { type: "text", nullable: false },
     availableSlots: { type: "int", default: 1 },
-    specialtyArea: { type: "varchar", length: 255, nullable: true },
+    specialtyArea: { type: "varchar", length: 80, nullable: true },
     createdAt: { type: "timestamp with time zone", default: () => "CURRENT_TIMESTAMP" },
     updatedAt: { type: "timestamp with time zone", default: () => "CURRENT_TIMESTAMP", onUpdate: "CURRENT_TIMESTAMP" }
   },

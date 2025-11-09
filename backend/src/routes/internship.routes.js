@@ -12,6 +12,9 @@ import {
 
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";
+import { validateBody } from "../middlewares/joiValidation.middleware.js";
+import { validateInternshipParams } from "../middlewares/validateInternshipParams.middleware.js";
+import { createInternshipSchema, updateInternshipSchema } from "../validations/internship.validation.js";
 
 const router = Router();
 
@@ -22,8 +25,8 @@ router.get("/:id", getInternshipById);
 
 router.use(authenticateJwt, isAdminOrCoordinator);
 
-router.post("/companies/:companyId/supervisors/:supervisorId", createInternship);
-router.put("/:id", updateInternship);
+router.post("/companies/:companyId/supervisors/:supervisorId", validateInternshipParams, validateBody(createInternshipSchema), createInternship);
+router.put("/:id", validateBody(updateInternshipSchema), updateInternship);
 router.delete("/:id", deleteInternship);
 
 export default router;

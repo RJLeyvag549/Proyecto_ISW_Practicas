@@ -7,7 +7,7 @@ const CompanyEntity = new EntitySchema({
 
   columns: {
     id: { type: "int", primary: true, generated: true },
-    name: { type: "varchar", length: 80, nullable: false },
+    name: { type: "varchar", length: 80, nullable: false , unique: true},
     industry: { type: "varchar", length: 200, nullable: false },
     address: { type: "varchar", length: 100, nullable: false },
     contactEmail: { type: "varchar", length: 70, nullable: false },

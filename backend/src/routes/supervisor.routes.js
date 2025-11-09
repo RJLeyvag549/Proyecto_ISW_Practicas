@@ -10,6 +10,8 @@ import {
 
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";
+import { validateBody } from "../middlewares/joiValidation.middleware.js";
+import { createSupervisorSchema, updateSupervisorSchema } from "../validations/supervisor.validation.js";
 
 const router = Router();
 
@@ -17,10 +19,10 @@ const router = Router();
 router.use(authenticateJwt, isAdminOrCoordinator);
 
 // CRUD y listados por empresa
-router.post("/:companyId/supervisors", createSupervisor);
+router.post("/:companyId/supervisors", validateBody(createSupervisorSchema), createSupervisor);
 router.get("/:companyId/supervisors", getAllSupervisors);
 router.get("/:companyId/supervisors/:id", getSupervisorById);
-router.put("/:companyId/supervisors/:id", updateSupervisor);
+router.put("/:companyId/supervisors/:id", validateBody(updateSupervisorSchema), updateSupervisor);
 router.delete("/:companyId/supervisors/:id", deleteSupervisor);
 
 export default router;

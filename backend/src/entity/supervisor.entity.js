@@ -7,10 +7,10 @@ const SupervisorEntity = new EntitySchema({
 
   columns: {
     id: { type: "int", primary: true, generated: true },
-    fullName: { type: "varchar", length: 255, nullable: false },
-    email: { type: "varchar", length: 255, nullable: false },
-    phone: { type: "varchar", length: 50, nullable: true },
-    specialtyArea: { type: "varchar", length: 255, nullable: true }
+    fullName: { type: "varchar", length: 100, nullable: false },
+    email: { type: "varchar", length: 70, nullable: false },
+    phone: { type: "varchar", length: 40, nullable: true },
+    specialtyArea: { type: "varchar", length: 80, nullable: true }
   },
 
   relations: {
