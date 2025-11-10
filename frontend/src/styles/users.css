@@ -1,16 +1,119 @@
 .main-container {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
-    height: 100vh;
+    padding: 48px 16px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .table-container {
     width: 90%;
     max-width: 1400px;
     margin: 0 auto;
+}
+
+.table-default {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8px;
+    background: transparent;
+}
+
+.table-default thead th {
+    text-align: left;
+    padding: 10px 12px;
+    font-weight: 700;
+    color: #0b2a45;
+    border-bottom: 2px solid rgba(16,24,40,0.06);
+}
+
+.table-default thead {
+    background: #003366;
+}
+
+.table-default thead th {
+    color: #fff;
+}
+
+.table-default tbody tr {
+    background: transparent;
+}
+
+.table-default td {
+    padding: 10px 12px;
+    vertical-align: middle;
+    color: #203040;
+    border-bottom: 1px solid rgba(16,24,40,0.04);
+}
+
+.table-default tbody tr:last-child td { border-bottom: none; }
+
+.table-default td.user-name {
+    font-weight: 600;
+}
+
+.table-default tbody tr:nth-child(even) {
+    background: #f6f7f9;
+}
+
+.table-default tbody tr:hover {
+    background: rgba(13, 110, 253, 0.04);
+}
+
+.table-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 12px 8px;
+    margin-top: 8px;
+    border-top: 1px solid rgba(16,24,40,0.04);
+    background: #f3f4f6;
+}
+
+.pagination { display: flex; gap: 8px; align-items: center; }
+.page-btn, .page-number {
+    padding: 6px 10px;
+    border: 1px solid rgba(16,24,40,0.08);
+    background: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.page-number.active { background: #fff; border-color: #E4332C; color: #E4332C; }
+
+/* Header title alignment */
+.title-table { color: #003366; margin-left: 12px; font-size: 1.8rem; }
+
+.btn-approve,
+.btn-reject {
+    border: none;
+    padding: 6px 10px;
+    margin-right: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.btn-approve {
+    background: #0ea5a1; /* teal */
+    color: white;
+}
+
+.btn-approve:hover { opacity: 0.95; }
+
+.btn-reject {
+    background: #ef4444; /* red */
+    color: white;
+}
+
+.btn-reject:hover { opacity: 0.95; }
+
+@media (max-width: 767px) {
+    .table-container { overflow-x: auto; }
+    .table-default thead th { padding: 8px 10px; }
+    .table-default td { padding: 8px 10px; }
 }
 
 .top-table {

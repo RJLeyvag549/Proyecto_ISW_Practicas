@@ -11,11 +11,13 @@ export async function registerStudentService(userData) {
       where: [{ email: userData.email }, { rut: userData.rut }],
     });
 
+    const createErrorMessage = (dataInfo, message) => ({ dataInfo, message });
+
     if (existingUser) {
       if (existingUser.email === userData.email)
-        return [null, "El correo ya está registrado"];
+        return [null, createErrorMessage('email', 'El correo ya está registrado')];
       if (existingUser.rut === userData.rut)
-        return [null, "El RUT ya está registrado"];
+        return [null, createErrorMessage('rut', 'El RUT ya está registrado')];
     }
 
     const hashedPassword = await encryptPassword(userData.password);
@@ -36,7 +38,8 @@ export async function registerStudentService(userData) {
     const { password, ...userWithoutPassword } = newUser;
     return [userWithoutPassword, null];
   } catch (error) {
-    return [null, error.message];
+    const createErrorMessage = (dataInfo, message) => ({ dataInfo, message });
+    return [null, createErrorMessage('server', error.message)];
   }
 }
 
