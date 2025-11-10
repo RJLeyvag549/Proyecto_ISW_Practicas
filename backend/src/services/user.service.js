@@ -107,9 +107,40 @@ export async function deleteUserService(query) {
 
     const userRepository = AppDataSource.getRepository(User);
 
-    const userFound = await userRepository.findOne({
-      where: [{ id: id }, { rut: rut }, { email: email }],
-    });
+    // Build a precise search condition to avoid ambiguous null/undefined matches
+    let searchCondition = null;
+    if (id !== undefined && id !== null && id !== '') {
+      searchCondition = { id: Number(id) };
+    } else if (rut) {
+      searchCondition = { rut };
+    } else if (email) {
+      searchCondition = { email };
+    }
+
+    console.log('deleteUserService - searchCondition:', searchCondition);
+
+    let userFound = null;
+    if (searchCondition) {
+      // If searching by rut, try a normalized search that ignores dots (frontend may send formatted rut)
+      if (searchCondition.rut) {
+        const rawRut = String(searchCondition.rut).trim();
+        const normRut = rawRut.replace(/\./g, "");
+        try {
+          userFound = await userRepository
+            .createQueryBuilder('user')
+            .where("replace(user.rut, '.', '') = :normRut", { normRut })
+            .orWhere('user.rut = :rawRut', { rawRut })
+            .getOne();
+        } catch (err) {
+          console.error('Error queryBuilder rut search:', err);
+          userFound = await userRepository.findOne({ where: { rut: rawRut } });
+        }
+      } else {
+        userFound = await userRepository.findOne({ where: searchCondition });
+      }
+    }
+
+    console.log('deleteUserService - userFound:', userFound ? userFound.id : null);
 
     if (!userFound) return [null, "Usuario no encontrado"];
 
