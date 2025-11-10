@@ -6,6 +6,7 @@ import {
   getAllPracticeApplications,
   updatePracticeApplication,
   addPracticeApplicationAttachments,
+  cancelPracticeApplication,
 } from "../services/practiceApplication.service.js";
 import { practiceApplicationValidation,
   statusUpdateValidation,
@@ -17,20 +18,16 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 
-/**
- * Controlador para crear una nueva solicitud de practica (solo estudiante autenticado).
- */
 export async function createApplication(req, res) {
   try {
-
-    if (req.user.rol !== "estudiante") {
-      return handleErrorClient(res, 403, "Solo los estudiantes pueden crear solicitudes de practica");
+    if (req.user.rol !== "usuario") {
+      return handleErrorClient(res, 403, "Solo los usuarios pueden crear solicitudes de practica");
     }
 
     const { body } = req;
     const { error } = practiceApplicationValidation.validate(body);
     if (error)
-  return handleErrorClient(res, 400, "Error de validacion", error.message);
+      return handleErrorClient(res, 400, "Error de validacion", error.message);
 
     const studentId = req.user.id;
     const [application, serviceError] = await createPracticeApplication(studentId, body);
@@ -44,9 +41,6 @@ export async function createApplication(req, res) {
   }
 }
 
-/**
- * Controlador para listar solicitudes propias (solo estudiante).
- */
 export async function getMyApplications(req, res) {
   try {
     const studentId = req.user.id;
@@ -61,9 +55,6 @@ export async function getMyApplications(req, res) {
   }
 }
 
-/**
- * Controlador para ver una solicitud especifica (estudiante dueño o encargado).
- */
 export async function getApplicationById(req, res) {
   try {
     const { id } = req.params;
@@ -79,9 +70,6 @@ export async function getApplicationById(req, res) {
   }
 }
 
-/**
- * Controlador para listar todas las solicitudes (solo encargado/admin).
- */
 export async function getAllApplications(req, res) {
   try {
     const filters = {
@@ -100,9 +88,6 @@ export async function getAllApplications(req, res) {
   }
 }
 
-/**
- * Controlador para actualizar estado y comentarios de una solicitud (solo encargado/admin).
- */
 export async function updateApplication(req, res) {
   try {
     const { id } = req.params;
@@ -128,9 +113,6 @@ export async function updateApplication(req, res) {
   }
 }
 
-/**
- * Controlador para agregar documentos adjuntos (solo estudiante dueño).
- */
 export async function addAttachments(req, res) {
   try {
     const { id } = req.params;
@@ -154,3 +136,21 @@ export async function addAttachments(req, res) {
     handleErrorServer(res, 500, error.message);
   }
 }
+
+export async function cancelApplication(req, res) {
+  try {
+    const { id } = req.params;
+    const studentId = req.user.id;
+    
+    const [result, serviceError] = await cancelPracticeApplication(parseInt(id), studentId);
+
+    if (serviceError)
+      return handleErrorClient(res, 400, "Error al cancelar solicitud", serviceError);
+
+    handleSuccess(res, 200, "Solicitud cancelada exitosamente", result);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+

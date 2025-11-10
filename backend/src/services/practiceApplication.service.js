@@ -2,35 +2,83 @@
 import { AppDataSource } from "../config/configDb.js";
 import PracticeApplicationSchema from "../entity/practiceApplication.entity.js";
 import { sendEmail } from "../helpers/email.helper.js";
+import { createInternshipExternal } from "./internshipExternal.service.js";
 
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
+const userRepository = AppDataSource.getRepository("User");
+const internshipRepository = AppDataSource.getRepository("Internship");
 
-/**
- * Crea una nueva solicitud de práctica.
- */
 export async function createPracticeApplication(studentId, data) {
-  // TODO: Validar existencia de estudiante y oferta cuando existan las entidades.
   try {
-    const newApplication = await practiceApplicationRepository.save({
+    const student = await userRepository.findOneBy({ id: studentId });
+    if (!student) return [null, "Student not found"];
+
+    if (!data.applicationType || !["existing", "external"].includes(data.applicationType)) {
+      return [null, "Invalid application type. Must be 'existing' or 'external'"];
+    }
+
+    let applicationData = {
       studentId,
-      offerId: data.offerId,
+      applicationType: data.applicationType,
       status: "pending",
       coordinatorComments: null,
       attachments: data.attachments || null,
-    });
-  return [newApplication, null];
+    };
+
+    if (data.applicationType === "existing") {
+      if (!data.internshipId) {
+        return [null, "internshipId es requerido para aplicaciones a ofertas existentes"];
+      }
+
+      const internship = await internshipRepository.findOneBy({ id: data.internshipId });
+      if (!internship) return [null, "Oferta de práctica no encontrada"];
+
+      const existingApplication = await practiceApplicationRepository.findOne({
+        where: { studentId, internshipId: data.internshipId },
+      });
+      if (existingApplication) {
+        return [null, "Ya has enviado una solicitud para esta práctica"];
+      }
+
+      applicationData.internshipId = data.internshipId;
+      applicationData.internshipExternalId = null;
+
+    } else if (data.applicationType === "external") {
+      if (!data.companyData) {
+        return [null, "companyData es requerido para aplicaciones externas"];
+      }
+
+      const [internshipExternal, externalError] = await createInternshipExternal(studentId, data.companyData);
+      if (externalError) {
+        return [null, `Error al crear práctica externa: ${externalError}`];
+      }
+
+      const existingApplication = await practiceApplicationRepository.findOne({
+        where: { 
+          studentId, 
+          internshipExternalId: internshipExternal.id 
+        },
+      });
+      if (existingApplication) {
+        return [null, "Ya has enviado una solicitud con estos datos de empresa"];
+      }
+
+      applicationData.internshipExternalId = internshipExternal.id;
+      applicationData.internshipId = null;
+    }
+
+    const newApplication = await practiceApplicationRepository.save(applicationData);
+    return [newApplication, null];
   } catch (error) {
     return [null, error.message];
   }
 }
 
-/**
- * Devuelve todas las solicitudes de un estudiante.
- */
 export async function getPracticeApplicationsByStudent(studentId) {
   try {
     const applications = await practiceApplicationRepository.find({
       where: { studentId },
+      relations: ["internship", "internshipExternal"],
       order: { createdAt: "DESC" },
     });
     return [applications, null];
@@ -39,20 +87,17 @@ export async function getPracticeApplicationsByStudent(studentId) {
   }
 }
 
-/**
- * Devuelve una solicitud específica, verificando permisos.
- */
 export async function getPracticeApplicationById(id, requester) {
   try {
-    const application = await practiceApplicationRepository.findOneBy({ id });
-  if (!application) return [null, "Solicitud no encontrada"];
+    const application = await practiceApplicationRepository.findOne({
+      where: { id },
+      relations: ["student", "student.profile", "internship", "internshipExternal"]
+    });
+    
+    if (!application) return [null, "Solicitud no encontrada"];
 
-    // Permitir acceso solo al dueño o administrador
-    if (
-      application.studentId !== requester.id
-      && requester.rol !== "administrador"
-    ) {
-  return [null, "No tienes permiso para ver esta solicitud"];
+    if (application.studentId !== requester.id && requester.rol !== "administrador") {
+      return [null, "No tienes permiso para ver esta solicitud"];
     }
     return [application, null];
   } catch (error) {
@@ -60,68 +105,56 @@ export async function getPracticeApplicationById(id, requester) {
   }
 }
 
-/**
- * Devuelve todas las solicitudes (solo administrador).
- */
 export async function getAllPracticeApplications(filters) {
   try {
     const where = {};
     if (filters.status) where.status = filters.status;
     if (filters.studentId) where.studentId = filters.studentId;
-    if (filters.offerId) where.offerId = filters.offerId;
+    if (filters.applicationType) where.applicationType = filters.applicationType;
+    if (filters.internshipId) where.internshipId = filters.internshipId;
+    if (filters.internshipExternalId) where.internshipExternalId = filters.internshipExternalId;
 
     const applications = await practiceApplicationRepository.find({
       where,
+      relations: ["student", "student.profile", "internship", "internshipExternal"],
       order: { createdAt: "DESC" },
     });
-  return [applications, null];
+    return [applications, null];
   } catch (error) {
     return [null, error.message];
   }
 }
 
-/**
- * Actualiza el estado y comentarios de una solicitud.
- * - coordinatorComments: obligatorio en rejected/needsInfo
- */
 export async function updatePracticeApplication(id, newStatus, coordinatorComments, coordinatorId) {
   try {
     const application = await practiceApplicationRepository.findOneBy({ id });
-  if (!application) return [null, "Solicitud no encontrada"];
+    if (!application) return [null, "Solicitud no encontrada"];
 
-    // Validar transicion de estado
     if (application.status === "accepted" && newStatus === "needsInfo") {
-  return [null, "No se puede volver de accepted a needsInfo"];
+      return [null, "No se puede volver de accepted a needsInfo"];
     }
 
-    // Validar comentarios obligatorios
-    if (
-      (newStatus === "rejected" || newStatus === "needsInfo")
-      && (!coordinatorComments || coordinatorComments.trim() === "")
-    ) {
-  return [null, "Debes ingresar comentarios del encargado"];
+    if ((newStatus === "rejected" || newStatus === "needsInfo") && (!coordinatorComments || coordinatorComments.trim() === "")) {
+      return [null, "Debes ingresar comentarios del encargado"];
     }
 
-  // Actualizar solicitud
-  application.status = newStatus;
-  application.coordinatorComments = coordinatorComments || null;
-  application.updatedAt = new Date();
+    application.status = newStatus;
+    application.coordinatorComments = coordinatorComments || null;
+    application.updatedAt = new Date();
 
-  await practiceApplicationRepository.save(application);
+    await practiceApplicationRepository.save(application);
 
-    // Notificar al estudiante (email)
     let subject, body;
     if (newStatus === "accepted") {
-  subject = "Solicitud de practica aceptada";
-  body = "Tu solicitud ha sido aceptada.";
+      subject = "Solicitud de practica aceptada";
+      body = "Tu solicitud ha sido aceptada.";
     } else if (newStatus === "rejected") {
-  subject = "Solicitud de practica rechazada";
-  body = `Tu solicitud ha sido rechazada. Comentarios: ${coordinatorComments}`;
+      subject = "Solicitud de practica rechazada";
+      body = `Tu solicitud ha sido rechazada. Comentarios: ${coordinatorComments}`;
     } else if (newStatus === "needsInfo") {
-  subject = "Informacion adicional requerida";
-  body = `Se requiere informacion adicional. Comentarios: ${coordinatorComments}`;
+      subject = "Informacion adicional requerida";
+      body = `Se requiere informacion adicional. Comentarios: ${coordinatorComments}`;
     }
-    // await sendEmail(studentEmail, subject, body);
 
     return [application, null];
   } catch (error) {
@@ -129,9 +162,6 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
   }
 }
 
-/**
- * Permite al estudiante agregar documentos si la solicitud está en pending o needsInfo.
- */
 export async function addPracticeApplicationAttachments(id, attachments, studentId) {
   try {
     const application = await practiceApplicationRepository.findOneBy({ id });
@@ -144,6 +174,22 @@ export async function addPracticeApplicationAttachments(id, attachments, student
     application.attachments = attachments;
     await practiceApplicationRepository.save(application);
     return [application, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function cancelPracticeApplication(id, studentId) {
+  try {
+    const application = await practiceApplicationRepository.findOneBy({ id });
+    if (!application) return [null, "Solicitud no encontrada"];
+    if (application.studentId !== studentId) return [null, "No tienes permiso"];
+    if (application.status !== "pending") {
+      return [null, "Solo puedes cancelar solicitudes en estado pending"];
+    }
+
+    await practiceApplicationRepository.remove(application);
+    return [{ message: "Solicitud cancelada exitosamente" }, null];
   } catch (error) {
     return [null, error.message];
   }

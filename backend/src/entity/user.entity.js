@@ -66,6 +66,14 @@ const UserSchema = new EntitySchema({
       nullable: false,
     },
   },
+  relations: {
+    profile: {
+      type: "one-to-one",
+      target: "Profile",
+      mappedBy: "user",
+      cascade: true,
+    },
+  },
   indices: [
     {
       name: "IDX_USER",
