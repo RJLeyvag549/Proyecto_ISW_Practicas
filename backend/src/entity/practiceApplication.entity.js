@@ -1,9 +1,6 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-/**
- * Entidad PracticeApplication
- */
 const PracticeApplicationSchema = new EntitySchema({
   name: "PracticeApplication",
   tableName: "practiceApplications",
@@ -17,24 +14,32 @@ const PracticeApplicationSchema = new EntitySchema({
       type: "int",
       nullable: false,
     },
-    offerId: {
-      type: "int",
+    applicationType: {
+      type: "varchar",
+      length: 10,
       nullable: false,
-      // TODO: Relacionar con entidad Offer
+    },
+    internshipId: {
+      type: "int",
+      nullable: true,
+    },
+    internshipExternalId: {
+      type: "int",
+      nullable: true,
     },
     status: {
       type: "varchar",
       length: 20,
       nullable: false,
-      default: "pending", // Valores permitidos: pending, accepted, rejected, needsInfo
+      default: "pending",
     },
     coordinatorComments: {
       type: "text",
-      nullable: true, // Obligatorio si status = rejected o needsInfo
+      nullable: true,
     },
     attachments: {
       type: "text",
-      nullable: true, // Puede usarse para guardar nombres/urls de documentos
+      nullable: true,
     },
     createdAt: {
       type: "timestamp with time zone",
@@ -48,21 +53,50 @@ const PracticeApplicationSchema = new EntitySchema({
       nullable: false,
     },
   },
-  //relaciones studentId y offerId
-    relations: {
+  relations: {
     student: {
       type: "many-to-one",
       target: "User",
-      joinColumn: { name: "studentId" },
+      joinColumn: {
+        name: "studentId",
+      },
       nullable: false,
       onDelete: "CASCADE",
     },
+    internship: {
+      type: "many-to-one",
+      target: "Internship",
+      joinColumn: {
+        name: "internshipId",
+      },
+      nullable: true,
     },
+    internshipExternal: {
+      type: "many-to-one",
+      target: "InternshipExternal",
+      joinColumn: {
+        name: "internshipExternalId",
+      },
+      nullable: true,
+    },
+  },
   indices: [
     {
       name: "IDX_PRACTICE_APPLICATION",
       columns: ["id"],
       unique: true,
+    },
+    {
+      name: "IDX_PRACTICE_APPLICATION_TYPE",
+      columns: ["applicationType"],
+    },
+    {
+      name: "IDX_PRACTICE_APPLICATION_STUDENT",
+      columns: ["studentId"],
+    },
+    {
+      name: "IDX_PRACTICE_APPLICATION_STATUS",
+      columns: ["status"],
     },
   ],
 });
