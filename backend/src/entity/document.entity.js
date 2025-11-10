@@ -50,6 +50,12 @@ const DocumentSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
+    grade: {
+      type: "decimal",
+      precision: 3,
+      scale: 1,
+      nullable: true,
+    },
     createdAt: {
       type: "timestamp with time zone",
       default: () => "CURRENT_TIMESTAMP",

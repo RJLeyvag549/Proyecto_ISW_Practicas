@@ -13,6 +13,12 @@ export const createDocumentSchema = Joi.object({
 });
 
 export const updateDocumentSchema = Joi.object({
-  status: Joi.string().valid("pending", "approved", "rejected").required(),
+  status: Joi.string().valid("pending", "approved", "rejected").optional(),
+  comments: Joi.string().optional(),
+  grade: Joi.number().min(1.0).max(7.0).optional(),
+}).or("status", "comments", "grade");
+
+export const gradeDocumentSchema = Joi.object({
+  grade: Joi.number().min(1.0).max(7.0).required(),
   comments: Joi.string().optional(),
 });
