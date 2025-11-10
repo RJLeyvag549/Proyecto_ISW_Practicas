@@ -10,7 +10,7 @@ import {
 } from "../services/practiceApplication.service.js";
 import { practiceApplicationValidation,
   statusUpdateValidation,
-  attachmentsValidation 
+  attachmentsValidation
 } from "../validations/practiceApplication.validation.js";
 import {
   handleErrorClient,
@@ -21,21 +21,46 @@ import {
 export async function createApplication(req, res) {
   try {
     if (req.user.rol !== "usuario") {
-      return handleErrorClient(res, 403, "Solo los usuarios pueden crear solicitudes de practica");
+      return handleErrorClient(res, 403, "Solo los usuarios pueden crear solicitudes de práctica");
     }
 
     const { body } = req;
-    const { error } = practiceApplicationValidation.validate(body);
+    const { internshipId } = req.params; // Capturar ID de la URL si existe
+    
+    let applicationData;
+
+    // Si hay internshipId en los parámetros, es una solicitud a oferta existente
+    if (internshipId) {
+      applicationData = {
+        applicationType: "existing",
+        internshipId: parseInt(internshipId),
+        attachments: body.attachments
+      };
+    } else {
+      // Si no hay internshipId, debe ser una solicitud externa
+      applicationData = {
+        applicationType: "external",
+        companyData: body.companyData,
+        attachments: body.attachments
+      };
+    }
+
+    // Usar la validación original que ya maneja ambos casos
+    const { error } = practiceApplicationValidation.validate(applicationData);
     if (error)
-      return handleErrorClient(res, 400, "Error de validacion", error.message);
+      return handleErrorClient(res, 400, "Error de validación", error.message);
 
     const studentId = req.user.id;
-    const [application, serviceError] = await createPracticeApplication(studentId, body);
+    const [application, serviceError] = await createPracticeApplication(studentId, applicationData);
 
     if (serviceError)
       return handleErrorClient(res, 400, "Error al crear la solicitud", serviceError);
 
-    handleSuccess(res, 201, "Solicitud creada exitosamente", application);
+    const message = internshipId 
+      ? "Solicitud a práctica existente creada exitosamente"
+      : "Solicitud de práctica externa creada exitosamente";
+    
+    handleSuccess(res, 201, message, application);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }

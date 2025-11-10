@@ -1,7 +1,7 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-const profileSchema = new EntitySchema({
+const ProfileSchema = new EntitySchema({
   name: "Profile",
   tableName: "profiles",
   columns: {
@@ -88,4 +88,4 @@ const profileSchema = new EntitySchema({
   },
 });
 
-export default profileSchema;
+export default ProfileSchema;

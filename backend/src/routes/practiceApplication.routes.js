@@ -14,7 +14,11 @@ import { isAdmin } from "../middlewares/authorization.middleware.js";
 
 const router = Router();
 
-router.post("/", authenticateJwt, createApplication);
+// Rutas específicas para cada tipo de solicitud usando el mismo controlador
+router.post("/internship/:internshipId", authenticateJwt, createApplication); // Para ofertas existentes
+router.post("/internshipExternal", authenticateJwt, createApplication);       // Para externas
+
+// Rutas generales
 router.get("/my", authenticateJwt, getMyApplications);
 router.get("/:id", authenticateJwt, getApplicationById);
 router.get("/", authenticateJwt, isAdmin, getAllApplications);

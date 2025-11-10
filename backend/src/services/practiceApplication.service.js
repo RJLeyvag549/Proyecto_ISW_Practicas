@@ -91,7 +91,7 @@ export async function getPracticeApplicationById(id, requester) {
   try {
     const application = await practiceApplicationRepository.findOne({
       where: { id },
-      relations: ["student", "student.profile", "internship", "internshipExternal"]
+      relations: ["student", "internship", "internshipExternal"]
     });
     
     if (!application) return [null, "Solicitud no encontrada"];
@@ -99,6 +99,15 @@ export async function getPracticeApplicationById(id, requester) {
     if (application.studentId !== requester.id && requester.rol !== "administrador") {
       return [null, "No tienes permiso para ver esta solicitud"];
     }
+
+    // Cargar el perfil del estudiante por separado si es necesario
+    if (application.student) {
+      const profileRepository = AppDataSource.getRepository("Profile");
+      application.student.profile = await profileRepository.findOne({
+        where: { userId: application.student.id }
+      });
+    }
+
     return [application, null];
   } catch (error) {
     return [null, error.message];
@@ -116,9 +125,20 @@ export async function getAllPracticeApplications(filters) {
 
     const applications = await practiceApplicationRepository.find({
       where,
-      relations: ["student", "student.profile", "internship", "internshipExternal"],
+      relations: ["student", "internship", "internshipExternal"],
       order: { createdAt: "DESC" },
     });
+
+    // Cargar perfiles de estudiantes por separado
+    const profileRepository = AppDataSource.getRepository("Profile");
+    for (let application of applications) {
+      if (application.student) {
+        application.student.profile = await profileRepository.findOne({
+          where: { userId: application.student.id }
+        });
+      }
+    }
+
     return [applications, null];
   } catch (error) {
     return [null, error.message];
