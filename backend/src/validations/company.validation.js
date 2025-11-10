@@ -7,6 +7,10 @@ export const createCompanySchema = Joi.object({
   contactEmail: Joi.string().email().max(70).required(),
   contactPhone: Joi.string().max(50).allow(null, ""),
   websiteUrl: Joi.string().uri().max(500).allow(null, "")
+})
+.unknown(false)
+.messages({
+  "object.unknown": "No se permiten propiedades adicionales."
 });
 
 export const updateCompanySchema = Joi.object({
@@ -16,4 +20,8 @@ export const updateCompanySchema = Joi.object({
   contactEmail: Joi.string().email().max(70),
   contactPhone: Joi.string().max(50).allow(null, ""),
   websiteUrl: Joi.string().uri().max(500).allow(null, "")
+})
+.unknown(false)
+.messages({
+  "object.unknown": "No se permiten propiedades adicionales."
 });
