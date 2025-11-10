@@ -57,6 +57,11 @@ const PracticeApplicationSchema = new EntitySchema({
       nullable: false,
       onDelete: "CASCADE",
     },
+    documents: {
+      type: "one-to-many",
+      target: "Document",
+      inverseSide: "practiceApplication",
+    },
     },
   indices: [
     {
