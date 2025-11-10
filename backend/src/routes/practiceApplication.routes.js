@@ -1,15 +1,16 @@
 "use strict";
 import { Router } from "express";
 import {
-  createApplication,
-  getMyApplications,
-  getApplicationById,
-  getAllApplications,
-  updateApplication,
   addAttachments,
+  closeApplication,
+  createApplication,
+  getAllApplications,
+  getApplicationById,
+  getMyApplications,
+  updateApplication,
 } from "../controllers/practiceApplication.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { isAdmin } from "../middlewares/authorization.middleware.js";
+import { isAdmin, isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";
 
 const router = Router();
 
@@ -34,5 +35,8 @@ router.patch("/:id", authenticateJwt, isAdmin, updateApplication);
 
 // Agregar documentos adjuntos (solo estudiante dueño)
 router.patch("/:id/attachments", authenticateJwt, addAttachments);
+
+// Cerrar práctica (admin o coordinador)
+router.post("/:id/close", authenticateJwt, isAdminOrCoordinator, closeApplication);
 
 export default router;

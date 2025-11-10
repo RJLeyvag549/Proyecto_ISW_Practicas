@@ -47,6 +47,26 @@ const PracticeApplicationSchema = new EntitySchema({
       onUpdate: "CURRENT_TIMESTAMP",
       nullable: false,
     },
+    //cerrar practica
+    isClosed: {
+      type: "boolean",
+      default: false,
+    },
+    finalAverage: {
+      type: "decimal",
+      precision: 3,
+      scale: 1,
+      nullable: true,
+    },
+    finalResult: {
+      type: "varchar",
+      length: 20,
+      nullable: true, //aproved - failed
+    },
+    closedAt: {
+      type: "timestamp with time zone",
+      nullable: true,
+    },
   },
   //relaciones studentId y offerId
     relations: {

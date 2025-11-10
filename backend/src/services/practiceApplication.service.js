@@ -4,6 +4,7 @@ import PracticeApplicationSchema from "../entity/practiceApplication.entity.js";
 import { sendEmail } from "../helpers/email.helper.js";
 
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
+const documentRepository = AppDataSource.getRepository("Document");
 
 /**
  * Crea una nueva solicitud de práctica.
@@ -142,6 +143,49 @@ export async function addPracticeApplicationAttachments(id, attachments, student
     }
 
     application.attachments = attachments;
+    await practiceApplicationRepository.save(application);
+    return [application, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+/**
+ * Cierra una práctica si todos los documentos tienen nota.
+ * Calcula el promedio y asigna resultado final (approved/failed).
+ * Reglas por defecto:
+ *  - Todos los documentos asociados deben tener grade no null
+ *  - Promedio >= 4.0 => approved, si no failed
+ */
+export async function closePracticeApplication(id, options = {}) {
+  const MIN_AVERAGE = typeof options.minAverage === "number" ? options.minAverage : 4.0;
+  try {
+    const application = await practiceApplicationRepository.findOneBy({ id });
+    if (!application) return [null, "Solicitud no encontrada"];
+
+    if (application.isClosed) return [null, "La práctica ya se encuentra cerrada"];
+
+    const documents = await documentRepository.find({ where: { practiceApplicationId: id } });
+
+    if (documents.length === 0) return [null, "No hay documentos asociados a la práctica"];
+
+    const missingGrades = documents.filter((d) => d.grade == null);
+    if (missingGrades.length > 0) {
+      return [null, "Existen documentos sin nota de evaluación"];
+    }
+
+    const avg = Number(
+      (
+        documents.reduce((acc, d) => acc + Number(d.grade), 0) / documents.length
+      ).toFixed(1),
+    );
+
+    application.finalAverage = avg;
+    application.finalResult = avg >= MIN_AVERAGE ? "approved" : "failed";
+    application.isClosed = true;
+    application.closedAt = new Date();
+    application.updatedAt = new Date();
+
     await practiceApplicationRepository.save(application);
     return [application, null];
   } catch (error) {
