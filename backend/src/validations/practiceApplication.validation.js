@@ -3,28 +3,20 @@ import Joi from "joi";
 
 // Validacion para crear solicitud de practica
 export const practiceApplicationValidation = Joi.object({
-  offerId: 
-  Joi.number()
-  .integer()
-  .positive()
-  .required()
-  .messages({
-  "any.required": "El campo offerId es obligatorio.",
-  "number.base": "El campo offerId debe ser un numero.",
-  "number.integer": "El campo offerId debe ser un numero entero.",
-  "number.positive": "El campo offerId debe ser positivo."
-    }),
   attachments: 
   Joi.array()
   .items(
     Joi.string()
     .max(255))
+    .min(1)
     .max(5)
+    .required()
     .messages({
+  "any.required": "Debes enviar al menos un documento.",
+  "array.min": "Debes adjuntar al menos 1 documento.",
   "array.max": "No puedes adjuntar mas de 5 documentos.",
   "string.max": "El nombre del documento no puede superar los 255 caracteres."
     })
-    .optional(),
 }).unknown(false).messages({
   "object.unknown": "No se permiten propiedades adicionales."
 });

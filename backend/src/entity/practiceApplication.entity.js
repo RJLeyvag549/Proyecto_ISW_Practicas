@@ -17,10 +17,9 @@ const PracticeApplicationSchema = new EntitySchema({
       type: "int",
       nullable: false,
     },
-    offerId: {
+    internshipId: {
       type: "int",
       nullable: false,
-      // TODO: Relacionar con entidad Offer
     },
     status: {
       type: "varchar",
@@ -48,12 +47,19 @@ const PracticeApplicationSchema = new EntitySchema({
       nullable: false,
     },
   },
-  //relaciones studentId y offerId
+  //relaciones studentId e internshipId
     relations: {
     student: {
       type: "many-to-one",
       target: "User",
       joinColumn: { name: "studentId" },
+      nullable: false,
+      onDelete: "CASCADE",
+    },
+    internship: {
+      type: "many-to-one",
+      target: "Internship",
+      joinColumn: { name: "internshipId" },
       nullable: false,
       onDelete: "CASCADE",
     },

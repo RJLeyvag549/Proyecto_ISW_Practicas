@@ -4,19 +4,36 @@ import PracticeApplicationSchema from "../entity/practiceApplication.entity.js";
 import { sendEmail } from "../helpers/email.helper.js";
 
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
+const internshipRepository = AppDataSource.getRepository("Internship");
+const userRepository = AppDataSource.getRepository("User");
 
 /**
  * Crea una nueva solicitud de práctica.
  */
 export async function createPracticeApplication(studentId, data) {
-  // TODO: Validar existencia de estudiante y oferta cuando existan las entidades.
   try {
+    // Validar que el estudiante existe
+    const student = await userRepository.findOneBy({ id: studentId });
+    if (!student) return [null, "Estudiante no encontrado"];
+    
+    // Validar que el internship existe
+    const internship = await internshipRepository.findOneBy({ id: data.internshipId });
+    if (!internship) return [null, "Oferta de práctica no encontrada"];
+    
+    // Verificar si ya existe una solicitud para esta práctica
+    const existingApplication = await practiceApplicationRepository.findOne({
+      where: { studentId, internshipId: data.internshipId },
+    });
+    if (existingApplication) {
+      return [null, "Ya has enviado una solicitud para esta práctica"];
+    }
+    
     const newApplication = await practiceApplicationRepository.save({
       studentId,
-      offerId: data.offerId,
+      internshipId: data.internshipId,
       status: "pending",
       coordinatorComments: null,
-      attachments: data.attachments || null,
+      attachments: data.attachments,
     });
   return [newApplication, null];
   } catch (error) {
@@ -31,6 +48,7 @@ export async function getPracticeApplicationsByStudent(studentId) {
   try {
     const applications = await practiceApplicationRepository.find({
       where: { studentId },
+      relations: ["student", "internship"],
       order: { createdAt: "DESC" },
     });
     return [applications, null];
@@ -68,7 +86,7 @@ export async function getAllPracticeApplications(filters) {
     const where = {};
     if (filters.status) where.status = filters.status;
     if (filters.studentId) where.studentId = filters.studentId;
-    if (filters.offerId) where.offerId = filters.offerId;
+    if (filters.internshipId) where.internshipId = filters.internshipId;
 
     const applications = await practiceApplicationRepository.find({
       where,

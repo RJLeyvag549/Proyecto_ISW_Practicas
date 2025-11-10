@@ -1,15 +1,16 @@
 "use strict";
 import {
-  createPracticeApplication,
-  getPracticeApplicationsByStudent,
-  getPracticeApplicationById,
-  getAllPracticeApplications,
-  updatePracticeApplication,
   addPracticeApplicationAttachments,
+  createPracticeApplication,
+  getAllPracticeApplications,
+  getPracticeApplicationById,
+  getPracticeApplicationsByStudent,
+  updatePracticeApplication,
 } from "../services/practiceApplication.service.js";
-import { practiceApplicationValidation,
+import {
+  attachmentsValidation,
+  practiceApplicationValidation,
   statusUpdateValidation,
-  attachmentsValidation 
 } from "../validations/practiceApplication.validation.js";
 import {
   handleErrorClient,
@@ -27,13 +28,22 @@ export async function createApplication(req, res) {
       return handleErrorClient(res, 403, "Solo los estudiantes pueden crear solicitudes de practica");
     }
 
+    const internshipId = parseInt(req.params.internshipId, 10);
+    if (!Number.isInteger(internshipId) || internshipId <= 0) {
+      return handleErrorClient(res, 400, "internshipId inválido en la URL");
+    }
+
     const { body } = req;
     const { error } = practiceApplicationValidation.validate(body);
-    if (error)
-  return handleErrorClient(res, 400, "Error de validacion", error.message);
+    if (error) {
+      return handleErrorClient(res, 400, "Error de validacion", error.message);
+    }
 
     const studentId = req.user.id;
-    const [application, serviceError] = await createPracticeApplication(studentId, body);
+    const [application, serviceError] = await createPracticeApplication(studentId, {
+      internshipId,
+      attachments: body.attachments,
+    });
 
     if (serviceError)
       return handleErrorClient(res, 400, "Error al crear la solicitud", serviceError);
@@ -87,7 +97,7 @@ export async function getAllApplications(req, res) {
     const filters = {
       status: req.query.status,
       studentId: req.query.studentId,
-      offerId: req.query.offerId,
+      internshipId: req.query.internshipId,
     };
     const [applications, serviceError] = await getAllPracticeApplications(filters);
 

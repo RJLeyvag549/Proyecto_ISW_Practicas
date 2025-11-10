@@ -1,12 +1,12 @@
 "use strict";
 import { Router } from "express";
 import {
-  createApplication,
-  getMyApplications,
-  getApplicationById,
-  getAllApplications,
-  updateApplication,
   addAttachments,
+  createApplication,
+  getAllApplications,
+  getApplicationById,
+  getMyApplications,
+  updateApplication,
 } from "../controllers/practiceApplication.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isAdmin } from "../middlewares/authorization.middleware.js";
@@ -17,8 +17,8 @@ const router = Router();
  * Rutas para solicitudes de práctica
  */
 
-// Crear nueva solicitud (solo estudiante autenticado)
-router.post("/", authenticateJwt, createApplication);
+// Crear nueva solicitud (solo estudiante autenticado) - internshipId desde URL
+router.post("/:internshipId", authenticateJwt, createApplication);
 
 // Listar solicitudes propias (solo estudiante autenticado)
 router.get("/my", authenticateJwt, getMyApplications);

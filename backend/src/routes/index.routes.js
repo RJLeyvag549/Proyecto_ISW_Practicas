@@ -16,7 +16,7 @@ router
   .use("/students", studentRoutes)
   .use("/companies", companyRoutes)
   .use("/companies", supervisorRoutes)
-  .use("/internships", internshipRoutes);
+  .use("/internships", internshipRoutes)
   .use("/practiceApp", practiceApplication);
 
 export default router;
