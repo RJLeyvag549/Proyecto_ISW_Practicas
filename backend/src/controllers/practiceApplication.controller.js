@@ -163,10 +163,7 @@ export async function addAttachments(req, res) {
   }
 }
 
-/**
- * Controlador para cerrar una práctica (admin o coordinador).
- * Calcula promedio de notas y marca resultado final.
- */
+//cerrar nota con promedio
 export async function closeApplication(req, res) {
   try {
     const { id } = req.params;

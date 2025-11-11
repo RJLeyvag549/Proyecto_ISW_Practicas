@@ -199,13 +199,7 @@ export async function addPracticeApplicationAttachments(id, attachments, student
   }
 }
 
-/**
- * Cierra una práctica si todos los documentos tienen nota.
- * Calcula el promedio y asigna resultado final (approved/failed).
- * Reglas por defecto:
- *  - Todos los documentos asociados deben tener grade no null
- *  - Promedio >= 4.0 => approved, si no failed
- */
+//cerrar practica con nota
 export async function closePracticeApplication(id, options = {}) {
   const MIN_AVERAGE = typeof options.minAverage === "number" ? options.minAverage : 4.0;
   try {
