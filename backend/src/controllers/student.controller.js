@@ -1,12 +1,12 @@
 "use strict";
 import {
-  registerStudentService,
-  getPendingStudentsService,
   approveStudentService,
+  getPendingStudentsService,
+  registerStudentService,
 } from "../services/student.service.js";
 import {
-  studentRegisterValidation,
   approvalValidation,
+  studentRegisterValidation,
 } from "../validations/student.validation.js";
 import {
   handleErrorClient,

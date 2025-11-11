@@ -24,7 +24,6 @@ router.get("/:id", authenticateJwt, getApplicationById);
 router.get("/", authenticateJwt, isAdmin, getAllApplications);
 router.patch("/:id", authenticateJwt, isAdmin, updateApplication);
 router.patch("/:id/attachments", authenticateJwt, addAttachments);
-router.delete("/:id", authenticateJwt, cancelApplication);
 
 // Cerrar práctica (admin o coordinador)
 router.post("/:id/close", authenticateJwt, isAdminOrCoordinator, closeApplication);

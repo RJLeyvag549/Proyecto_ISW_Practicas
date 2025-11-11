@@ -153,7 +153,8 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
       return [null, "No se puede volver de accepted a needsInfo"];
     }
 
-    if ((newStatus === "rejected" || newStatus === "needsInfo") && (!coordinatorComments || coordinatorComments.trim() === "")) {
+    const needsComments = (newStatus === "rejected" || newStatus === "needsInfo");
+    if (needsComments && (!coordinatorComments || coordinatorComments.trim() === "")) {
       return [null, "Debes ingresar comentarios del encargado"];
     }
 

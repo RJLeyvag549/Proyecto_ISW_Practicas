@@ -88,7 +88,6 @@ const PracticeApplicationSchema = new EntitySchema({
       target: "Document",
       inverseSide: "practiceApplication",
     },
-    },
   },
   indices: [
     {
