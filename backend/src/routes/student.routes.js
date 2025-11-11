@@ -1,9 +1,9 @@
 "use strict";
 import express from "express";
 import {
-  registerStudent,
-  getPendingStudents,
   approveStudent,
+  getPendingStudents,
+  registerStudent,
 } from "../controllers/student.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";

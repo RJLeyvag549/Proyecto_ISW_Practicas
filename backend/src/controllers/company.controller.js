@@ -1,10 +1,10 @@
 "use strict";
 import {
   createCompanyService,
+  deleteCompanyService,
   getAllCompaniesService,
   getCompanyByIdService,
   updateCompanyService,
-  deleteCompanyService,
 } from "../services/company.service.js";
 import { handleErrorClient, handleErrorServer, handleSuccess } from "../handlers/responseHandlers.js";
 

@@ -1,16 +1,17 @@
 "use strict";
 import {
-  createPracticeApplication,
-  getPracticeApplicationsByStudent,
-  getPracticeApplicationById,
-  getAllPracticeApplications,
-  updatePracticeApplication,
   addPracticeApplicationAttachments,
-  cancelPracticeApplication,
+  closePracticeApplication,
+  createPracticeApplication,
+  getAllPracticeApplications,
+  getPracticeApplicationById,
+  getPracticeApplicationsByStudent,
+  updatePracticeApplication,
 } from "../services/practiceApplication.service.js";
-import { practiceApplicationValidation,
+import { attachmentsValidation,
+  closeApplicationValidation,
+  practiceApplicationValidation,
   statusUpdateValidation,
-  attachmentsValidation
 } from "../validations/practiceApplication.validation.js";
 import {
   handleErrorClient,
@@ -162,20 +163,24 @@ export async function addAttachments(req, res) {
   }
 }
 
-export async function cancelApplication(req, res) {
+/**
+ * Controlador para cerrar una práctica (admin o coordinador).
+ * Calcula promedio de notas y marca resultado final.
+ */
+export async function closeApplication(req, res) {
   try {
     const { id } = req.params;
-    const studentId = req.user.id;
-    
-    const [result, serviceError] = await cancelPracticeApplication(parseInt(id), studentId);
-
-    if (serviceError)
-      return handleErrorClient(res, 400, "Error al cancelar solicitud", serviceError);
-
-    handleSuccess(res, 200, "Solicitud cancelada exitosamente", result);
+    const { error } = closeApplicationValidation.validate(req.body || {});
+    if (error) {
+      return handleErrorClient(res, 400, "Error de validación", error.message);
+    }
+    const { minAverage } = req.body || {};
+    const [application, serviceError] = await closePracticeApplication(parseInt(id), { minAverage });
+    if (serviceError) {
+      return handleErrorClient(res, 400, "No se pudo cerrar la práctica", serviceError);
+    }
+    handleSuccess(res, 200, "Práctica cerrada exitosamente", application);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
 }
-
-

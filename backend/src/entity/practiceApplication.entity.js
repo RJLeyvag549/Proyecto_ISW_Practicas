@@ -52,6 +52,26 @@ const PracticeApplicationSchema = new EntitySchema({
       onUpdate: "CURRENT_TIMESTAMP",
       nullable: false,
     },
+    //cerrar practica
+    isClosed: {
+      type: "boolean",
+      default: false,
+    },
+    finalAverage: {
+      type: "decimal",
+      precision: 3,
+      scale: 1,
+      nullable: true,
+    },
+    finalResult: {
+      type: "varchar",
+      length: 20,
+      nullable: true, //aproved - failed
+    },
+    closedAt: {
+      type: "timestamp with time zone",
+      nullable: true,
+    },
   },
   relations: {
     student: {
@@ -63,21 +83,10 @@ const PracticeApplicationSchema = new EntitySchema({
       nullable: false,
       onDelete: "CASCADE",
     },
-    internship: {
-      type: "many-to-one",
-      target: "Internship",
-      joinColumn: {
-        name: "internshipId",
-      },
-      nullable: true,
-    },
-    internshipExternal: {
-      type: "many-to-one",
-      target: "InternshipExternal",
-      joinColumn: {
-        name: "internshipExternalId",
-      },
-      nullable: true,
+    documents: {
+      type: "one-to-many",
+      target: "Document",
+      inverseSide: "practiceApplication",
     },
   },
   indices: [
