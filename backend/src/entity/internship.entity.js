@@ -11,6 +11,7 @@ const InternshipEntity = new EntitySchema({
     description: { type: "text", nullable: false },
     availableSlots: { type: "int", default: 1 },
     specialtyArea: { type: "varchar", length: 80, nullable: true },
+    applicationDeadline: { type: "date", nullable: false },
     createdAt: { type: "timestamp with time zone", default: () => "CURRENT_TIMESTAMP" },
     updatedAt: { type: "timestamp with time zone", default: () => "CURRENT_TIMESTAMP", onUpdate: "CURRENT_TIMESTAMP" }
   },
@@ -22,3 +23,4 @@ const InternshipEntity = new EntitySchema({
 });
 
 export default InternshipEntity;
+
