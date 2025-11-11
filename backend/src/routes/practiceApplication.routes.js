@@ -14,27 +14,17 @@ import { isAdmin, isAdminOrCoordinator } from "../middlewares/authorization.midd
 
 const router = Router();
 
-/**
- * Rutas para solicitudes de práctica
- */
+// Rutas específicas para cada tipo de solicitud usando el mismo controlador
+router.post("/internship/:internshipId", authenticateJwt, createApplication); // Para ofertas existentes
+router.post("/internshipExternal", authenticateJwt, createApplication);       // Para externas
 
-// Crear nueva solicitud (solo estudiante autenticado)
-router.post("/", authenticateJwt, createApplication);
-
-// Listar solicitudes propias (solo estudiante autenticado)
+// Rutas generales
 router.get("/my", authenticateJwt, getMyApplications);
-
-// Ver una solicitud específica (estudiante dueño o administrador)
 router.get("/:id", authenticateJwt, getApplicationById);
-
-// Listar todas las solicitudes (solo administrador)
 router.get("/", authenticateJwt, isAdmin, getAllApplications);
-
-// Actualizar estado y comentarios (solo administrador)
 router.patch("/:id", authenticateJwt, isAdmin, updateApplication);
-
-// Agregar documentos adjuntos (solo estudiante dueño)
 router.patch("/:id/attachments", authenticateJwt, addAttachments);
+router.delete("/:id", authenticateJwt, cancelApplication);
 
 // Cerrar práctica (admin o coordinador)
 router.post("/:id/close", authenticateJwt, isAdminOrCoordinator, closeApplication);

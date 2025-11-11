@@ -19,36 +19,54 @@ import {
   handleSuccess,
 } from "../handlers/responseHandlers.js";
 
-/**
- * Controlador para crear una nueva solicitud de practica (solo estudiante autenticado).
- */
 export async function createApplication(req, res) {
   try {
-
-    if (req.user.rol !== "estudiante") {
-      return handleErrorClient(res, 403, "Solo los estudiantes pueden crear solicitudes de practica");
+    if (req.user.rol !== "usuario") {
+      return handleErrorClient(res, 403, "Solo los usuarios pueden crear solicitudes de práctica");
     }
 
     const { body } = req;
-    const { error } = practiceApplicationValidation.validate(body);
+    const { internshipId } = req.params; // Capturar ID de la URL si existe
+    
+    let applicationData;
+
+    // Si hay internshipId en los parámetros, es una solicitud a oferta existente
+    if (internshipId) {
+      applicationData = {
+        applicationType: "existing",
+        internshipId: parseInt(internshipId),
+        attachments: body.attachments
+      };
+    } else {
+      // Si no hay internshipId, debe ser una solicitud externa
+      applicationData = {
+        applicationType: "external",
+        companyData: body.companyData,
+        attachments: body.attachments
+      };
+    }
+
+    // Usar la validación original que ya maneja ambos casos
+    const { error } = practiceApplicationValidation.validate(applicationData);
     if (error)
-  return handleErrorClient(res, 400, "Error de validacion", error.message);
+      return handleErrorClient(res, 400, "Error de validación", error.message);
 
     const studentId = req.user.id;
-    const [application, serviceError] = await createPracticeApplication(studentId, body);
+    const [application, serviceError] = await createPracticeApplication(studentId, applicationData);
 
     if (serviceError)
       return handleErrorClient(res, 400, "Error al crear la solicitud", serviceError);
 
-    handleSuccess(res, 201, "Solicitud creada exitosamente", application);
+    const message = internshipId 
+      ? "Solicitud a práctica existente creada exitosamente"
+      : "Solicitud de práctica externa creada exitosamente";
+    
+    handleSuccess(res, 201, message, application);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
 }
 
-/**
- * Controlador para listar solicitudes propias (solo estudiante).
- */
 export async function getMyApplications(req, res) {
   try {
     const studentId = req.user.id;
@@ -63,9 +81,6 @@ export async function getMyApplications(req, res) {
   }
 }
 
-/**
- * Controlador para ver una solicitud especifica (estudiante dueño o encargado).
- */
 export async function getApplicationById(req, res) {
   try {
     const { id } = req.params;
@@ -81,9 +96,6 @@ export async function getApplicationById(req, res) {
   }
 }
 
-/**
- * Controlador para listar todas las solicitudes (solo encargado/admin).
- */
 export async function getAllApplications(req, res) {
   try {
     const filters = {
@@ -102,9 +114,6 @@ export async function getAllApplications(req, res) {
   }
 }
 
-/**
- * Controlador para actualizar estado y comentarios de una solicitud (solo encargado/admin).
- */
 export async function updateApplication(req, res) {
   try {
     const { id } = req.params;
@@ -130,9 +139,6 @@ export async function updateApplication(req, res) {
   }
 }
 
-/**
- * Controlador para agregar documentos adjuntos (solo estudiante dueño).
- */
 export async function addAttachments(req, res) {
   try {
     const { id } = req.params;

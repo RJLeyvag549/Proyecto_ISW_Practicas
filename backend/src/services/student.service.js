@@ -22,7 +22,7 @@ export async function registerStudentService(userData) {
     const newUser = await userRepository.save({
       ...userData,
       password: hashedPassword,
-      rol: "estudiante",
+      rol: "usuario",  // Cambiado de "estudiante" a "usuario" para consistencia
       status: "pending",
     });
 
@@ -45,7 +45,7 @@ export async function getPendingStudentsService() {
     const pendingStudents = await userRepository.find({
       where: {
         status: "pending",
-        rol: "estudiante",
+        rol: "usuario",
       },
       select: ["id", "nombreCompleto", "rut", "email", "createdAt"],
     });
@@ -58,7 +58,7 @@ export async function getPendingStudentsService() {
 export async function approveStudentService(studentId, approvalData, approverId) {
   try {
     const student = await userRepository.findOne({
-      where: { id: studentId, rol: "estudiante" },
+      where: { id: studentId, rol: "usuario" },
     });
 
     if (!student) return [null, "Estudiante no encontrado"];
