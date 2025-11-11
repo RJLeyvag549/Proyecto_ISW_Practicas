@@ -1,16 +1,16 @@
 "use strict";
 import { Router } from "express";
 import {
-  createApplication,
-  getMyApplications,
-  getApplicationById,
-  getAllApplications,
-  updateApplication,
   addAttachments,
-  cancelApplication,
+  closeApplication,
+  createApplication,
+  getAllApplications,
+  getApplicationById,
+  getMyApplications,
+  updateApplication,
 } from "../controllers/practiceApplication.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { isAdmin } from "../middlewares/authorization.middleware.js";
+import { isAdmin, isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";
 
 const router = Router();
 
@@ -25,5 +25,8 @@ router.get("/", authenticateJwt, isAdmin, getAllApplications);
 router.patch("/:id", authenticateJwt, isAdmin, updateApplication);
 router.patch("/:id/attachments", authenticateJwt, addAttachments);
 router.delete("/:id", authenticateJwt, cancelApplication);
+
+// Cerrar práctica (admin o coordinador)
+router.post("/:id/close", authenticateJwt, isAdminOrCoordinator, closeApplication);
 
 export default router;

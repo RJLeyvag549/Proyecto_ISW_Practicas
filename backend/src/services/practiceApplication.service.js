@@ -5,8 +5,7 @@ import { sendEmail } from "../helpers/email.helper.js";
 import { createInternshipExternal } from "./internshipExternal.service.js";
 
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
-const userRepository = AppDataSource.getRepository("User");
-const internshipRepository = AppDataSource.getRepository("Internship");
+const documentRepository = AppDataSource.getRepository("Document");
 
 export async function createPracticeApplication(studentId, data) {
   try {
@@ -199,17 +198,44 @@ export async function addPracticeApplicationAttachments(id, attachments, student
   }
 }
 
-export async function cancelPracticeApplication(id, studentId) {
+/**
+ * Cierra una práctica si todos los documentos tienen nota.
+ * Calcula el promedio y asigna resultado final (approved/failed).
+ * Reglas por defecto:
+ *  - Todos los documentos asociados deben tener grade no null
+ *  - Promedio >= 4.0 => approved, si no failed
+ */
+export async function closePracticeApplication(id, options = {}) {
+  const MIN_AVERAGE = typeof options.minAverage === "number" ? options.minAverage : 4.0;
   try {
     const application = await practiceApplicationRepository.findOneBy({ id });
     if (!application) return [null, "Solicitud no encontrada"];
-    if (application.studentId !== studentId) return [null, "No tienes permiso"];
-    if (application.status !== "pending") {
-      return [null, "Solo puedes cancelar solicitudes en estado pending"];
+
+    if (application.isClosed) return [null, "La práctica ya se encuentra cerrada"];
+
+    const documents = await documentRepository.find({ where: { practiceApplicationId: id } });
+
+    if (documents.length === 0) return [null, "No hay documentos asociados a la práctica"];
+
+    const missingGrades = documents.filter((d) => d.grade == null);
+    if (missingGrades.length > 0) {
+      return [null, "Existen documentos sin nota de evaluación"];
     }
 
-    await practiceApplicationRepository.remove(application);
-    return [{ message: "Solicitud cancelada exitosamente" }, null];
+    const avg = Number(
+      (
+        documents.reduce((acc, d) => acc + Number(d.grade), 0) / documents.length
+      ).toFixed(1),
+    );
+
+    application.finalAverage = avg;
+    application.finalResult = avg >= MIN_AVERAGE ? "approved" : "failed";
+    application.isClosed = true;
+    application.closedAt = new Date();
+    application.updatedAt = new Date();
+
+    await practiceApplicationRepository.save(application);
+    return [application, null];
   } catch (error) {
     return [null, error.message];
   }
