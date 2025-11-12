@@ -4,6 +4,7 @@ import Login from '@pages/Login';
 import Home from '@pages/Home';
 import Users from '@pages/Users';
 import AdminRequests from '@pages/AdminRequests';
+import InternshipPage from '@pages/InternshipPage'; // <-- nueva página
 import Register from '@pages/Register';
 import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
@@ -24,20 +25,27 @@ const router = createBrowserRouter([
       {
         path: '/users',
         element: (
-        <ProtectedRoute allowedRoles={['administrador']}>
-          <Users />
-        </ProtectedRoute>
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <Users />
+          </ProtectedRoute>
         ),
-    }
-    ,
-    {
-      path: '/admin/requests',
-      element: (
-        <ProtectedRoute allowedRoles={['administrador']}>
-          <AdminRequests />
-        </ProtectedRoute>
-      ),
-    }
+      },
+      {
+        path: '/admin/requests',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <AdminRequests />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/internships',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <InternshipPage />
+          </ProtectedRoute>
+        ),
+      },
     ]
   },
   {
@@ -48,8 +56,8 @@ const router = createBrowserRouter([
     path: '/register',
     element: <Register/>
   }
-])
+]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <RouterProvider router={router}/>
-)
+);
