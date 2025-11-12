@@ -18,15 +18,23 @@ import { createInternshipSchema, updateInternshipSchema } from "../validations/i
 
 const router = Router();
 
+router.use(authenticateJwt);
+
 router.get("/", getAllInternships);
 router.get("/companies/:companyId", getInternshipsByCompany);
 router.get("/companies/:companyId/supervisors/:supervisorId", getInternshipsBySupervisor);
 router.get("/:id", getInternshipById);
 
-router.use(authenticateJwt, isAdminOrCoordinator);
+router.post(
+  "/companies/:companyId/supervisors/:supervisorId",
+  isAdminOrCoordinator,
+  validateInternshipParams,
+  validateBody(createInternshipSchema),
+  createInternship
+);
 
-router.post("/companies/:companyId/supervisors/:supervisorId", validateInternshipParams, validateBody(createInternshipSchema), createInternship);
-router.put("/:id", validateBody(updateInternshipSchema), updateInternship);
-router.delete("/:id", deleteInternship);
+router.put("/:id",isAdminOrCoordinator,validateBody(updateInternshipSchema),updateInternship);
+
+router.delete("/:id",isAdminOrCoordinator,deleteInternship);
 
 export default router;
