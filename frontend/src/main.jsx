@@ -9,6 +9,7 @@ import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
 import ProtectedRoute from '@components/ProtectedRoute';
 import '@styles/styles.css';
+import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const router = createBrowserRouter([
   {

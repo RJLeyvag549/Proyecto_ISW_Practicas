@@ -1,109 +1,76 @@
-import { NavLink, useNavigate, useLocation } from "react-router-dom";
+﻿import { NavLink, useNavigate } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
 import '@styles/navbar.css';
 import { useState } from "react";
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const user = JSON.parse(sessionStorage.getItem('usuario')) || '';
     const userRole = user?.rol;
-    const [menuOpen, setMenuOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
 
     const logoutSubmit = () => {
         try {
             logout();
-            navigate('/auth'); 
+            navigate('/auth');
         } catch (error) {
             console.error('Error al cerrar sesión:', error);
         }
     };
 
-    const toggleMenu = () => {
-        if (!menuOpen) {
-            removeActiveClass();
-        } else {
-            addActiveClass();
-        }
-        setMenuOpen(!menuOpen);
-    };
-
-    const removeActiveClass = () => {
-        const activeLinks = document.querySelectorAll('.nav-menu ul li a.active');
-        activeLinks.forEach(link => link.classList.remove('active'));
-    };
-
-    const addActiveClass = () => {
-        const links = document.querySelectorAll('.nav-menu ul li a');
-        links.forEach(link => {
-            if (link.getAttribute('href') === location.pathname) {
-                link.classList.add('active');
-            }
-        });
-    };
+    const closeMobile = () => setMobileOpen(false);
 
     return (
         <nav className="navbar">
-            <div className={`nav-menu ${menuOpen ? 'activado' : ''}`}>
-                <ul>
-                    <li>
-                        <NavLink 
-                            to="/home" 
-                            onClick={() => { 
-                                setMenuOpen(false); 
-                                addActiveClass();
-                            }} 
-                            activeClassName="active"
-                        >
-                            Inicio
-                        </NavLink>
-                    </li>
-                    {(userRole === 'administrador' || userRole === 'coordinador') && (
-                    <li>
-                        <NavLink 
-                            to="/users" 
-                            onClick={() => { 
-                                setMenuOpen(false); 
-                                addActiveClass();
-                            }} 
-                            activeClassName="active"
-                        >
-                            Usuarios
-                        </NavLink>
-                    </li>
-                    )}
-                    {(userRole === 'administrador' || userRole === 'coordinador') && (
-                    <li>
-                        <NavLink 
-                            to="/admin/requests" 
-                            onClick={() => { 
-                                setMenuOpen(false); 
-                                addActiveClass();
-                            }} 
-                            activeClassName="active"
-                        >
-                            Solicitudes
-                        </NavLink>
-                    </li>
-                    )}
-                    <li>
-                        <NavLink 
-                            to="/auth" 
-                            onClick={() => { 
-                                logoutSubmit(); 
-                                setMenuOpen(false); 
-                            }} 
-                            activeClassName="active"
-                        >
-                            Cerrar sesión
-                        </NavLink>
-                    </li>
-                </ul>
-            </div>
-            <div className="hamburger" onClick={toggleMenu}>
-                <span className="bar"></span>
-                <span className="bar"></span>
-                <span className="bar"></span>
+            <div className="navbar-inner">
+                <div className="nav-left">
+                    <NavLink to="/home" className="logo">
+                        <span className="logo-mark">✶</span>
+                        <span className="logo-text">Proyecto ISW</span>
+                    </NavLink>
+                </div>
+
+                <div className={`nav-center ${mobileOpen ? 'open' : ''}`}>
+                    <ul>
+                        <li>
+                            <NavLink to="/home" className={({isActive}) => isActive ? 'active' : ''} onClick={closeMobile}>
+                                Inicio
+                            </NavLink>
+                        </li>
+
+                        {(userRole === 'administrador' || userRole === 'coordinador') && (
+                            <li>
+                                <NavLink to="/users" className={({isActive}) => isActive ? 'active' : ''} onClick={closeMobile}>
+                                    Usuarios
+                                </NavLink>
+                            </li>
+                        )}
+
+                        {(userRole === 'administrador' || userRole === 'coordinador') && (
+                            <li>
+                                <NavLink to="/admin/requests" className={({isActive}) => isActive ? 'active' : ''} onClick={closeMobile}>
+                                    Solicitudes
+                                </NavLink>
+                            </li>
+                        )}
+
+                        <li>
+                            <button className="link-like" onClick={() => { logoutSubmit(); closeMobile(); }}>
+                                Cerrar sesión
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="nav-right">
+                    {/* Optionally show username or other controls here */}
+                </div>
+
+                <button className={`hamburger ${mobileOpen ? 'is-open' : ''}`} onClick={() => setMobileOpen(!mobileOpen)} aria-label="Toggle menu" aria-expanded={mobileOpen}>
+                    <span className="bar"></span>
+                    <span className="bar"></span>
+                    <span className="bar"></span>
+                </button>
             </div>
         </nav>
     );

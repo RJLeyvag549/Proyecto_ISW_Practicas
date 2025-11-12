@@ -95,6 +95,8 @@ export async function deleteUser(req, res) {
   try {
     const { rut, id, email } = req.query;
 
+    console.log('deleteUser controller - query params:', { rut, id, email });
+
     const { error: queryError } = userQueryValidation.validate({
       rut,
       id,
