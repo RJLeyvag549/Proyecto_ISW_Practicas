@@ -1,22 +1,24 @@
 import { Outlet } from 'react-router-dom';
-import Navbar from '@components/Navbar';
+import NavbarSuperior from '@components/NavbarSuperior';
+import Navbar from '@components/NavbarInferior';
 import { AuthProvider } from '@context/AuthContext';
 
-function Root()  {
-return (
+function Root() {
+  return (
     <AuthProvider>
-        <PageRoot/>
+      <PageRoot />
     </AuthProvider>
-);
+  );
 }
 
 function PageRoot() {
-return (
+  return (
     <>
-        <Navbar />
-        <Outlet />
+      <NavbarSuperior />
+      <Navbar />
+      <Outlet />
     </>
-);
+  );
 }
 
 export default Root;
