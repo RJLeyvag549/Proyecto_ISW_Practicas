@@ -6,6 +6,7 @@ import Users from '@pages/Users';
 import AdminRequests from '@pages/AdminRequests';
 import InternshipPage from '@pages/InternshipPage'; // <-- nueva página
 import Register from '@pages/Register';
+import Terminos from '@pages/Terminos';
 import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
 import ProtectedRoute from '@components/ProtectedRoute';
@@ -55,6 +56,10 @@ const router = createBrowserRouter([
   {
     path: '/register',
     element: <Register/>
+  },
+  {
+    path: '/terminos',
+    element: <Terminos/>
   }
 ]);
 

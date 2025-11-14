@@ -1,0 +1,130 @@
+.terminos-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #003366 0%, #001a33 100%);
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.terminos-content {
+    max-width: 900px;
+    background-color: #eef7ff;
+    border-radius: 24px;
+    padding: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.terminos-content h1 {
+    color: #003366;
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-align: center;
+    border-bottom: 3px solid #003366;
+    padding-bottom: 15px;
+}
+
+.terminos-content section {
+    margin-bottom: 30px;
+}
+
+.terminos-content h2 {
+    color: #003366;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    margin-top: 10px;
+}
+
+.terminos-content p {
+    color: #003366;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    text-align: justify;
+}
+
+.terminos-content ul {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.terminos-content ul li {
+    color: #003366;
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 8px;
+}
+
+.terminos-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid #003366;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.terminos-footer p {
+    color: #003366;
+    font-size: 14px;
+    margin: 0;
+}
+
+.btn-volver {
+    padding: 12px 30px;
+    background-color: #003366;
+    color: #eef7ff;
+    text-decoration: none;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 16px;
+    border: 3px solid #003366;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.btn-volver:hover {
+    background-color: #eef7ff;
+    color: #003366;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .terminos-content {
+        padding: 30px 25px;
+    }
+
+    .terminos-content h1 {
+        font-size: 28px;
+    }
+
+    .terminos-content h2 {
+        font-size: 20px;
+    }
+
+    .terminos-content p,
+    .terminos-content ul li {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .terminos-container {
+        padding: 20px 10px;
+    }
+
+    .terminos-content {
+        padding: 25px 20px;
+    }
+
+    .terminos-content h1 {
+        font-size: 24px;
+    }
+
+    .terminos-content h2 {
+        font-size: 18px;
+    }
+}

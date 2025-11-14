@@ -31,10 +31,15 @@
 
 .filter-actions input {
     padding: 0.5rem 1rem;
+    padding-left: 40px;
     font-size: 1rem;
     width: 250px;
     border-radius: 5px;
     border: 1px solid #ccc;
+    background-image: url('../assets/SearchIcon.svg');
+    background-repeat: no-repeat;
+    background-position: 10px center;
+    background-size: 20px 20px;
 }
 
 @media (max-width: 767px) {
