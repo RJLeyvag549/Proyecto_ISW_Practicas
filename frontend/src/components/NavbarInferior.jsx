@@ -19,21 +19,18 @@ const NavbarInferior = () => {
   return (
     <nav className="navbar-inferior">
       <ul className="inferior-list">
-
-        {/* Administrador */}
+        
         {userRole === 'administrador' && (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
             <li><NavLink to="/users">Usuarios Registrados</NavLink></li>
           </>
         )}
-
-        {/* Otros roles */}
+        
         {userRole !== 'administrador' && (
           <li><NavLink to="/perfil">Mi Perfil</NavLink></li>
         )}
-
-        {/* Logout */}
+        
         <li>
           <button onClick={logoutSubmit} className="logout-link">
             Cerrar sesión

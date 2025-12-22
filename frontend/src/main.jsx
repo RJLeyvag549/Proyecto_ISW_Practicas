@@ -10,6 +10,7 @@ import Terminos from '@pages/Terminos';
 import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
 import ProtectedRoute from '@components/ProtectedRoute';
+import Perfil from '@pages/Perfil';
 import '@styles/styles.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -44,6 +45,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['administrador']}>
             <InternshipPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/perfil',
+        element: (
+          <ProtectedRoute>
+            <Perfil />
           </ProtectedRoute>
         ),
       },

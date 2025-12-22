@@ -10,10 +10,9 @@ import { isAdminOrCoordinator } from "../middlewares/authorization.middleware.js
 
 const router = express.Router();
 
-// Public route for student registration
 router.post("/register", registerStudent);
 
-// Protected routes for coordinators
+
 router.get("/pending", authenticateJwt, isAdminOrCoordinator, getPendingStudents);
 router.post("/:id/approve", authenticateJwt, isAdminOrCoordinator, approveStudent);
 
