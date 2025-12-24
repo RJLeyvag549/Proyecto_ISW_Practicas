@@ -1,19 +1,21 @@
 import axios from './root.service.js';
 
 export async function getAllCompanies() {
-    try {
-        const { data } = await axios.get('/companies');
-        return data.data;
-    } catch (error) {
-        return error.response?.data || { error: 'Unknown error' };
-    }
+    const { data } = await axios.get('/companies');
+    return data.data;
 }
 
 export async function createCompany(companyData) {
-    try {
-        const { data } = await axios.post('/companies', companyData);
-        return data;
-    } catch (error) {
-        return error.response?.data || { error: 'Unknown error' };
-    }
+    const { data } = await axios.post('/companies', companyData);
+    return data;
+}
+
+export async function updateCompany(id, companyData) {
+    const { data } = await axios.put(`/companies/${id}`, companyData);
+    return data;
+}
+
+export async function deleteCompany(id) {
+    const { data } = await axios.delete(`/companies/${id}`);
+    return data;
 }

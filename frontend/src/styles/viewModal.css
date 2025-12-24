@@ -1,0 +1,237 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-container {
+    background: white;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden;
+}
+
+/* Header with Teal Palette */
+.modal-header {
+    background-color: #6cc4c2;
+    /* Celeste medio */
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    border-bottom: 1px solid #4fa8a6;
+}
+
+.header-content {
+    flex: 1;
+    min-width: 0;
+    /* Critical for text overflow */
+    margin-right: 1rem;
+}
+
+.header-content h3 {
+    margin: 0 0 0.5rem 0;
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    /* Prevent long titles from breaking out */
+    line-height: 1.3;
+}
+
+.modal-company-tag {
+    display: inline-block;
+    background-color: #d6f5f3;
+    /* Celeste pálido */
+    color: #0d5c56;
+    /* Petróleo oscuro */
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-close:hover {
+    background: rgba(255, 255, 255, 0.4);
+    transform: rotate(90deg);
+}
+
+/* Body & Sections */
+.modal-body {
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.section-title {
+    margin: 1.5rem 0 0.8rem 0;
+    color: #0d5c56;
+    /* Dark teal */
+    font-size: 1.1rem;
+    border-left: 4px solid #6cc4c2;
+    padding-left: 0.8rem;
+}
+
+.section-title:first-child {
+    margin-top: 0;
+}
+
+.box-style {
+    background-color: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+
+.info-item label {
+    display: block;
+    color: #6b7280;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.3rem;
+    font-weight: 600;
+}
+
+.info-item p {
+    margin: 0;
+    font-size: 1rem;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    word-break: break-word;
+    /* Important for emails/urls */
+}
+
+.modal-link {
+    color: #0d5c56;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.modal-link:hover {
+    text-decoration: underline;
+}
+
+.description-content {
+    color: #374151;
+    line-height: 1.6;
+    word-wrap: break-word;
+}
+
+/* Footer */
+.modal-footer {
+    padding: 1rem 2rem;
+    background-color: #f9fafb;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-modal-action {
+    background-color: #0d5c56;
+    color: white;
+    border: none;
+    padding: 0.7rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-modal-action:hover {
+    background-color: #083d39;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Edit Form Styles */
+.input-label {
+    display: block;
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 1rem;
+    color: #1f2937;
+    background-color: white;
+    box-sizing: border-box;
+    /* Important for width: 100% */
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: #0d5c56;
+    box-shadow: 0 0 0 3px rgba(13, 92, 86, 0.1);
+}

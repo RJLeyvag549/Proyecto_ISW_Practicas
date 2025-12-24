@@ -1,12 +1,11 @@
-
 .navbar-inferior {
     margin-top: 9vh;
     width: 100%;
-    background-color: #9fede8; /* Tu color */
+    background-color: #9fdece;
     padding: 2.8rem 0;
     display: flex;
     justify-content: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
     z-index: 900;
 }
 
@@ -22,7 +21,7 @@
 .inferior-list li {
     position: relative;
     padding: 0 1rem;
-    font-size: 1.15rem;
+    font-size: 1.3rem;
     font-weight: 600;
     transition: transform 0.25s ease;
 }
@@ -38,7 +37,7 @@
     left: -8px;
     right: -8px;
     bottom: -10px;
-    background: rgba(255,255,255,0.25);
+    background: rgba(255, 255, 255, 0.25);
     border-radius: 10px;
     z-index: -1;
     transition: 0.3s ease;
@@ -51,8 +50,8 @@
     top: 50%;
     transform: translateY(-50%);
     width: 2px;
-    height: 70px; /* MISMO TAMAÑO QUE ANTES */
-    background-color: rgba(255,255,255,0.7);
+    height: 70px;
+    background-color: rgba(255, 255, 255, 0.7);
 }
 
 .inferior-list li a,
@@ -68,7 +67,7 @@
 /* === ANIMACIÓN DEL TEXTO AL PASAR === */
 .inferior-list li a:hover,
 .logout-link:hover {
-    color: #002651;
+    color: #0d5c56;
     transform: scale(1.08);
 }
 
@@ -90,6 +89,8 @@
 
 /* small nice detail */
 @media (min-width: 900px) {
-	.navbar { padding-top: 18px; padding-bottom: 18px; }
+    .navbar {
+        padding-top: 18px;
+        padding-bottom: 18px;
+    }
 }
-

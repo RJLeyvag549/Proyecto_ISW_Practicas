@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import api from "@services/root.service.js";
 import Swal from "sweetalert2";
 import InternshipCard from "@components/InternshipCard.jsx";
-import StepCompany from "@components/Wizard/StepCompany.jsx";
-import StepSupervisor from "@components/Wizard/StepSupervisor.jsx";
-import StepDetails from "@components/Wizard/StepDetails.jsx";
+import StepCompany from "@components/createInternship/StepCompany.jsx";
+import StepSupervisor from "@components/createInternship/StepSupervisor.jsx";
+import StepDetails from "@components/createInternship/StepDetails.jsx";
+import InternshipViewModal from "@components/InternshipViewModal.jsx";
+import InternshipEditModal from "@components/InternshipEditModal.jsx";
 import '@styles/internship.css';
 
 export default function InternshipPage() {
@@ -22,6 +24,11 @@ export default function InternshipPage() {
     supervisor: null,
     details: null
   });
+
+  // Modal State
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedInternship, setSelectedInternship] = useState(null);
 
   useEffect(() => {
     fetchOfertas();
@@ -60,6 +67,16 @@ export default function InternshipPage() {
         Swal.fire('Error', 'Hubo un problema al eliminar la oferta.', 'error');
       }
     }
+  };
+
+  const handleView = (internship) => {
+    setSelectedInternship(internship);
+    setShowViewModal(true);
+  };
+
+  const handleEdit = (internship) => {
+    setSelectedInternship(internship);
+    setShowEditModal(true);
   };
 
   const handleCreateClick = () => {
@@ -103,7 +120,9 @@ export default function InternshipPage() {
   return (
     <div className="page-container">
       <div className="top-table">
-        <h2>{viewMode === 'list' ? 'Ofertas de Práctica' : 'Crear Nueva Oferta'}</h2>
+        <div className="header-title-container">
+          <h2>{viewMode === 'list' ? 'OFERTAS DE PRACTICA' : 'Crear Nueva Oferta'}</h2>
+        </div>
 
         {viewMode === 'list' && (
           <div className="filter-actions">
@@ -127,7 +146,8 @@ export default function InternshipPage() {
               <InternshipCard
                 key={oferta.id}
                 data={oferta}
-                onEdit={() => Swal.fire('Info', 'Edición directa pendiente de implementar. Usa el flujo de creación para nuevas.', 'info')}
+                onView={handleView}
+                onEdit={handleEdit}
                 onDelete={() => handleDelete(oferta.id)}
               />
             ))
@@ -136,48 +156,71 @@ export default function InternshipPage() {
           )}
         </div>
       ) : (
-        <div className="wizard-container">
-          <div className="wizard-steps">
-            <div className={`step-indicator ${wizardStep >= 1 ? 'active' : ''}`}>
-              <div className="step-number">1</div>
-              <span>Empresa</span>
-            </div>
-            <div className={`step-indicator ${wizardStep >= 2 ? 'active' : ''}`}>
-              <div className="step-number">2</div>
-              <span>Supervisor</span>
-            </div>
-            <div className={`step-indicator ${wizardStep >= 3 ? 'active' : ''}`}>
-              <div className="step-number">3</div>
-              <span>Detalles</span>
-            </div>
+        <>
+          <div className="wizard-nav-container">
+            <button className="btn-back-wizard" onClick={() => setViewMode('list')} title="Volver al listado">
+              <i className="fa-solid fa-arrow-left"></i>
+              <span>Volver</span>
+            </button>
           </div>
 
-          <div className="wizard-content">
-            {wizardStep === 1 && (
-              <StepCompany
-                onNext={handleCompanySelect}
-                initialData={wizardData.company}
-              />
-            )}
-            {wizardStep === 2 && (
-              <StepSupervisor
-                companyId={wizardData.company?.id}
-                onNext={handleSupervisorSelect}
-                onBack={handleBack}
-                initialData={wizardData.supervisor}
-              />
-            )}
-            {wizardStep === 3 && (
-              <StepDetails
-                company={wizardData.company}
-                supervisor={wizardData.supervisor}
-                onBack={handleBack}
-                onComplete={handleWizardComplete}
-              />
-            )}
+          <div className="wizard-container">
+            <div className="wizard-steps">
+              <div className={`step-indicator ${wizardStep >= 1 ? 'active' : ''}`}>
+                <div className="step-number">1</div>
+                <span>Empresa</span>
+              </div>
+              <div className={`step-indicator ${wizardStep >= 2 ? 'active' : ''}`}>
+                <div className="step-number">2</div>
+                <span>Supervisor</span>
+              </div>
+              <div className={`step-indicator ${wizardStep >= 3 ? 'active' : ''}`}>
+                <div className="step-number">3</div>
+                <span>Detalles</span>
+              </div>
+            </div>
+
+            <div className="wizard-content">
+              {wizardStep === 1 && (
+                <StepCompany
+                  onNext={handleCompanySelect}
+                  initialData={wizardData.company}
+                />
+              )}
+              {wizardStep === 2 && (
+                <StepSupervisor
+                  companyId={wizardData.company?.id}
+                  onNext={handleSupervisorSelect}
+                  onBack={handleBack}
+                  initialData={wizardData.supervisor}
+                />
+              )}
+              {wizardStep === 3 && (
+                <StepDetails
+                  company={wizardData.company}
+                  supervisor={wizardData.supervisor}
+                  onBack={handleBack}
+                  onComplete={handleWizardComplete}
+                />
+              )}
+            </div>
           </div>
-        </div>
+        </>
       )}
+
+      <InternshipViewModal
+        show={showViewModal}
+        onClose={() => setShowViewModal(false)}
+        data={selectedInternship}
+      />
+
+      <InternshipEditModal
+        show={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        data={selectedInternship}
+        onUpdate={fetchOfertas}
+      />
     </div>
   );
 }
+
