@@ -26,11 +26,10 @@ export async function createApplication(req, res) {
     }
 
     const { body } = req;
-    const { internshipId } = req.params; // Capturar ID de la URL si existe
+    const { internshipId } = req.params;
     
     let applicationData;
 
-    // Si hay internshipId en los parámetros, es una solicitud a oferta existente
     if (internshipId) {
       applicationData = {
         applicationType: "existing",
@@ -38,7 +37,6 @@ export async function createApplication(req, res) {
         attachments: body.attachments
       };
     } else {
-      // Si no hay internshipId, debe ser una solicitud externa
       applicationData = {
         applicationType: "external",
         companyData: body.companyData,
@@ -46,7 +44,6 @@ export async function createApplication(req, res) {
       };
     }
 
-    // Usar la validación original que ya maneja ambos casos
     const { error } = practiceApplicationValidation.validate(applicationData);
     if (error)
       return handleErrorClient(res, 400, "Error de validación", error.message);
@@ -163,10 +160,6 @@ export async function addAttachments(req, res) {
   }
 }
 
-/**
- * Controlador para cerrar una práctica (admin o coordinador).
- * Calcula promedio de notas y marca resultado final.
- */
 export async function closeApplication(req, res) {
   try {
     const { id } = req.params;

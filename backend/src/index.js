@@ -65,7 +65,7 @@ async function setupServer() {
       console.log(`=> Servidor corriendo en ${HOST}:${PORT}/api`);
     });
   } catch (error) {
-    console.log("Error en index.js -> setupServer(), el error es: ", error);
+    console.error('Error en setupServer():', error);
   }
 }
 
@@ -75,12 +75,12 @@ async function setupAPI() {
     await setupServer();
     await createUsers();
   } catch (error) {
-    console.log("Error en index.js -> setupAPI(), el error es: ", error);
+    console.error('Error en setupAPI():', error);
   }
 }
 
 setupAPI()
-  .then(() => console.log("=> API Iniciada exitosamente"))
+  .then(() => console.log('=> API Iniciada exitosamente'))
   .catch((error) =>
-    console.log("Error en index.js -> setupAPI(), el error es: ", error),
+    console.error('Error iniciando API:', error),
   );

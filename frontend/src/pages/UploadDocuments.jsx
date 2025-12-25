@@ -33,13 +33,11 @@ export default function UploadDocuments() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validar tamaño (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         showErrorAlert('Error', 'El archivo no debe superar los 10MB');
         e.target.value = '';
         return;
       }
-      // Validar tipo de archivo
       const allowedTypes = ['application/pdf', 'application/msword', 
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
       if (!allowedTypes.includes(file.type)) {
@@ -77,7 +75,6 @@ export default function UploadDocuments() {
       
       if (response.status === 'Success') {
         showSuccessAlert('¡Éxito!', 'Documento subido correctamente');
-        // Limpiar formulario
         setSelectedFile(null);
         setFormData({
           type: 'informe_final',
@@ -85,7 +82,6 @@ export default function UploadDocuments() {
           comments: ''
         });
         document.getElementById('fileInput').value = '';
-        // Recargar documentos
         loadDocuments();
       }
     } catch (error) {
@@ -141,7 +137,6 @@ export default function UploadDocuments() {
       </div>
 
       <div className="documents-content">
-        {/* Formulario de subida */}
         <div className="upload-section">
           <h2>Nuevo Documento</h2>
           <form onSubmit={handleSubmit} className="upload-form">
@@ -240,7 +235,6 @@ export default function UploadDocuments() {
           </form>
         </div>
 
-        {/* Lista de documentos subidos */}
         <div className="documents-list-section">
           <h2>Documentos Subidos</h2>
           {loading && !documents.length ? (

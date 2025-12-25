@@ -90,7 +90,6 @@ export const attachmentsValidation = Joi.object({
   "object.unknown": "No se permiten propiedades adicionales."
 });
 
-// Validación para cierre de práctica (permite minAverage opcional)
 export const closeApplicationValidation = Joi.object({
   minAverage: Joi.number().min(1.0).max(7.0).optional(),
 }).unknown(false).messages({

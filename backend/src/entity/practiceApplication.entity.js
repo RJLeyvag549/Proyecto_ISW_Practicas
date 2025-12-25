@@ -52,7 +52,6 @@ const PracticeApplicationSchema = new EntitySchema({
       onUpdate: "CURRENT_TIMESTAMP",
       nullable: false,
     },
-    //cerrar practica
     isClosed: {
       type: "boolean",
       default: false,
@@ -66,7 +65,7 @@ const PracticeApplicationSchema = new EntitySchema({
     finalResult: {
       type: "varchar",
       length: 20,
-      nullable: true, //aproved - failed
+      nullable: true,
     },
     closedAt: {
       type: "timestamp with time zone",

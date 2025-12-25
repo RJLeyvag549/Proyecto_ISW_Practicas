@@ -16,7 +16,7 @@ export async function login(dataUser) {
             sessionStorage.setItem('usuario', JSON.stringify(userData));
             axios.defaults.headers.common['Authorization'] = `Bearer ${data.token}`;
             cookies.set('jwt-auth', data.data.token, {path:'/'});
-            return response.data
+            return response.data;
         }
     } catch (error) {
         return error.response.data;
@@ -27,7 +27,6 @@ export async function register(data) {
     try {
         const dataRegister = convertirMinusculas(data);
         const { nombreCompleto, email, rut, password } = dataRegister
-        // Send registration as a student so it goes into pending approval
         const response = await axios.post('/students/register', {
             nombreCompleto,
             email,

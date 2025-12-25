@@ -5,7 +5,6 @@ const companyRepository = AppDataSource.getRepository("Company");
 
 export async function createCompanyService(companyData) {
   try {
-    // Verificar si ya existe empresa con mismo nombre
     const existingCompany = await companyRepository.findOne({
       where: { name: companyData.name },
     });

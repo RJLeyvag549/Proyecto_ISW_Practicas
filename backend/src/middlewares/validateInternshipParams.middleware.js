@@ -8,14 +8,12 @@ export async function validateInternshipParams(req, res, next) {
   try {
     const { companyId, supervisorId } = req.params;
 
-    // Verificar que companyId y supervisorId sean números válidos
     if (isNaN(parseInt(companyId)) || (supervisorId && isNaN(parseInt(supervisorId)))) {
       return handleErrorClient(res, 400, "Parámetros inválidos", [
         "companyId y supervisorId deben ser números"
       ]);
     }
 
-    // Si se proporcionó supervisorId, verificar que pertenezca a la empresa indicada
     if (supervisorId) {
       const supervisor = await supervisorRepository.findOne({
         where: { id: parseInt(supervisorId) },

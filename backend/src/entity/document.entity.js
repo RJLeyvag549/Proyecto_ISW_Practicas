@@ -82,7 +82,7 @@ const DocumentSchema = new EntitySchema({
       joinColumn: { name: "uploadedBy" },
       nullable: false,
     },
-  },// 
+  },
   indices: [
     {
       name: "IDX_DOCUMENT_PRIMARY",

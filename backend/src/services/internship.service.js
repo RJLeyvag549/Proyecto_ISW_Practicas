@@ -80,7 +80,6 @@ export async function deleteInternshipService(id) {
   }
 }
 
-// Funciones extra
 export async function getInternshipsByCompanyService(companyId) {
   try {
     const internships = await internshipRepository.find({ where: { company: { id: companyId } }, relations: ["supervisor"] });

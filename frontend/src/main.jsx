@@ -4,7 +4,7 @@ import Login from '@pages/Login';
 import Home from '@pages/Home';
 import Users from '@pages/Users';
 import AdminRequests from '@pages/AdminRequests';
-import InternshipPage from '@pages/InternshipPage'; // <-- nueva página
+import InternshipPage from '@pages/InternshipPage';
 import UploadDocuments from '@pages/UploadDocuments';
 import Register from '@pages/Register';
 import Terminos from '@pages/Terminos';

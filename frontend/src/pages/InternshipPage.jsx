@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import Table from '@components/Table.jsx';
 import api from '@services/root.service.js';
-import '@styles/internship.css'; // nuevo archivo CSS para esta página
+import '@styles/internship.css';
 
 export default function OfertasPage() {
   const [ofertas, setOfertas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState(""); // Estado para la búsqueda
+  const [filter, setFilter] = useState("");
 
   const columns = [
     { title: "ID", field: "id", width: 100 },
@@ -20,7 +20,6 @@ export default function OfertasPage() {
     try {
       setLoading(true);
       const response = await api.get("/internships");
-      console.log("Array real de prácticas:", response.data.data);
       setOfertas(response.data.data);
     } catch (error) {
       console.error("Error al obtener ofertas:", error);

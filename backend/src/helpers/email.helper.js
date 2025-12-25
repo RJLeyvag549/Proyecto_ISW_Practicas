@@ -2,8 +2,7 @@
 
 export async function sendEmail(to, subject, text) {
   try {
-    // Log the email that would be sent
-    console.log('Email would be sent:', {
+    console.log("Email would be sent:", {
       to,
       subject,
       text

@@ -21,7 +21,6 @@ const Login = () => {
             if (response.status === 'Success') {
                 navigate('/home');
             } else if (response.status === 'Client error') {
-                // If the error is about account status (pending), show a user-friendly alert
                 if (response.details && response.details.dataInfo === 'status') {
                     showErrorAlert('Acceso restringido', response.details.message);
                 } else {
@@ -29,7 +28,7 @@ const Login = () => {
                 }
             }
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 

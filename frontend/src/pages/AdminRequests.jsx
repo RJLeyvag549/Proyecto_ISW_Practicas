@@ -1,4 +1,3 @@
-import React from 'react';
 import useGetPendingStudents from '@hooks/users/useGetPendingStudents.jsx';
 import '@styles/users.css';
 import Swal from 'sweetalert2';

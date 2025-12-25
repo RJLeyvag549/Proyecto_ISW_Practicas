@@ -68,7 +68,6 @@ export async function deleteInternship(req, res) {
   }
 }
 
-// ✅ Funciones extra
 export async function getInternshipsByCompany(req, res) {
   try {
     const { companyId } = req.params;
