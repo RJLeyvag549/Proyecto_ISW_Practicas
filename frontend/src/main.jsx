@@ -5,6 +5,7 @@ import Home from '@pages/Home';
 import Users from '@pages/Users';
 import AdminRequests from '@pages/AdminRequests';
 import InternshipPage from '@pages/InternshipPage'; // <-- nueva página
+import UploadDocuments from '@pages/UploadDocuments';
 import Register from '@pages/Register';
 import Terminos from '@pages/Terminos';
 import Error404 from '@pages/Error404';
@@ -45,6 +46,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['administrador']}>
             <InternshipPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/documents/upload',
+        element: (
+          <ProtectedRoute allowedRoles={['estudiante', 'administrador']}>
+            <UploadDocuments />
           </ProtectedRoute>
         ),
       },
