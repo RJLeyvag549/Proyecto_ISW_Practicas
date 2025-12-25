@@ -25,6 +25,11 @@ export async function createApplication(req, res) {
       return handleErrorClient(res, 403, "Solo los usuarios pueden crear solicitudes de práctica");
     }
 
+    const internshipId = parseInt(req.params.internshipId, 10);
+    if (!Number.isInteger(internshipId) || internshipId <= 0) {
+      return handleErrorClient(res, 400, "internshipId inválido en la URL");
+    }
+
     const { body } = req;
     const { internshipId } = req.params; // Capturar ID de la URL si existe
     
@@ -101,7 +106,7 @@ export async function getAllApplications(req, res) {
     const filters = {
       status: req.query.status,
       studentId: req.query.studentId,
-      offerId: req.query.offerId,
+      internshipId: req.query.internshipId,
     };
     const [applications, serviceError] = await getAllPracticeApplications(filters);
 
