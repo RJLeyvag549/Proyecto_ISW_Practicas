@@ -23,6 +23,7 @@ const NavbarInferior = () => {
         {userRole === 'administrador' ? (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
+            <li><NavLink to="/admin/documents">Documentos de Estudiantes</NavLink></li>
             <li><NavLink to="/users">Usuarios Registrados</NavLink></li>
           </>
         ) : (

@@ -13,15 +13,13 @@ const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole }) =
     if (isValidDeadline) {
         try {
             deadlineLabel = format(deadlineDate, "short");
-        } catch (error) {
-            // Fallback to a locale date if tempo fails to parse unexpected offsets
+        } catch {
             deadlineLabel = deadlineDate.toLocaleDateString();
         }
     }
 
     return (
         <div className={`internship-card ${isExpired ? 'expired' : ''}`}>
-            {/* ... header ... */}
             <div className="card-header" style={{ position: 'relative' }}>
                 <h3>{title}</h3>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
