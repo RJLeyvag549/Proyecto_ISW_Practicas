@@ -23,7 +23,9 @@ export async function createInternshipExternal(studentId, data) {
       department: data.department || null,
       activities: data.activities,
       estimatedDuration: data.estimatedDuration,
-      schedule: data.schedule,
+      // DB column `schedule` is NOT NULL in the entity; ensure we send an empty string
+      // when the frontend does not provide a schedule to avoid DB constraint errors.
+  schedule: (typeof data.schedule === "string" ? data.schedule : ""),
       specialtyArea: data.specialtyArea || null,
     });
 
