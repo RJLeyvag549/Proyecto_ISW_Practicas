@@ -29,6 +29,7 @@ const NavbarInferior = () => {
         ) : (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
+            <li><NavLink to="/upload-documents">Subir Documentos</NavLink></li>
             <li><NavLink to="/perfil">Mi Perfil</NavLink></li>
           </>
         )}

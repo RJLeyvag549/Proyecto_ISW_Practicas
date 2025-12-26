@@ -29,7 +29,7 @@ export async function loginService(user) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
-    if (userFound.rol === 'usuario' && userFound.status !== 'approved') {
+    if (userFound.rol === "usuario" && userFound.status !== "approved") {
       return [null, createErrorMessage("status", "Cuenta pendiente de aprobación")];
     }
 
