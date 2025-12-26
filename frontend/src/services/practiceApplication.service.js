@@ -2,20 +2,25 @@ import api from "./root.service.js";
 
 export const createApplication = async (internshipId, attachments = null) => {
     try {
-        const response = await api.post(`/practiceApplication/internship/${internshipId}`, {
-            attachments
-        });
+        const payload = {};
+        if (attachments) payload.attachments = attachments;
+
+        const response = await api.post(`/practice-applications/internship/${internshipId}`, payload);
         return [response.data, null];
     } catch (error) {
-        return [null, error.response?.data?.message || "Error al enviar la solicitud"];
+        const message = error.response?.data?.message || "Error al enviar la solicitud";
+        const details = error.response?.data?.details;
+        return [null, details ? `${message}: ${details}` : message];
     }
 };
 
 export const getMyApplications = async () => {
     try {
-        const response = await api.get("/practiceApplication/my");
+        const response = await api.get("/practice-applications/my");
         return [response.data.data, null];
     } catch (error) {
-        return [null, error.response?.data?.message || "Error al obtener tus solicitudes"];
+        const message = error.response?.data?.message || "Error al obtener tus solicitudes";
+        const details = error.response?.data?.details;
+        return [null, details ? `${message}: ${details}` : message];
     }
 };
