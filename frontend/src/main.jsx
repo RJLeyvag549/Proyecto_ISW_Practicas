@@ -4,7 +4,10 @@ import Login from '@pages/Login';
 import Home from '@pages/Home';
 import Users from '@pages/Users';
 import AdminRequests from '@pages/AdminRequests';
-import InternshipPage from '@pages/InternshipPage'; // <-- nueva página
+import InternshipPage from '@pages/InternshipPage';
+import PracticeApplicationsPage from '@pages/PracticeApplicationsPage';
+import MyApplicationsPage from '@pages/MyApplicationsPage';
+import AvailableInternshipsPage from '@pages/AvailableInternshipsPage';
 import Register from '@pages/Register';
 import Terminos from '@pages/Terminos';
 import Error404 from '@pages/Error404';
@@ -45,6 +48,30 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['administrador']}>
             <InternshipPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/admin/applications',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <PracticeApplicationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/my-applications',
+        element: (
+          <ProtectedRoute allowedRoles={['estudiante']}>
+            <MyApplicationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/available-internships',
+        element: (
+          <ProtectedRoute allowedRoles={['estudiante']}>
+            <AvailableInternshipsPage />
           </ProtectedRoute>
         ),
       },

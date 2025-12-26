@@ -23,11 +23,20 @@ const NavbarInferior = () => {
         {userRole === 'administrador' && (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
+            <li><NavLink to="/admin/applications">Solicitudes de Práctica</NavLink></li>
             <li><NavLink to="/users">Usuarios Registrados</NavLink></li>
           </>
         )}
         
-        {userRole !== 'administrador' && (
+        {userRole === 'estudiante' && (
+          <>
+            <li><NavLink to="/perfil">Mi Perfil</NavLink></li>
+            <li><NavLink to="/available-internships">Ofertas Disponibles</NavLink></li>
+            <li><NavLink to="/my-applications">Mis Solicitudes</NavLink></li>
+          </>
+        )}
+
+        {userRole !== 'administrador' && userRole !== 'estudiante' && (
           <li><NavLink to="/perfil">Mi Perfil</NavLink></li>
         )}
         
