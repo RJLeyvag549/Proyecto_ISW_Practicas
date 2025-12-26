@@ -3,9 +3,21 @@ import { format } from "@formkit/tempo";
 
 const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole }) => {
     const { id, title, description, company, supervisor, occupiedSlots, totalSlots, specialtyArea, applicationDeadline } = data;
-
-    const isExpired = applicationDeadline ? new Date(applicationDeadline) < new Date().setHours(0, 0, 0, 0) : false;
+    const deadlineDate = applicationDeadline ? new Date(applicationDeadline) : null;
+    const isValidDeadline = deadlineDate instanceof Date && !Number.isNaN(deadlineDate?.getTime());
+    const startOfToday = new Date().setHours(0, 0, 0, 0);
+    const isExpired = isValidDeadline ? deadlineDate < startOfToday : false;
     const isFull = occupiedSlots >= totalSlots;
+
+    let deadlineLabel = 'Sin fecha';
+    if (isValidDeadline) {
+        try {
+            deadlineLabel = format(deadlineDate, "short");
+        } catch (error) {
+            // Fallback to a locale date if tempo fails to parse unexpected offsets
+            deadlineLabel = deadlineDate.toLocaleDateString();
+        }
+    }
 
     return (
         <div className={`internship-card ${isExpired ? 'expired' : ''}`}>
@@ -49,7 +61,7 @@ const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole }) =
             <div className="card-actions" style={{ justifyContent: 'space-between', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
                     <i className="fa-regular fa-calendar"></i>
-                    <span>{applicationDeadline ? format(applicationDeadline, "short") : 'Sin fecha'}</span>
+                    <span>{deadlineLabel}</span>
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
