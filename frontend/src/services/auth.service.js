@@ -29,10 +29,11 @@ export async function register(data) {
         const { nombreCompleto, email, rut, password } = dataRegister
         // Send registration as a student so it goes into pending approval
         const response = await axios.post('/students/register', {
-            nombreCompleto,
-            email,
-            rut,
-            password
+                nombreCompleto,
+                email,
+                rut,
+                password,
+                carrera: dataRegister.carrera
         });
         return response.data;
     } catch (error) {
