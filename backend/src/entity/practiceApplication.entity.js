@@ -88,6 +88,22 @@ const PracticeApplicationSchema = new EntitySchema({
       target: "Document",
       inverseSide: "practiceApplication",
     },
+    internship: {
+      type: "many-to-one",
+      target: "Internship",
+      joinColumn: {
+        name: "internshipId",
+      },
+      nullable: true,
+    },
+    internshipExternal: {
+      type: "many-to-one",
+      target: "InternshipExternal",
+      joinColumn: {
+        name: "internshipExternalId",
+      },
+      nullable: true,
+    },
   },
   indices: [
     {

@@ -86,6 +86,21 @@ const Form = ({ title, fields, buttonText, onSubmit, footerContent, backgroundCo
                             ))}
                         </select>
                     )}
+                    {field.fieldType === 'checkbox' && (
+                        <div className="checkbox-container">
+                            <input
+                                type="checkbox"
+                                {...register(field.name, {
+                                    required: field.required ? field.requiredMessage || 'Debes aceptar este campo' : false,
+                                })}
+                                id={field.name}
+                                onChange={field.onChange}
+                            />
+                            <label htmlFor={field.name} className="checkbox-label">
+                                {field.checkboxLabel}
+                            </label>
+                        </div>
+                    )}
                     {field.type === 'password' && field.name === 'password' && (
                         <span className="toggle-password-icon" onClick={togglePasswordVisibility}>
                             <img src={showPassword ? ViewIcon : HideIcon} />

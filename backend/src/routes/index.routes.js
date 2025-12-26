@@ -8,6 +8,7 @@ import supervisorRoutes from "./supervisor.routes.js";
 import internshipRoutes from "./internship.routes.js";
 import practiceApplication from "./practiceApplication.routes.js";
 import documentRoutes from "./document.routes.js";
+import profileRoutes from "./profile.routes.js";
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router
   .use("/companies", supervisorRoutes)
   .use("/internships", internshipRoutes)
   .use("/practiceApp", practiceApplication)
-  .use("/documents", documentRoutes);
+  .use("/documents", documentRoutes)
+  .use("/profile", profileRoutes);
 
 export default router;

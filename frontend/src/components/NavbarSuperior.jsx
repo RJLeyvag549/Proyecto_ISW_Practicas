@@ -30,17 +30,15 @@ const NavbarSuperior = () => {
   };
 
   const handleViewProfile = () => {
-    navigate('/perfil'); // Ajusta la ruta si tu página de perfil es distinta
+    navigate('/perfil');
   };
 
   return (
     <nav className="navbar-superior">
-      {/* Logo UBB */}
       <div className="navbar-logo">
         <img src={logoUBB} alt="UBB" />
       </div>
 
-      {/* Perfil */}
       <div className="navbar-user" ref={dropdownRef}>
         <button className="user-btn" onClick={toggleDropdown}>
           <img src={iconoPerfil} alt="Perfil" className="user-icon" />

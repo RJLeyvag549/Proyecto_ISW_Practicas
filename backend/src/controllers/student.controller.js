@@ -70,7 +70,7 @@ export async function approveStudent(req, res) {
   try {
     const { id } = req.params;
     const { body } = req;
-    const approverId = req.user.id; // Assuming we have the user in the request from auth middleware
+    const approverId = req.user.id; 
 
     const { error } = approvalValidation.validate(body);
 

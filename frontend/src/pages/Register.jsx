@@ -101,6 +101,17 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                                 pattern: /^[a-zA-Z0-9]+$/,
                                 patternMessage: "Debe contener solo letras y números",
                             },
+                            {
+                                fieldType: 'checkbox',
+                                name: "termsAccepted",
+                                checkboxLabel: (
+                                    <span>
+                                        Acepto los <a href="/terminos" target="_blank" rel="noopener noreferrer" style={{color: '#007bff', textDecoration: 'underline'}}>términos y condiciones</a>
+                                    </span>
+                                ),
+                                required: true,
+                                requiredMessage: "Debes aceptar los términos y condiciones para continuar",
+                            },
                         ]}
                         buttonText="Registrarse"
                         onSubmit={registerSubmit}
