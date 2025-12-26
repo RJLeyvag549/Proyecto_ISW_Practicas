@@ -19,10 +19,11 @@ const formatDate = (dateString) => {
     });
 };
 
-const ApplicationCard = ({ data, onView, onUpdateStatus }) => {
+const ApplicationCard = ({ data, onView, onEdit, onDelete }) => {
     const statusInfo = getStatusInfo(data.status);
     const studentName = data.student?.nombreCompleto || 'Estudiante';
     const isExternal = data.applicationType === 'external';
+    const isEditable = isExternal && ['pending', 'needsInfo'].includes(data.status);
     
     // Obtener nombre de empresa
     const companyName = isExternal 
@@ -62,7 +63,7 @@ const ApplicationCard = ({ data, onView, onUpdateStatus }) => {
                     {data.attachments && (
                         <div className="detail-item">
                             <i className="fa-solid fa-paperclip"></i>
-                            <span>{JSON.parse(data.attachments || '[]').length} documentos</span>
+                            <span>Documentos adjuntos</span>
                         </div>
                     )}
                 </div>
@@ -72,10 +73,15 @@ const ApplicationCard = ({ data, onView, onUpdateStatus }) => {
                 <button className="btn-view" onClick={() => onView(data)} title="Ver detalles">
                     <i className="fa-solid fa-eye"></i>
                 </button>
-                {data.status === 'pending' && (
-                    <button className="btn-edit" onClick={() => onUpdateStatus(data)} title="Gestionar">
-                        <i className="fa-solid fa-edit"></i>
-                    </button>
+                {isEditable && (
+                    <>
+                        <button className="btn-edit" onClick={() => onEdit?.(data)} title="Editar">
+                            <i className="fa-solid fa-pen"></i>
+                        </button>
+                        <button className="btn-delete" onClick={() => onDelete?.(data)} title="Eliminar">
+                            <i className="fa-solid fa-trash"></i>
+                        </button>
+                    </>
                 )}
             </div>
         </div>

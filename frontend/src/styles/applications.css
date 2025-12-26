@@ -207,6 +207,37 @@
 .type-external { background: #fef3c7; color: #92400e; }
 .type-existing { background: #dbeafe; color: #1e40af; }
 
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+.card-actions button {
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #4b5563;
+    border-radius: 8px;
+    padding: 0.55rem 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 42px;
+}
+
+.card-actions .btn-view { color: #2563eb; }
+.card-actions .btn-edit { color: #d97706; }
+.card-actions .btn-delete { color: #dc2626; }
+
+.card-actions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
 /* =============================================
    APPLICATION MODAL STYLES (específicos)
    ============================================= */
@@ -339,6 +370,8 @@
 
 .info-item span {
     color: #1f2937;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .coordinator-comments {
@@ -713,3 +746,46 @@
     border-color: #6cc4c2;
     box-shadow: 0 0 0 3px rgba(108, 196, 194, 0.1);
 }
+
+/* =============================================
+   FILE LIST STYLES
+   ============================================= */
+
+.file-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.file-item span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-item i {
+    color: #6cc4c2;
+    flex-shrink: 0;
+}
+
+.file-item button {
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+

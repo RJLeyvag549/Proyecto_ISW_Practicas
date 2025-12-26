@@ -6,6 +6,7 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [step, setStep] = useState(1); // 1: Empresa, 2: Supervisor, 3: Práctica
+    const [uploadedFiles, setUploadedFiles] = useState([]);
 
     // Limpiar error cuando cambia el paso
     useEffect(() => {
@@ -13,19 +14,18 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
     }, [step]);
 
     const [formData, setFormData] = useState({
-        // Datos de la práctica
         title: '',
         description: '',
         activities: '',
         estimatedDuration: '',
-        // Datos de la empresa
+        schedule: '',
+        specialtyArea: '',
         companyName: '',
         companyAddress: '',
         companyIndustry: '',
         companyWebsite: '',
         companyPhone: '',
         companyEmail: '',
-        // Datos del supervisor
         supervisorName: '',
         supervisorPosition: '',
         supervisorEmail: '',
@@ -38,172 +38,19 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // Validaciones que coinciden con el backend
-    const validateStep1 = () => {
-        // companyName: min 2, max 255, pattern
-        if (!formData.companyName?.trim()) {
-            setError('El nombre de la empresa es obligatorio.');
-            return false;
-        }
-        if (formData.companyName.length < 2) {
-            setError('El nombre de la empresa debe tener al menos 2 caracteres.');
-            return false;
-        }
-        if (formData.companyName.length > 255) {
-            setError('El nombre de la empresa no puede superar los 255 caracteres.');
-            return false;
-        }
-        
-        // companyAddress: min 10, max 500, required
-        if (!formData.companyAddress?.trim()) {
-            setError('La dirección de la empresa es obligatoria.');
-            return false;
-        }
-        if (formData.companyAddress.length < 10) {
-            setError('La dirección debe tener al menos 10 caracteres.');
-            return false;
-        }
-        if (formData.companyAddress.length > 500) {
-            setError('La dirección no puede superar los 500 caracteres.');
-            return false;
-        }
-        
-        // companyIndustry: optional, min 3, max 100
-        if (formData.companyIndustry && formData.companyIndustry.length > 0) {
-            if (formData.companyIndustry.length < 3) {
-                setError('La industria debe tener al menos 3 caracteres.');
-                return false;
-            }
-            if (formData.companyIndustry.length > 100) {
-                setError('La industria no puede superar los 100 caracteres.');
-                return false;
-            }
-        }
-        
-        return true;
+    const handleFileChange = (e) => {
+        const files = Array.from(e.target.files);
+        const fileNames = files.map(f => f.name);
+        setUploadedFiles([...uploadedFiles, ...fileNames]);
     };
 
-    const validateStep2 = () => {
-        // supervisorName: min 3, max 255, required
-        if (!formData.supervisorName?.trim()) {
-            setError('El nombre del supervisor es obligatorio.');
-            return false;
-        }
-        if (formData.supervisorName.length < 3) {
-            setError('El nombre del supervisor debe tener al menos 3 caracteres.');
-            return false;
-        }
-        if (formData.supervisorName.length > 255) {
-            setError('El nombre del supervisor no puede superar los 255 caracteres.');
-            return false;
-        }
-        
-        // supervisorPosition: min 3, max 100, required
-        if (!formData.supervisorPosition?.trim()) {
-            setError('El cargo del supervisor es obligatorio.');
-            return false;
-        }
-        if (formData.supervisorPosition.length < 3) {
-            setError('El cargo debe tener al menos 3 caracteres.');
-            return false;
-        }
-        if (formData.supervisorPosition.length > 100) {
-            setError('El cargo no puede superar los 100 caracteres.');
-            return false;
-        }
-        
-        // supervisorEmail: required, email format
-        if (!formData.supervisorEmail?.trim()) {
-            setError('El email del supervisor es obligatorio.');
-            return false;
-        }
-        if (!/^\S+@\S+\.\S+$/.test(formData.supervisorEmail)) {
-            setError('El email del supervisor debe tener un formato válido.');
-            return false;
-        }
-        
-        // supervisorPhone: optional, pattern 7-25 chars
-        if (formData.supervisorPhone && formData.supervisorPhone.length > 0) {
-            if (!/^[\+]?[\d\s\-\(\)]{7,25}$/.test(formData.supervisorPhone)) {
-                setError('El teléfono del supervisor debe tener un formato válido (ej: +56 9 1234 5678).');
-                return false;
-            }
-        }
-        
-        // department: optional, min 3, max 100
-        if (formData.department && formData.department.length > 0) {
-            if (formData.department.length < 3) {
-                setError('El departamento debe tener al menos 3 caracteres.');
-                return false;
-            }
-            if (formData.department.length > 100) {
-                setError('El departamento no puede superar los 100 caracteres.');
-                return false;
-            }
-        }
-        
-        return true;
-    };
-
-    const validateStep3 = () => {
-        // title: min 5, max 200, required
-        if (!formData.title?.trim()) {
-            setError('El título de la práctica es obligatorio.');
-            return false;
-        }
-        if (formData.title.length < 5) {
-            setError('El título debe tener al menos 5 caracteres.');
-            return false;
-        }
-        if (formData.title.length > 200) {
-            setError('El título no puede superar los 200 caracteres.');
-            return false;
-        }
-        
-        // description: min 20, max 2000, required
-        if (!formData.description?.trim()) {
-            setError('La descripción de la práctica es obligatoria.');
-            return false;
-        }
-        if (formData.description.length < 20) {
-            setError('La descripción debe tener al menos 20 caracteres.');
-            return false;
-        }
-        if (formData.description.length > 2000) {
-            setError('La descripción no puede superar los 2000 caracteres.');
-            return false;
-        }
-        
-        // activities: min 20, max 2000, required
-        if (!formData.activities?.trim()) {
-            setError('Las actividades a desarrollar son obligatorias.');
-            return false;
-        }
-        if (formData.activities.length < 20) {
-            setError('Las actividades deben tener al menos 20 caracteres.');
-            return false;
-        }
-        if (formData.activities.length > 2000) {
-            setError('Las actividades no pueden superar los 2000 caracteres.');
-            return false;
-        }
-        
-        // estimatedDuration: no validación específica, pero required
-        if (!formData.estimatedDuration?.trim()) {
-            setError('Indica la duración estimada.');
-            return false;
-        }
-        
-        return true;
+    const handleRemoveFile = (index) => {
+        setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
     };
 
     const handleNext = () => {
         setError('');
-        if (step === 1 && validateStep1()) {
-            setStep(2);
-        } else if (step === 2 && validateStep2()) {
-            setStep(3);
-        }
+        setStep(step + 1);
     };
 
     const handleBack = () => {
@@ -214,13 +61,10 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
-
-        if (!validateStep3()) return;
-
         setLoading(true);
+
         try {
-            const response = await applyExternal(formData);
-            
+            const response = await applyExternal(formData, uploadedFiles);
             if (response.error) {
                 setError(response.error);
             } else {
@@ -306,6 +150,7 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
                     <label>Email de contacto</label>
                     <input
                         type="text"
+                        inputMode="email"
                         name="companyEmail"
                         value={formData.companyEmail}
                         onChange={handleChange}
@@ -371,6 +216,7 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
                     <label>Email <span className="required">*</span></label>
                     <input
                         type="text"
+                        inputMode="email"
                         name="supervisorEmail"
                         value={formData.supervisorEmail}
                         onChange={handleChange}
@@ -436,8 +282,56 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
                     name="estimatedDuration"
                     value={formData.estimatedDuration}
                     onChange={handleChange}
-                    placeholder="Ej: 3 meses, 360 horas"
+                    placeholder="Ej: 3 meses - 360 horas"
                 />
+            </div>
+
+            <div className="app-form-group">
+                <label>Horarios <span className="required">*</span></label>
+                <textarea
+                    name="schedule"
+                    value={formData.schedule}
+                    onChange={handleChange}
+                    placeholder="Ej: Lunes a Viernes 9:00-18:00"
+                    rows={2}
+                />
+            </div>
+
+            <div className="app-form-group">
+                <label>Área de Especialidad (opcional)</label>
+                <input
+                    type="text"
+                    name="specialtyArea"
+                    value={formData.specialtyArea}
+                    onChange={handleChange}
+                    placeholder="Ej: Desarrollo Web"
+                />
+            </div>
+
+            <div className="app-form-group">
+                <label>Documentos (máx 5)</label>
+                <input
+                    type="file"
+                    multiple
+                    onChange={handleFileChange}
+                    accept=".pdf,.jpg,.jpeg,.png"
+                />
+                {uploadedFiles.length > 0 && (
+                    <div className="file-list">
+                        {uploadedFiles.map((file, idx) => (
+                            <div key={idx} className="file-item">
+                                <span><i className="fa-solid fa-file"></i> {file}</span>
+                                <button
+                                    type="button"
+                                    className="app-btn-danger"
+                                    onClick={() => handleRemoveFile(idx)}
+                                >
+                                    <i className="fa-solid fa-trash"></i> Quitar
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </>
     );

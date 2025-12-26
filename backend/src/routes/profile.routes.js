@@ -4,7 +4,7 @@ import {
   getProfile,
   updateStudentProfile,
   updateDocuments,
-  updatePassword
+  updatePassword,
 } from "../controllers/profile.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 
