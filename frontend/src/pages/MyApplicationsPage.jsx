@@ -174,6 +174,7 @@ export default function MyApplicationsPage() {
                         setShowViewModal(false);
                         setSelectedApplication(null);
                     }}
+                    onDelete={fetchMyApplications}
                 />
             )}
 

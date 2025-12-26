@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { applyExternal } from '@services/practiceApplication.service.js';
+import { updateOwnApplication } from '@services/practiceApplication.service.js';
 import '../styles/applications.css';
 
-const ExternalApplicationModal = ({ onClose, onSuccess }) => {
+const EditExternalApplicationModal = ({ application, onClose, onSuccess }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [step, setStep] = useState(1); // 1: Empresa, 2: Supervisor, 3: Práctica
@@ -14,23 +14,23 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
 
     const [formData, setFormData] = useState({
         // Datos de la práctica
-        title: '',
-        description: '',
-        activities: '',
-        estimatedDuration: '',
+        title: application?.internshipExternal?.title || '',
+        description: application?.internshipExternal?.description || '',
+        activities: application?.internshipExternal?.activities || '',
+        estimatedDuration: application?.internshipExternal?.estimatedDuration || '',
         // Datos de la empresa
-        companyName: '',
-        companyAddress: '',
-        companyIndustry: '',
-        companyWebsite: '',
-        companyPhone: '',
-        companyEmail: '',
+        companyName: application?.internshipExternal?.companyName || '',
+        companyAddress: application?.internshipExternal?.companyAddress || '',
+        companyIndustry: application?.internshipExternal?.companyIndustry || '',
+        companyWebsite: application?.internshipExternal?.companyWebsite || '',
+        companyPhone: application?.internshipExternal?.companyPhone || '',
+        companyEmail: application?.internshipExternal?.companyEmail || '',
         // Datos del supervisor
-        supervisorName: '',
-        supervisorPosition: '',
-        supervisorEmail: '',
-        supervisorPhone: '',
-        department: ''
+        supervisorName: application?.internshipExternal?.supervisorName || '',
+        supervisorPosition: application?.internshipExternal?.supervisorPosition || '',
+        supervisorEmail: application?.internshipExternal?.supervisorEmail || '',
+        supervisorPhone: application?.internshipExternal?.supervisorPhone || '',
+        department: application?.internshipExternal?.department || ''
     });
 
     const handleChange = (e) => {
@@ -219,7 +219,7 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
 
         setLoading(true);
         try {
-            const response = await applyExternal(formData);
+            const response = await updateOwnApplication(application.id, formData);
             
             if (response.error) {
                 setError(response.error);
@@ -228,7 +228,7 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
                 onClose();
             }
         } catch (err) {
-            setError('Error al enviar la solicitud');
+            setError('Error al actualizar la solicitud');
         } finally {
             setLoading(false);
         }
@@ -442,11 +442,13 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
         </>
     );
 
+    if (!application) return null;
+
     return (
         <div className="app-modal-overlay" onClick={onClose}>
             <div className="app-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="app-modal-header">
-                    <h2>Nueva Solicitud Externa</h2>
+                    <h2>Editar Solicitud Externa</h2>
                     <button className="app-btn-close" onClick={onClose}>
                         <i className="fa-solid fa-times"></i>
                     </button>
@@ -484,12 +486,12 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
                                 {loading ? (
                                     <>
                                         <i className="fa-solid fa-spinner fa-spin"></i>
-                                        Enviando...
+                                        Actualizando...
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fa-solid fa-paper-plane"></i>
-                                        Enviar Solicitud
+                                        <i className="fa-solid fa-save"></i>
+                                        Guardar Cambios
                                     </>
                                 )}
                             </button>
@@ -501,4 +503,4 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
     );
 };
 
-export default ExternalApplicationModal;
+export default EditExternalApplicationModal;

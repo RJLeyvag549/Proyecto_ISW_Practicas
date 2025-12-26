@@ -39,6 +39,12 @@ router.get(
   DocumentController.getDocumentsByPractice
 );
 
+router.get(
+  "/external/:externalId",
+  authenticateJwt,
+  DocumentController.getDocumentsByExternal
+);
+
 router.patch(
   "/:documentId/status",
   authenticateJwt,

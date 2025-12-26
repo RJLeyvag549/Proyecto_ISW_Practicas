@@ -4,20 +4,35 @@ import { AppDataSource } from "../config/configDb.js";
 
 const documentRepository = AppDataSource.getRepository("Document");
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
+const internshipExternalRepository = AppDataSource.getRepository("InternshipExternal");
 
 
 export const DocumentService = {
 
   async createDocument(documentData, file) {
     try {
+      const { practiceApplicationId, internshipExternalId } = documentData;
 
-      const practiceApplication = await practiceApplicationRepository.findOne({
-        where: { id: documentData.practiceApplicationId },
-        relations: ["student"],
-      });
+      if (!practiceApplicationId && !internshipExternalId) {
+        throw new Error("Debe especificar practiceApplicationId o internshipExternalId");
+      }
 
-      if (!practiceApplication) {
-        throw new Error("Práctica no encontrada");
+      if (practiceApplicationId) {
+        const practiceApplication = await practiceApplicationRepository.findOne({
+          where: { id: practiceApplicationId },
+          relations: ["student"],
+        });
+
+        if (!practiceApplication) {
+          throw new Error("Práctica no encontrada");
+        }
+      }
+
+      if (internshipExternalId) {
+        const external = await internshipExternalRepository.findOne({ where: { id: internshipExternalId } });
+        if (!external) {
+          throw new Error("Práctica externa no encontrada");
+        }
       }
 
       const document = documentRepository.create({
@@ -29,7 +44,6 @@ export const DocumentService = {
 
       return await documentRepository.save(document);
     } catch (error) {
-
       throw error;
     }
   },
@@ -39,6 +53,17 @@ export const DocumentService = {
     try {
       return await documentRepository.find({
         where: { practiceApplicationId: practiceId },
+        order: { createdAt: "DESC" },
+      });
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  async getDocumentsByExternalId(externalId) {
+    try {
+      return await documentRepository.find({
+        where: { internshipExternalId: externalId },
         order: { createdAt: "DESC" },
       });
     } catch (error) {

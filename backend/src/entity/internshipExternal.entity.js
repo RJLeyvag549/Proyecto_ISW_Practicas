@@ -90,14 +90,15 @@ const InternshipExternalSchema = new EntitySchema({
       type: "text",
       nullable: false,
     },
-    requirements: {
-      type: "text",
-      nullable: true,
-    },
     specialtyArea: {
       type: "varchar",
       length: 100,
       nullable: true,
+    },
+    isActive: {
+      type: "boolean",
+      default: true,
+      nullable: false,
     },
     createdAt: {
       type: "timestamp with time zone",

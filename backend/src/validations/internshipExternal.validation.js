@@ -4,46 +4,62 @@ import Joi from "joi";
 export const internshipExternalValidation = Joi.object({
 
   title: Joi.string()
+    .pattern(/^[a-zA-Z0-9\s\-&\/\+áéíóúÁÉÍÓÚ]+$/)
     .min(5)
     .max(200)
     .required()
     .messages({
       "any.required": "El título de la práctica es obligatorio.",
       "string.min": "El título debe tener al menos 5 caracteres.",
-      "string.max": "El título no puede superar los 200 caracteres."
+      "string.max": "El título no puede superar los 200 caracteres.",
+      "string.pattern.base": "El título solo puede contener letras, números y símbolos comunes (- & / +)."
     }),
     
   description: Joi.string()
+    .pattern(/^[a-zA-Z0-9\s\.,;:\-áéíóúÁÉÍÓÚ\n\r]+$/)
     .min(20)
+    .max(2000)
     .required()
     .messages({
       "any.required": "La descripción de la práctica es obligatoria.",
-      "string.min": "La descripción debe tener al menos 20 caracteres."
+      "string.min": "La descripción debe tener al menos 20 caracteres.",
+      "string.max": "La descripción no puede superar los 2000 caracteres.",
+      "string.pattern.base": "La descripción solo puede contener letras, números y puntuación básica."
     }),
 
   companyName: Joi.string()
+    .pattern(/^[a-zA-Z0-9\s\.,&\-áéíóúÁÉÍÓÚ]+$/)
     .min(2)
     .max(255)
     .required()
     .messages({
       "any.required": "El nombre de la empresa es obligatorio.",
       "string.min": "El nombre de la empresa debe tener al menos 2 caracteres.",
-      "string.max": "El nombre de la empresa no puede superar los 255 caracteres."
+      "string.max": "El nombre de la empresa no puede superar los 255 caracteres.",
+      "string.pattern.base": "El nombre de la empresa solo puede contener letras, números y símbolos comunes (. , & -)."
     }),
 
   companyAddress: Joi.string()
+    .pattern(/^[a-zA-Z0-9\s\.,#\-\/áéíóúÁÉÍÓÚ]+$/)
     .min(10)
+    .max(500)
     .required()
     .messages({
       "any.required": "La dirección de la empresa es obligatoria.",
-      "string.min": "La dirección debe tener al menos 10 caracteres."
+      "string.min": "La dirección debe tener al menos 10 caracteres.",
+      "string.max": "La dirección no puede superar los 500 caracteres.",
+      "string.pattern.base": "La dirección solo puede contener letras, números y símbolos comunes (., #, -, /)."
     }),
 
   companyIndustry: Joi.string()
+    .pattern(/^[a-zA-Z\s&\-áéíóúÁÉÍÓÚ]+$/)
+    .min(3)
     .max(100)
     .optional()
     .messages({
-      "string.max": "La industria no puede superar los 100 caracteres."
+      "string.min": "La industria debe tener al menos 3 caracteres.",
+      "string.max": "La industria no puede superar los 100 caracteres.",
+      "string.pattern.base": "La industria solo puede contener letras y símbolos comunes (&, -)."
     }),
 
   companyWebsite: Joi.string()
@@ -56,10 +72,10 @@ export const internshipExternalValidation = Joi.object({
     }),
 
   companyPhone: Joi.string()
-    .pattern(/^[+]?[\d\s\-\(\)]{7,20}$/)
+    .pattern(/^[\+]?[\d\s\-\(\)]{7,25}$/)
     .optional()
     .messages({
-      "string.pattern.base": "El teléfono de la empresa debe tener un formato válido."
+      "string.pattern.base": "El teléfono de la empresa debe tener un formato válido (ej: +56 9 1234 5678)."
     }),
 
   companyEmail: Joi.string()
@@ -72,23 +88,27 @@ export const internshipExternalValidation = Joi.object({
     }),
 
   supervisorName: Joi.string()
-    .min(2)
+    .pattern(/^[a-zA-Z\s\-áéíóúÁÉÍÓÚ]+$/)
+    .min(3)
     .max(255)
     .required()
     .messages({
       "any.required": "El nombre del supervisor es obligatorio.",
-      "string.min": "El nombre del supervisor debe tener al menos 2 caracteres.",
-      "string.max": "El nombre del supervisor no puede superar los 255 caracteres."
+      "string.min": "El nombre del supervisor debe tener al menos 3 caracteres.",
+      "string.max": "El nombre del supervisor no puede superar los 255 caracteres.",
+      "string.pattern.base": "El nombre del supervisor solo puede contener letras y guiones."
     }),
 
   supervisorPosition: Joi.string()
-    .min(2)
+    .pattern(/^[a-zA-Z0-9\s\-&\/áéíóúÁÉÍÓÚ]+$/)
+    .min(3)
     .max(100)
     .required()
     .messages({
       "any.required": "El cargo del supervisor es obligatorio.",
-      "string.min": "El cargo debe tener al menos 2 caracteres.",
-      "string.max": "El cargo no puede superar los 100 caracteres."
+      "string.min": "El cargo debe tener al menos 3 caracteres.",
+      "string.max": "El cargo no puede superar los 100 caracteres.",
+      "string.pattern.base": "El cargo solo puede contener letras, números y símbolos comunes (- & /)."
     }),
 
   supervisorEmail: Joi.string()
@@ -102,54 +122,68 @@ export const internshipExternalValidation = Joi.object({
     }),
 
   supervisorPhone: Joi.string()
-    .pattern(/^[+]?[\d\s\-\(\)]{7,20}$/)
+    .pattern(/^[\+]?[\d\s\-\(\)]{7,25}$/)
     .optional()
     .messages({
-      "string.pattern.base": "El teléfono del supervisor debe tener un formato válido."
+      "string.pattern.base": "El teléfono del supervisor debe tener un formato válido (ej: +56 9 1234 5678)."
     }),
 
-    department: Joi.string()
+  department: Joi.string()
+    .pattern(/^[a-zA-Z\s&\+\-áéíóúÁÉÍÓÚ]+$/)
+    .min(3)
     .max(100)
     .optional()
     .messages({
-      "string.max": "El departamento no puede superar los 100 caracteres."
+      "string.min": "El departamento debe tener al menos 3 caracteres.",
+      "string.max": "El departamento no puede superar los 100 caracteres.",
+      "string.pattern.base": "El departamento solo puede contener letras y símbolos comunes (&, +, -)."
     }),
 
   activities: Joi.string()
+    .pattern(/^[a-zA-Z0-9\s\.,;:\-áéíóúÁÉÍÓÚ\n\r]+$/)
     .min(20)
+    .max(2000)
     .required()
     .messages({
       "any.required": "Las actividades a desarrollar son obligatorias.",
-      "string.min": "Las actividades deben tener al menos 20 caracteres."
+      "string.min": "Las actividades deben tener al menos 20 caracteres.",
+      "string.max": "Las actividades no pueden superar los 2000 caracteres.",
+      "string.pattern.base": "Las actividades solo pueden contener letras, números y puntuación básica."
     }),
 
   estimatedDuration: Joi.string()
+    .pattern(/^[a-zA-Z0-9\s\-áéíóúÁÉÍÓÚ]+$/)
     .min(2)
     .max(50)
     .required()
     .messages({
       "any.required": "La duración estimada es obligatoria.",
       "string.min": "La duración debe tener al menos 2 caracteres.",
-      "string.max": "La duración no puede superar los 50 caracteres."
+      "string.max": "La duración no puede superar los 50 caracteres.",
+      "string.pattern.base": "La duración solo puede contener letras, números y guiones."
     }),
 
   schedule: Joi.string()
+    .pattern(/^[a-zA-Z0-9\s\-:áéíóúÁÉÍÓÚ]+$/)
     .min(5)
+    .max(1000)
     .required()
     .messages({
       "any.required": "Los horarios son obligatorios.",
-      "string.min": "Los horarios deben tener al menos 5 caracteres."
+      "string.min": "Los horarios deben tener al menos 5 caracteres.",
+      "string.max": "Los horarios no pueden superar los 1000 caracteres.",
+      "string.pattern.base": "Los horarios solo pueden contener letras, números y símbolos comunes (- : )."
     }),
 
-  requirements: Joi.string()
-    .optional()
-    .allow(""),
-
   specialtyArea: Joi.string()
+    .pattern(/^[a-zA-Z0-9\s&\-\/áéíóúÁÉÍÓÚ]+$/)
+    .min(3)
     .max(100)
     .optional()
     .messages({
-      "string.max": "El área de especialidad no puede superar los 100 caracteres."
+      "string.min": "El área de especialidad debe tener al menos 3 caracteres.",
+      "string.max": "El área de especialidad no puede superar los 100 caracteres.",
+      "string.pattern.base": "El área de especialidad solo puede contener letras, números y símbolos comunes (&, -, /)."
     }),
 
 }).unknown(false).messages({

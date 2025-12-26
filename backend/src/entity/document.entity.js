@@ -13,7 +13,11 @@ const DocumentSchema = new EntitySchema({
     },
     practiceApplicationId: {
       type: "int",
-      nullable: false,
+      nullable: true,
+    },
+    internshipExternalId: {
+      type: "int",
+      nullable: true,
     },
     type: {
       type: "varchar",
@@ -73,7 +77,14 @@ const DocumentSchema = new EntitySchema({
       type: "many-to-one",
       target: "PracticeApplication",
       joinColumn: { name: "practiceApplicationId" },
-      nullable: false,
+      nullable: true,
+      onDelete: "CASCADE",
+    },
+    internshipExternal: {
+      type: "many-to-one",
+      target: "InternshipExternal",
+      joinColumn: { name: "internshipExternalId" },
+      nullable: true,
       onDelete: "CASCADE",
     },
     uploader: {
@@ -92,6 +103,10 @@ const DocumentSchema = new EntitySchema({
     {
       name: "IDX_DOCUMENT_APPLICATION",
       columns: ["practiceApplicationId"],
+    },
+    {
+      name: "IDX_DOCUMENT_INTERNSHIP_EXTERNAL",
+      columns: ["internshipExternalId"],
     },
   ],
 });

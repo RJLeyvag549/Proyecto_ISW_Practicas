@@ -83,6 +83,20 @@ const PracticeApplicationSchema = new EntitySchema({
       nullable: false,
       onDelete: "CASCADE",
     },
+    internship: {
+      type: "many-to-one",
+      target: "Internship",
+      joinColumn: { name: "internshipId" },
+      nullable: true,
+      onDelete: "SET NULL",
+    },
+    internshipExternal: {
+      type: "many-to-one",
+      target: "InternshipExternal",
+      joinColumn: { name: "internshipExternalId" },
+      nullable: true,
+      onDelete: "CASCADE",
+    },
     documents: {
       type: "one-to-many",
       target: "Document",
@@ -106,6 +120,14 @@ const PracticeApplicationSchema = new EntitySchema({
     {
       name: "IDX_PRACTICE_APPLICATION_STATUS",
       columns: ["status"],
+    },
+    {
+      name: "IDX_PRACTICE_APPLICATION_INTERNSHIP",
+      columns: ["internshipId"],
+    },
+    {
+      name: "IDX_PRACTICE_APPLICATION_EXTERNAL",
+      columns: ["internshipExternalId"],
     },
   ],
 });

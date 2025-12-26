@@ -7,7 +7,7 @@ export async function getAllApplications(filters = {}) {
         if (filters.status) params.append('status', filters.status);
         if (filters.studentId) params.append('studentId', filters.studentId);
         
-        const { data } = await axios.get(`/practice-applications?${params.toString()}`);
+        const { data } = await axios.get(`/practiceApp?${params.toString()}`);
         return data.data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al obtener solicitudes' };
@@ -17,7 +17,7 @@ export async function getAllApplications(filters = {}) {
 // Obtener mis solicitudes (estudiante)
 export async function getMyApplications() {
     try {
-        const { data } = await axios.get('/practice-applications/my');
+        const { data } = await axios.get('/practiceApp/my');
         return data.data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al obtener solicitudes' };
@@ -27,7 +27,7 @@ export async function getMyApplications() {
 // Obtener solicitud por ID
 export async function getApplicationById(id) {
     try {
-        const { data } = await axios.get(`/practice-applications/${id}`);
+        const { data } = await axios.get(`/practiceApp/${id}`);
         return data.data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al obtener solicitud' };
@@ -37,7 +37,7 @@ export async function getApplicationById(id) {
 // Crear solicitud para oferta existente
 export async function applyToInternship(internshipId, attachments = []) {
     try {
-        const { data } = await axios.post(`/practice-applications/internship/${internshipId}`, { attachments });
+        const { data } = await axios.post(`/practiceApp/internship/${internshipId}`, { attachments });
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al crear solicitud' };
@@ -47,17 +47,37 @@ export async function applyToInternship(internshipId, attachments = []) {
 // Crear solicitud externa
 export async function applyExternal(companyData, attachments = []) {
     try {
-        const { data } = await axios.post('/practice-applications/internshipExternal', { companyData, attachments });
+        const { data } = await axios.post('/practiceApp/internshipExternal', { companyData, attachments });
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al crear solicitud' };
     }
 }
 
+// Editar solicitud externa (estudiante)
+export async function updateOwnApplication(id, companyData, attachments = []) {
+    try {
+        const { data } = await axios.put(`/practiceApp/${id}`, { companyData, attachments });
+        return data;
+    } catch (error) {
+        return { error: error.response?.data?.message || 'Error al editar solicitud' };
+    }
+}
+
+// Eliminar solicitud externa (estudiante)
+export async function deleteOwnApplication(id) {
+    try {
+        const { data } = await axios.delete(`/practiceApp/${id}`);
+        return data;
+    } catch (error) {
+        return { error: error.response?.data?.message || 'Error al eliminar solicitud' };
+    }
+}
+
 // Actualizar estado de solicitud (admin)
 export async function updateApplicationStatus(id, status, coordinatorComments = '') {
     try {
-        const { data } = await axios.patch(`/practice-applications/${id}`, { status, coordinatorComments });
+        const { data } = await axios.patch(`/practiceApp/${id}`, { status, coordinatorComments });
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al actualizar solicitud' };
@@ -67,7 +87,7 @@ export async function updateApplicationStatus(id, status, coordinatorComments = 
 // Agregar documentos a solicitud
 export async function addAttachments(id, attachments) {
     try {
-        const { data } = await axios.patch(`/practice-applications/${id}/attachments`, { attachments });
+        const { data } = await axios.patch(`/practiceApp/${id}/attachments`, { attachments });
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al agregar documentos' };
@@ -77,7 +97,7 @@ export async function addAttachments(id, attachments) {
 // Cerrar práctica (admin/coordinador)
 export async function closeApplication(id, minAverage = 4.0) {
     try {
-        const { data } = await axios.post(`/practice-applications/${id}/close`, { minAverage });
+        const { data } = await axios.post(`/practiceApp/${id}/close`, { minAverage });
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al cerrar práctica' };

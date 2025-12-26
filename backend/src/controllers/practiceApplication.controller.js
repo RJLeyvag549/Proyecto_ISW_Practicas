@@ -7,11 +7,14 @@ import {
   getPracticeApplicationById,
   getPracticeApplicationsByStudent,
   updatePracticeApplication,
+  updateOwnPracticeApplication,
+  deleteOwnPracticeApplication,
 } from "../services/practiceApplication.service.js";
 import { attachmentsValidation,
   closeApplicationValidation,
   practiceApplicationValidation,
   statusUpdateValidation,
+  practiceApplicationUpdateValidation,
 } from "../validations/practiceApplication.validation.js";
 import {
   handleErrorClient,
@@ -21,10 +24,6 @@ import {
 
 export async function createApplication(req, res) {
   try {
-    if (req.user.rol !== "usuario") {
-      return handleErrorClient(res, 403, "Solo los usuarios pueden crear solicitudes de práctica");
-    }
-
     const { body } = req;
     const { internshipId } = req.params; // Capturar ID de la URL si existe
     
@@ -101,7 +100,9 @@ export async function getAllApplications(req, res) {
     const filters = {
       status: req.query.status,
       studentId: req.query.studentId,
-      offerId: req.query.offerId,
+      applicationType: req.query.applicationType,
+      internshipId: req.query.internshipId || req.query.offerId,
+      internshipExternalId: req.query.internshipExternalId,
     };
     const [applications, serviceError] = await getAllPracticeApplications(filters);
 
@@ -158,6 +159,44 @@ export async function addAttachments(req, res) {
       return handleErrorClient(res, 400, "Error al agregar documentos", serviceError);
 
     handleSuccess(res, 200, "Documentos agregados exitosamente", application);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function updateOwnApplication(req, res) {
+  try {
+    const { id } = req.params;
+    const { error } = practiceApplicationUpdateValidation.validate(req.body);
+    if (error)
+      return handleErrorClient(res, 400, "Error de validacion", error.message);
+
+    const studentId = req.user.id;
+    const [application, serviceError] = await updateOwnPracticeApplication(
+      parseInt(id),
+      studentId,
+      req.body
+    );
+
+    if (serviceError)
+      return handleErrorClient(res, 400, "Error al actualizar la solicitud", serviceError);
+
+    handleSuccess(res, 200, "Solicitud actualizada exitosamente", application);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function deleteOwnApplication(req, res) {
+  try {
+    const { id } = req.params;
+    const studentId = req.user.id;
+    const [result, serviceError] = await deleteOwnPracticeApplication(parseInt(id), studentId);
+
+    if (serviceError)
+      return handleErrorClient(res, 400, "Error al eliminar la solicitud", serviceError);
+
+    handleSuccess(res, 200, "Solicitud eliminada exitosamente", result);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
