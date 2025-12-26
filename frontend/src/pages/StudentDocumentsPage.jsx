@@ -9,13 +9,18 @@ const StudentDocumentsPage = () => {
   const [expandedStudent, setExpandedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
-  const [reviewData, setReviewData] = useState({ status: 'pending', grade: null });
+  const [reviewData, setReviewData] = useState({ status: 'pending', grade: null, weight: 0, comments: '' });
+  const [studentAverages, setStudentAverages] = useState({});
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.get('/documents');
-      setDocuments(response.data);
+      const [docsResponse, avgResponse] = await Promise.all([
+        api.get('/documents'),
+        api.get('/documents/averages')
+      ]);
+      setDocuments(docsResponse.data?.data || []);
+      setStudentAverages(avgResponse.data?.data || {});
     } catch {
       Swal.fire('Error', 'No se pudieron cargar los documentos', 'error');
     } finally {
@@ -28,7 +33,7 @@ const StudentDocumentsPage = () => {
   }, [fetchDocuments]);
 
   const groupedByStudent = documents.reduce((acc, doc) => {
-    const student = doc.uploadedBy || 'Desconocido';
+    const student = doc.uploader?.nombreCompleto || `Usuario ${doc.uploadedBy ?? 'desconocido'}`;
     if (!acc[student]) acc[student] = [];
     acc[student].push(doc);
     return acc;
@@ -54,7 +59,7 @@ const StudentDocumentsPage = () => {
     if (result.isConfirmed) {
       try {
         await api.delete(`/documents/${id}`);
-        setDocuments(documents.filter(d => d._id !== id));
+        setDocuments(documents.filter(d => d.id !== id));
         Swal.fire('Eliminado', 'Documento eliminado', 'success');
       } catch {
         Swal.fire('Error', 'No se pudo eliminar', 'error');
@@ -81,7 +86,12 @@ const StudentDocumentsPage = () => {
 
   const handleReview = (doc) => {
     setSelectedDoc(doc);
-    setReviewData({ status: doc.status || 'pending', grade: doc.grade || null });
+    setReviewData({ 
+      status: doc.status || 'pending', 
+      grade: doc.grade || null, 
+      weight: doc.weight || 0,
+      comments: doc.comments || ''
+    });
     setShowModal(true);
   };
 
@@ -89,9 +99,11 @@ const StudentDocumentsPage = () => {
     if (!selectedDoc) return;
 
     try {
-      await api.put(`/documents/${selectedDoc._id}`, {
+      await api.patch(`/documents/${selectedDoc.id}/status`, {
         status: reviewData.status,
         grade: reviewData.grade ? parseFloat(reviewData.grade) : null,
+        weight: reviewData.weight ? parseFloat(reviewData.weight) : 0,
+        comments: reviewData.comments || '',
       });
 
       Swal.fire('Éxito', 'Documento actualizado', 'success');
@@ -158,7 +170,10 @@ const StudentDocumentsPage = () => {
         <div className="empty">No hay documentos</div>
       ) : (
         <div className="students-list">
-          {Object.entries(groupedByStudent).map(([student, docs]) => (
+          {Object.entries(groupedByStudent).map(([student, docs]) => {
+            const studentId = docs[0]?.uploadedBy;
+            const avgData = studentAverages[studentId];
+            return (
             <div key={student} className="student-card">
               <div
                 className="student-header"
@@ -166,7 +181,14 @@ const StudentDocumentsPage = () => {
                   setExpandedStudent(expandedStudent === student ? null : student)
                 }
               >
-                <span className="student-name">{student}</span>
+                <div className="student-info">
+                  <span className="student-name">{student}</span>
+                  {avgData && avgData.average !== null && (
+                    <span className={`average-badge ${avgData.isComplete ? 'complete' : 'incomplete'}`}>
+                      Promedio: {avgData.average} ({avgData.totalWeight}%)
+                    </span>
+                  )}
+                </div>
                 <span className="doc-count">{docs.length} documentos</span>
                 <span className="toggle-icon">
                   {expandedStudent === student ? '▼' : '▶'}
@@ -176,12 +198,17 @@ const StudentDocumentsPage = () => {
               {expandedStudent === student && (
                 <div className="documents-list">
                   {docs.map((doc) => (
-                    <div key={doc._id} className="document-item">
+                    <div key={doc.id} className="document-item">
                       <div className="doc-info">
-                        <p className="doc-name">{doc.documentName}</p>
+                        <p className="doc-name">{doc.filename}</p>
                         <p className="doc-meta">
-                          {new Date(doc.uploadedAt).toLocaleDateString()}
+                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : 'Fecha no disponible'}
                         </p>
+                        {doc.comments && (
+                          <p className="doc-comments">
+                            <strong>Comentarios:</strong> {doc.comments}
+                          </p>
+                        )}
                       </div>
                       <span
                         className={`status-badge ${getStatusBadgeClass(
@@ -194,6 +221,9 @@ const StudentDocumentsPage = () => {
                       <span className="grade-badge">
                         {doc.grade ? `${doc.grade}` : '-'}
                       </span>
+                      <span className="weight-badge">
+                        {doc.weight ? `${doc.weight}%` : '0%'}
+                      </span>
                       <div className="doc-actions">
                         <button
                           onClick={() => handleReview(doc)}
@@ -204,7 +234,7 @@ const StudentDocumentsPage = () => {
                         </button>
                         <button
                           onClick={() =>
-                            handleDownload(doc._id, doc.documentName)
+                            handleDownload(doc.id, doc.filename)
                           }
                           className="btn-icon"
                           title="Descargar"
@@ -212,7 +242,7 @@ const StudentDocumentsPage = () => {
                           ⬇️
                         </button>
                         <button
-                          onClick={() => handleDelete(doc._id)}
+                          onClick={() => handleDelete(doc.id)}
                           className="btn-icon btn-danger"
                           title="Eliminar"
                         >
@@ -224,7 +254,8 @@ const StudentDocumentsPage = () => {
                 </div>
               )}
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
 
@@ -234,9 +265,9 @@ const StudentDocumentsPage = () => {
             <h3>Revisar Documento</h3>
             <div className="modal-content">
               <div className="doc-details">
-                <p><strong>Archivo:</strong> {selectedDoc.documentName}</p>
-                <p><strong>Estudiante:</strong> {selectedDoc.uploadedBy}</p>
-                <p><strong>Fecha:</strong> {new Date(selectedDoc.uploadedAt).toLocaleDateString()}</p>
+                <p><strong>Archivo:</strong> {selectedDoc.filename}</p>
+                <p><strong>Estudiante:</strong> {selectedDoc.uploader?.nombreCompleto || selectedDoc.uploadedBy}</p>
+                <p><strong>Fecha:</strong> {selectedDoc.createdAt ? new Date(selectedDoc.createdAt).toLocaleDateString() : '-'}</p>
               </div>
               <div>
                 <label>Estado</label>
@@ -252,14 +283,39 @@ const StudentDocumentsPage = () => {
                 </select>
               </div>
               <div>
-                <label>Calificación (0-100)</label>
+                <label>Calificación (1.0-7.0)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="7"
+                  step="0.1"
+                  value={reviewData.grade || ''}
+                  onChange={(e) =>
+                    setReviewData({ ...reviewData, grade: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label>Porcentaje (%)</label>
                 <input
                   type="number"
                   min="0"
                   max="100"
-                  value={reviewData.grade || ''}
+                  step="1"
+                  value={reviewData.weight || 0}
                   onChange={(e) =>
-                    setReviewData({ ...reviewData, grade: e.target.value })
+                    setReviewData({ ...reviewData, weight: e.target.value })
+                  }
+                />
+              </div>
+              <div>
+                <label>Comentarios</label>
+                <textarea
+                  rows="3"
+                  placeholder="Agregar comentarios sobre la revisión..."
+                  value={reviewData.comments || ''}
+                  onChange={(e) =>
+                    setReviewData({ ...reviewData, comments: e.target.value })
                   }
                 />
               </div>

@@ -15,9 +15,9 @@ export async function registerStudentService(userData) {
 
     if (existingUser) {
       if (existingUser.email === userData.email)
-        return [null, createErrorMessage('email', 'El correo ya está registrado')];
+        return [null, createErrorMessage("email", "El correo ya está registrado")];
       if (existingUser.rut === userData.rut)
-        return [null, createErrorMessage('rut', 'El RUT ya está registrado')];
+        return [null, createErrorMessage("rut", "El RUT ya está registrado")];
     }
 
     const hashedPassword = await encryptPassword(userData.password);
@@ -39,7 +39,7 @@ export async function registerStudentService(userData) {
     return [userWithoutPassword, null];
   } catch (error) {
     const createErrorMessage = (dataInfo, message) => ({ dataInfo, message });
-    return [null, createErrorMessage('server', error.message)];
+    return [null, createErrorMessage("server", error.message)];
   }
 }
 

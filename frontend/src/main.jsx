@@ -7,6 +7,7 @@ import AdminRequests from '@pages/AdminRequests';
 import InternshipPage from '@pages/InternshipPage';
 import StudentDocumentsPage from '@pages/StudentDocumentsPage';
 import UploadDocuments from '@pages/UploadDocuments';
+import MyDocuments from '@pages/MyDocuments';
 import Register from '@pages/Register';
 import Terminos from '@pages/Terminos';
 import Error404 from '@pages/Error404';
@@ -63,6 +64,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>
             <UploadDocuments />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/my-documents',
+        element: (
+          <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>
+            <MyDocuments />
           </ProtectedRoute>
         ),
       },

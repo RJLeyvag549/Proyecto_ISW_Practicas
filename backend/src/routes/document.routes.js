@@ -9,26 +9,44 @@ import {
   updateDocumentSchema 
 } from "../validations/document.validation.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import multer from "multer";
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/documents/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
+import { uploadDocument } from "../middlewares/upload.middleware.js";
 
 const router = Router();
+
+router.get(
+  "/",
+  authenticateJwt,
+  DocumentController.getAllDocuments
+);
+
+router.get(
+  "/averages",
+  authenticateJwt,
+  DocumentController.getStudentAverages
+);
+
+router.get(
+  "/my-documents",
+  authenticateJwt,
+  DocumentController.getMyDocuments
+);
+
+router.get(
+  "/my-average",
+  authenticateJwt,
+  DocumentController.getMyAverage
+);
+
+router.get(
+  "/:documentId/download",
+  authenticateJwt,
+  DocumentController.downloadDocument
+);
 
 router.post(
   "/upload",
   authenticateJwt,
-  upload.single("document"),
+  uploadDocument,
   validateBody(createDocumentSchema),
   DocumentController.uploadDocument
 );
@@ -37,6 +55,12 @@ router.get(
   "/practice/:practiceId",
   authenticateJwt,
   DocumentController.getDocumentsByPractice
+);
+
+router.get(
+  "/practice/:practiceId/statistics",
+  authenticateJwt,
+  DocumentController.getGradeStatistics
 );
 
 router.patch(

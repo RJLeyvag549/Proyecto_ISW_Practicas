@@ -52,9 +52,16 @@ const DocumentSchema = new EntitySchema({
     },
     grade: {
       type: "decimal",
-      precision: 3,
-      scale: 1,
+      precision: 5,
+      scale: 2,
       nullable: true,
+    },
+    weight: {
+      type: "decimal",
+      precision: 5,
+      scale: 2,
+      default: 0,
+      nullable: false,
     },
     createdAt: {
       type: "timestamp with time zone",

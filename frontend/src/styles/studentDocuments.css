@@ -94,10 +94,36 @@
     background: #f3f4f6;
 }
 
+.student-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
 .student-name {
     font-weight: 600;
     color: #1f2937;
     font-size: 1rem;
+}
+
+.average-badge {
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    width: fit-content;
+}
+
+.average-badge.complete {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.average-badge.incomplete {
+    background: #fef3c7;
+    color: #92400e;
 }
 
 .doc-count {
@@ -158,6 +184,17 @@
     margin: 0;
 }
 
+.doc-comments {
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin: 0.5rem 0 0 0;
+    font-style: italic;
+    padding: 0.5rem;
+    background: #f9fafb;
+    border-radius: 4px;
+    border-left: 3px solid #6cc4c2;
+}
+
 .status-badge {
     display: inline-block;
     padding: 0.4rem 0.8rem;
@@ -177,6 +214,18 @@
     font-size: 0.9rem;
     font-weight: 600;
     color: #374151;
+    min-width: 50px;
+    text-align: center;
+}
+
+.weight-badge {
+    display: inline-block;
+    padding: 0.4rem 0.8rem;
+    background: #dbeafe;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1e40af;
     min-width: 50px;
     text-align: center;
 }
@@ -254,16 +303,19 @@
 }
 
 .modal-content select,
-.modal-content input {
+.modal-content input,
+.modal-content textarea {
     padding: 0.6rem;
     border: 1px solid #d1d5db;
     border-radius: 6px;
     font-size: 0.9rem;
     font-family: inherit;
+    resize: vertical;
 }
 
 .modal-content select:focus,
-.modal-content input:focus {
+.modal-content input:focus,
+.modal-content textarea:focus {
     outline: none;
     border-color: #6cc4c2;
 }
