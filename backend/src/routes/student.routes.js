@@ -5,6 +5,7 @@ import {
   getPendingStudents,
   registerStudent,
 } from "../controllers/student.controller.js";
+import { getPendingStudent } from "../controllers/student.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";
 
@@ -14,6 +15,7 @@ router.post("/register", registerStudent);
 
 
 router.get("/pending", authenticateJwt, isAdminOrCoordinator, getPendingStudents);
+router.get("/pending/:id", authenticateJwt, isAdminOrCoordinator, getPendingStudent);
 router.post("/:id/approve", authenticateJwt, isAdminOrCoordinator, approveStudent);
 
 export default router;

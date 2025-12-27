@@ -2,6 +2,7 @@
 import {
   approveStudentService,
   getPendingStudentsService,
+  getPendingStudentService,
   registerStudentService,
 } from "../services/student.service.js";
 import {
@@ -92,6 +93,21 @@ export async function approveStudent(req, res) {
       );
 
     handleSuccess(res, 200, "Estudiante procesado con éxito", result);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function getPendingStudent(req, res) {
+  try {
+    const { id } = req.params;
+
+    const [student, error] = await getPendingStudentService(parseInt(id));
+
+    if (error)
+      return handleErrorClient(res, 404, "Estudiante pendiente no encontrado", error);
+
+    handleSuccess(res, 200, "Estudiante pendiente recuperado con éxito", student);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }

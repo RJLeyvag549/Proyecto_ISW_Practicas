@@ -62,9 +62,25 @@ export async function getPendingStudentsService() {
         status: "pending",
         rol: "estudiante",
       },
-      select: ["id", "nombreCompleto", "rut", "email", "carrera", "createdAt"],
+      // return all fields except password so admin can inspect full submission
     });
-    return [pendingStudents, null];
+    const studentsData = pendingStudents.map(({ password, ...u }) => u);
+    return [studentsData, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function getPendingStudentService(studentId) {
+  try {
+    const student = await userRepository.findOne({
+      where: { id: studentId, rol: "estudiante", status: "pending" },
+    });
+
+    if (!student) return [null, "Estudiante pendiente no encontrado"];
+
+    const { password, ...studentData } = student;
+    return [studentData, null];
   } catch (error) {
     return [null, error.message];
   }
@@ -80,27 +96,18 @@ export async function approveStudentService(studentId, approvalData, approverId)
     if (student.status !== "pending")
       return [null, "Este estudiante ya ha sido procesado"];
 
-    const status = approvalData.approved ? "approved" : "rejected";
-    const updateData = {
-      status,
-      approvedBy: approverId,
-      approvalDate: new Date(),
-      rejectionReason: approvalData.rejectionReason,
-    };
+    if (approvalData.approved) {
+      const updateData = {
+        status: "approved",
+        approvedBy: approverId,
+        approvalDate: new Date(),
+      };
 
-    await userRepository.update(studentId, updateData);
+      await userRepository.update(studentId, updateData);
 
-    // Send email notification
-    const emailSubject = approvalData.approved
-      ? "Registro aprobado"
-      : "Registro rechazado";
-
-    const emailText = approvalData.approved
-      ? `Hola ${student.nombreCompleto || ''},\n\nTu cuenta ha sido aprobada. Ya puedes acceder al sistema.\n\nSaludos,\nEquipo de Prácticas`
-      : `Hola ${student.nombreCompleto || ''},\n\nTu cuenta ha sido rechazada. Motivo: ${approvalData.rejectionReason}\n\nSaludos,\nEquipo de Prácticas`;
-
-    const emailHtml = approvalData.approved
-      ? `
+      const emailSubject = "Registro aprobado";
+      const emailText = `Hola ${student.nombreCompleto || ''},\n\nTu cuenta ha sido aprobada. Ya puedes acceder al sistema.\n\nSaludos,\nEquipo de Prácticas`;
+      const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width:600px;margin:0 auto;">
           <div style="background:#dff7e0;padding:18px;border-radius:8px;text-align:center;color:#1a7f2e;">
             <h2 style="margin:0">Registro aprobado</h2>
@@ -111,8 +118,16 @@ export async function approveStudentService(studentId, approvalData, approverId)
             <p>Saludos,<br/><strong>Equipo de Prácticas</strong></p>
           </div>
         </div>
-      `
-      : `
+      `;
+
+      await sendEmail(student.email, emailSubject, emailText, emailHtml);
+
+      return [{ message: "Estudiante aprobado con éxito" }, null];
+    } else {
+      // En caso de rechazo, enviar notificación y eliminar el registro en lugar de guardarlo
+      const emailSubject = "Registro rechazado";
+      const emailText = `Hola ${student.nombreCompleto || ''},\n\nTu cuenta ha sido rechazada. Motivo: ${approvalData.rejectionReason}\n\nSaludos,\nEquipo de Prácticas`;
+      const emailHtml = `
         <div style="font-family: Arial, sans-serif; max-width:600px;margin:0 auto;">
           <div style="background:#ffe6e6;padding:18px;border-radius:8px;text-align:center;color:#b30000;">
             <h2 style="margin:0">Registro rechazado</h2>
@@ -127,9 +142,12 @@ export async function approveStudentService(studentId, approvalData, approverId)
         </div>
       `;
 
-    await sendEmail(student.email, emailSubject, emailText, emailHtml);
+      await sendEmail(student.email, emailSubject, emailText, emailHtml);
 
-    return [{ message: "Estudiante procesado con éxito" }, null];
+      await userRepository.delete(studentId);
+
+      return [{ message: "Estudiante rechazado y eliminado" }, null];
+    }
   } catch (error) {
     return [null, error.message];
   }
