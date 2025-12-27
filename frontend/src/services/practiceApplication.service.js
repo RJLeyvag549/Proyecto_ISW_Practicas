@@ -50,7 +50,17 @@ export async function applyExternal(companyData, attachments = []) {
         const { data } = await axios.post('/practiceApp/internshipExternal', { companyData, attachments });
         return data;
     } catch (error) {
-        return { error: error.response?.data?.message || 'Error al crear solicitud' };
+        const errorData = error.response?.data;
+        // Manejar diferentes formatos de error del backend
+        let errorMessage = 'Error al crear solicitud';
+        if (errorData?.message) {
+            errorMessage = errorData.message;
+        } else if (errorData?.details) {
+            errorMessage = errorData.details;
+        } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+        }
+        return { error: errorMessage };
     }
 }
 

@@ -197,7 +197,8 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
         return true;
     };
 
-    const handleNext = () => {
+    const handleNext = (e) => {
+        if (e) e.preventDefault();
         setError('');
         if (step === 1 && validateStep1()) {
             setStep(2);
@@ -206,7 +207,8 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
         }
     };
 
-    const handleBack = () => {
+    const handleBack = (e) => {
+        if (e) e.preventDefault();
         setError('');
         setStep(step - 1);
     };
@@ -222,13 +224,17 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
             const response = await applyExternal(formData);
             
             if (response.error) {
-                setError(response.error);
+                // Mostrar el error detallado
+                setError(typeof response.error === 'string' ? response.error : JSON.stringify(response.error));
+            } else if (response.status === 'Client error') {
+                // Error del backend con detalles
+                setError(response.details || response.message || 'Error de validación');
             } else {
                 onSuccess();
                 onClose();
             }
         } catch (err) {
-            setError('Error al enviar la solicitud');
+            setError('Error al enviar la solicitud. Intenta nuevamente.');
         } finally {
             setLoading(false);
         }
@@ -443,7 +449,7 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
     );
 
     return (
-        <div className="app-modal-overlay" onClick={onClose}>
+        <div className="app-modal-overlay">
             <div className="app-modal-content" onClick={(e) => e.stopPropagation()}>
                 <div className="app-modal-header">
                     <h2>Nueva Solicitud Externa</h2>
@@ -452,7 +458,12 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} onKeyDown={(e) => {
+                    if (e.key === 'Enter' && step < 3) {
+                        e.preventDefault();
+                        handleNext(e);
+                    }
+                }}>
                     <div className="app-modal-body">
                         {renderStepIndicator()}
 

@@ -197,7 +197,8 @@ const EditExternalApplicationModal = ({ application, onClose, onSuccess }) => {
         return true;
     };
 
-    const handleNext = () => {
+    const handleNext = (e) => {
+        if (e) e.preventDefault();
         setError('');
         if (step === 1 && validateStep1()) {
             setStep(2);
@@ -206,7 +207,8 @@ const EditExternalApplicationModal = ({ application, onClose, onSuccess }) => {
         }
     };
 
-    const handleBack = () => {
+    const handleBack = (e) => {
+        if (e) e.preventDefault();
         setError('');
         setStep(step - 1);
     };
@@ -454,7 +456,12 @@ const EditExternalApplicationModal = ({ application, onClose, onSuccess }) => {
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleSubmit} onKeyDown={(e) => {
+                    if (e.key === 'Enter' && step < 3) {
+                        e.preventDefault();
+                        handleNext(e);
+                    }
+                }}>
                     <div className="app-modal-body">
                         {renderStepIndicator()}
 
