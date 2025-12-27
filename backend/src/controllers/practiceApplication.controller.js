@@ -24,6 +24,7 @@ import {
 
 export async function createApplication(req, res) {
   try {
+
     const { body } = req;
     const { internshipId } = req.params; // Capturar ID de la URL si existe
     
@@ -103,6 +104,7 @@ export async function getAllApplications(req, res) {
       applicationType: req.query.applicationType,
       internshipId: req.query.internshipId || req.query.offerId,
       internshipExternalId: req.query.internshipExternalId,
+
     };
     const [applications, serviceError] = await getAllPracticeApplications(filters);
 
