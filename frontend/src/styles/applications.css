@@ -1,0 +1,795 @@
+/* =============================================
+   APPLICATIONS - ESTILOS
+   ============================================= */
+
+/* Grid de aplicaciones */
+.applications-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+}
+
+/* Loading */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    color: #6cc4c2;
+    font-size: 1.2rem;
+}
+
+.loading-container i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+/* No Results */
+.no-results {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    color: #9ca3af;
+}
+
+.no-results i {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* =============================================
+   STATUS FILTERS
+   ============================================= */
+
+/* Filter Actions Container */
+.filter-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.filter-actions input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem 1rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+.filter-actions input:focus {
+    outline: none;
+    border-color: #6cc4c2;
+}
+
+/* Botón de crear solicitud externa */
+.filter-actions .btn-create-external,
+.btn-create-external {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    background: #2d8b87 !important;
+    color: #ffffff !important;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+    box-shadow: 0 3px 10px rgba(45, 139, 135, 0.4);
+}
+
+.filter-actions .btn-create-external:hover,
+.btn-create-external:hover {
+    background: #236c69 !important;
+    color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(45, 139, 135, 0.6);
+}
+
+.btn-create-external i {
+    font-size: 1rem;
+    color: #ffffff !important;
+}
+
+.status-filters {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.filter-btn {
+    padding: 0.6rem 1.2rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.filter-btn:hover {
+    border-color: #6cc4c2;
+    color: #6cc4c2;
+}
+
+.filter-btn.active {
+    background: #6cc4c2;
+    border-color: #6cc4c2;
+    color: white;
+}
+
+.filter-pending.active { background: #f59e0b; border-color: #f59e0b; }
+.filter-accepted.active { background: #10b981; border-color: #10b981; }
+.filter-rejected.active { background: #ef4444; border-color: #ef4444; }
+.filter-needsinfo.active { background: #8b5cf6; border-color: #8b5cf6; }
+
+/* =============================================
+   APPLICATION CARD
+   ============================================= */
+.application-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid #eee;
+    overflow: hidden;
+}
+
+.application-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.application-card .card-header {
+    background-color: #6cc4c2;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid #4fa8a6;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.application-card .card-header h3 {
+    margin: 0.5rem 0;
+    font-size: 1.15rem;
+    color: #ffffff;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-accepted { background: #d1fae5; color: #065f46; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+.status-needsinfo { background: #ede9fe; color: #5b21b6; }
+
+.status-badge-large {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.2rem;
+    border-radius: 9999px;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+/* Type Badge */
+.type-badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.type-external { background: #fef3c7; color: #92400e; }
+.type-existing { background: #dbeafe; color: #1e40af; }
+
+.card-actions {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+.card-actions button {
+    border: 1px solid #e5e7eb;
+    background: white;
+    color: #4b5563;
+    border-radius: 8px;
+    padding: 0.55rem 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-width: 42px;
+}
+
+.card-actions .btn-view { color: #2563eb; }
+.card-actions .btn-edit { color: #d97706; }
+.card-actions .btn-delete { color: #dc2626; }
+.card-actions .btn-status { color: #7c3aed; }
+
+.card-actions button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+}
+
+/* =============================================
+   APPLICATION MODAL STYLES (específicos)
+   ============================================= */
+.app-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+}
+
+.app-modal-content {
+    background: white;
+    border-radius: 16px;
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.app-modal-small {
+    max-width: 500px;
+}
+
+.app-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+    background: #6cc4c2;
+    border-radius: 16px 16px 0 0;
+}
+
+.app-modal-header h2 {
+    margin: 0;
+    color: white;
+    font-size: 1.4rem;
+}
+
+.app-btn-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.app-btn-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.app-modal-body {
+    padding: 1.5rem;
+}
+
+.app-modal-subtitle {
+    font-size: 1.1rem;
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+}
+
+.app-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    background: #f9fafb;
+    border-radius: 0 0 16px 16px;
+}
+
+/* =============================================
+   INFO SECTIONS
+   ============================================= */
+.info-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.info-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.info-section h3 {
+    color: #374151;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.info-section h3 i {
+    color: #6cc4c2;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.info-item label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.info-item span {
+    color: #1f2937;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.coordinator-comments {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #f3f4f6;
+    border-radius: 8px;
+}
+
+.coordinator-comments p {
+    margin: 0.5rem 0 0 0;
+    color: #4b5563;
+}
+
+.attachments-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.attachments-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    color: #4b5563;
+}
+
+.attachments-list li i {
+    color: #6cc4c2;
+}
+
+.text-success { color: #10b981; font-weight: 600; }
+.text-danger { color: #ef4444; font-weight: 600; }
+
+/* =============================================
+   APPLICATION FORM STYLES (específicos)
+   ============================================= */
+.app-form-group {
+    margin-bottom: 1.5rem;
+}
+
+.app-form-group label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.app-form-group .required {
+    color: #ef4444;
+    margin-left: 0.25rem;
+}
+
+.app-form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    resize: vertical;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.app-form-group textarea:focus {
+    outline: none;
+    border-color: #6cc4c2;
+    box-shadow: 0 0 0 3px rgba(108, 196, 194, 0.1);
+}
+
+.app-form-group small {
+    display: block;
+    margin-top: 0.25rem;
+    color: #9ca3af;
+    font-size: 0.85rem;
+}
+
+/* Status Options */
+.status-options {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.status-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.status-option input {
+    display: none;
+}
+
+.status-option:hover {
+    border-color: #6cc4c2;
+}
+
+.status-option.selected {
+    border-color: #6cc4c2;
+    background: #e0f7f6;
+    color: #0d5c56;
+}
+
+.status-option i {
+    font-size: 1.1rem;
+}
+
+/* Error Message */
+.app-error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #fee2e2;
+    color: #991b1b;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+/* =============================================
+   APPLICATION BUTTONS (específicos)
+   ============================================= */
+.app-btn-primary {
+    background: #6cc4c2;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.app-btn-primary:hover:not(:disabled) {
+    background: #5ab3b1;
+}
+
+.app-btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.app-btn-secondary {
+    background: white;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.app-btn-secondary:hover:not(:disabled) {
+    background: #f3f4f6;
+}
+
+.app-btn-secondary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.app-btn-warning {
+    background: #f59e0b;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.app-btn-warning:hover:not(:disabled) {
+    background: #d97706;
+}
+
+.app-btn-warning:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.app-btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.app-btn-danger:hover:not(:disabled) {
+    background: #dc2626;
+}
+
+.app-btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+@media (max-width: 768px) {
+    .applications-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .status-filters {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filter-btn {
+        text-align: center;
+    }
+
+    .app-modal-content {
+        margin: 1rem;
+        max-height: 85vh;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .status-options {
+        flex-direction: column;
+    }
+}
+
+/* =============================================
+   BUTTON APPLY (para ofertas disponibles)
+   ============================================= */
+.btn-apply {
+    background: #6cc4c2;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.btn-apply:hover:not(:disabled) {
+    background: #5ab3b1;
+    transform: translateY(-2px);
+}
+
+.btn-apply:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* =============================================
+   WIZARD STEPS (Modal)
+   ============================================= */
+.wizard-steps-modal {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.step-indicator-modal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0.5;
+    transition: opacity 0.3s;
+}
+
+.step-indicator-modal.active {
+    opacity: 1;
+}
+
+.step-number-modal {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    color: #6b7280;
+    transition: all 0.3s;
+}
+
+.step-indicator-modal.active .step-number-modal {
+    background: #6cc4c2;
+    color: white;
+}
+
+.step-indicator-modal span {
+    font-size: 0.85rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+.step-title {
+    color: #374151;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #6cc4c2;
+    display: inline-block;
+}
+
+/* Form Row (2 columnas) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .wizard-steps-modal {
+        gap: 1rem;
+    }
+    
+    .step-indicator-modal span {
+        font-size: 0.75rem;
+    }
+}
+
+/* Input styles para el modal */
+.app-form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.app-form-group input:focus {
+    outline: none;
+    border-color: #6cc4c2;
+    box-shadow: 0 0 0 3px rgba(108, 196, 194, 0.1);
+}
+
+/* =============================================
+   FILE LIST STYLES
+   ============================================= */
+
+.file-list {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+
+.file-item span {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-item i {
+    color: #6cc4c2;
+    flex-shrink: 0;
+}
+
+.file-item button {
+    margin-left: 0.5rem;
+    flex-shrink: 0;
+}
+

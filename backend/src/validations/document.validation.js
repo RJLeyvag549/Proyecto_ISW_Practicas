@@ -2,8 +2,11 @@
 import Joi from "joi";
 
 export const createDocumentSchema = Joi.object({
-  practiceApplicationId: Joi.number().required(),
-  type: Joi.string().valid("PROGRESS_REPORT", "FINAL_REPORT", "PERFORMANCE_EVALUATION").required(),
+  practiceApplicationId: Joi.number(),
+  internshipExternalId: Joi.number(),
+  type: Joi.string()
+    .valid("PROGRESS_REPORT", "FINAL_REPORT", "PERFORMANCE_EVALUATION", "ATTACHMENT")
+    .required(),
   period: Joi.string().when("type", {
     is: "PROGRESS_REPORT",
     then: Joi.required(),

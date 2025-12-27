@@ -1,26 +1,126 @@
-import api from "./root.service.js";
+import axios from './root.service.js';
 
-export const createApplication = async (internshipId, attachments = null) => {
+// Obtener todas las solicitudes (admin)
+export async function getAllApplications(filters = {}) {
     try {
-        const payload = {};
-        if (attachments) payload.attachments = attachments;
-
-        const response = await api.post(`/practiceApp/internship/${internshipId}`, payload);
-        return [response.data, null];
+        const params = new URLSearchParams();
+        if (filters.status) params.append('status', filters.status);
+        if (filters.studentId) params.append('studentId', filters.studentId);
+        
+        const { data } = await axios.get(`/practiceApp?${params.toString()}`);
+        return data.data;
     } catch (error) {
-        const message = error.response?.data?.message || "Error al enviar la solicitud";
-        const details = error.response?.data?.details;
-        return [null, details ? `${message}: ${details}` : message];
+        return { error: error.response?.data?.message || 'Error al obtener solicitudes' };
     }
-};
+}
 
-export const getMyApplications = async () => {
+// Obtener mis solicitudes (estudiante)
+export async function getMyApplications() {
     try {
-        const response = await api.get("/practiceApp/my");
-        return [response.data.data, null];
+        const { data } = await axios.get('/practiceApp/my');
+        return data.data;
     } catch (error) {
-        const message = error.response?.data?.message || "Error al obtener tus solicitudes";
-        const details = error.response?.data?.details;
-        return [null, details ? `${message}: ${details}` : message];
+        return { error: error.response?.data?.message || 'Error al obtener solicitudes' };
     }
-};
+}
+
+// Obtener solicitud por ID
+export async function getApplicationById(id) {
+    try {
+        const { data } = await axios.get(`/practiceApp/${id}`);
+        return data.data;
+    } catch (error) {
+        return { error: error.response?.data?.message || 'Error al obtener solicitud' };
+    }
+}
+
+// Crear solicitud para oferta existente
+export async function applyToInternship(internshipId, attachments = []) {
+    try {
+        const { data } = await axios.post(`/practiceApp/internship/${internshipId}`, { attachments });
+        return data;
+    } catch (error) {
+        return { error: error.response?.data?.message || 'Error al crear solicitud' };
+    }
+}
+
+// Crear solicitud externa
+export async function applyExternal(companyData, attachments = []) {
+    try {
+        const { data } = await axios.post('/practiceApp/internshipExternal', { 
+            applicationType: "external",
+            companyData, 
+            attachments 
+        });
+        return data;
+    } catch (error) {
+        const errorData = error.response?.data;
+        // Manejar diferentes formatos de error del backend
+        let errorMessage = 'Error al crear solicitud';
+        if (errorData?.message) {
+            errorMessage = errorData.message;
+        } else if (errorData?.details) {
+            errorMessage = errorData.details;
+        } else if (typeof errorData === 'string') {
+            errorMessage = errorData;
+        }
+        return { error: errorMessage };
+    }
+}
+
+// Editar solicitud externa (estudiante)
+export async function updateOwnApplication(id, companyData, attachments = []) {
+    try {
+        const { data } = await axios.put(`/practiceApp/${id}`, { companyData, attachments });
+        return data;
+    } catch (error) {
+        const err = error.response?.data;
+        const message = err?.details || err?.message || 'Error al editar solicitud';
+        return { error: message };
+    }
+}
+
+// Eliminar solicitud externa (estudiante)
+export async function deleteOwnApplication(id) {
+    try {
+        const { data } = await axios.delete(`/practiceApp/${id}`);
+        return data;
+    } catch (error) {
+        return { error: error.response?.data?.message || 'Error al eliminar solicitud' };
+    }
+}
+
+// Actualizar estado de solicitud (admin)
+export async function updateApplicationStatus(id, status, coordinatorComments = '') {
+    try {
+        const payload = { status };
+        // Solo incluir comentarios si no están vacíos
+        if (coordinatorComments && coordinatorComments.trim()) {
+            payload.coordinatorComments = coordinatorComments.trim();
+        }
+        const { data } = await axios.patch(`/practiceApp/${id}`, payload);
+        return data;
+    } catch (error) {
+        return { error: error.response?.data?.message || error.response?.data?.details || 'Error al actualizar solicitud' };
+    }
+}
+
+// Agregar documentos a solicitud
+export async function addAttachments(id, attachments) {
+    try {
+        const { data } = await axios.patch(`/practiceApp/${id}/attachments`, { attachments });
+        return data;
+    } catch (error) {
+        return { error: error.response?.data?.message || 'Error al agregar documentos' };
+    }
+}
+
+// Cerrar práctica (admin/coordinador)
+export async function closeApplication(id, minAverage = 4.0) {
+    try {
+        const { data } = await axios.post(`/practiceApp/${id}/close`, { minAverage });
+        return data;
+    } catch (error) {
+        return { error: error.response?.data?.message || 'Error al cerrar práctica' };
+    }
+}

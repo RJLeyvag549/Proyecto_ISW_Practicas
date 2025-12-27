@@ -2,12 +2,13 @@
 import { AppDataSource } from "../config/configDb.js";
 import PracticeApplicationSchema from "../entity/practiceApplication.entity.js";
 import { sendEmail } from "../helpers/email.helper.js";
-import { createInternshipExternal } from "./internshipExternal.service.js";
+import { createInternshipExternal, updateInternshipExternal, deleteInternshipExternal } from "./internshipExternal.service.js";
 
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
 const documentRepository = AppDataSource.getRepository("Document");
 const userRepository = AppDataSource.getRepository("User");
 const internshipRepository = AppDataSource.getRepository("Internship");
+const internshipExternalRepository = AppDataSource.getRepository("InternshipExternal");
 
 export async function createPracticeApplication(studentId, data) {
   try {
@@ -195,6 +196,62 @@ export async function addPracticeApplicationAttachments(id, attachments, student
     application.attachments = attachments;
     await practiceApplicationRepository.save(application);
     return [application, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function updateOwnPracticeApplication(id, studentId, data) {
+  try {
+    const application = await practiceApplicationRepository.findOne({ where: { id }, relations: ["internshipExternal"] });
+    if (!application) return [null, "Solicitud no encontrada"];
+    if (application.studentId !== studentId) return [null, "No tienes permiso"];
+    if (!["pending", "needsInfo"].includes(application.status)) {
+      return [null, "Solo puedes editar solicitudes en estado pending o needsInfo"];
+    }
+    if (application.applicationType !== "external") {
+      return [null, "Solo se pueden editar solicitudes externas"];
+    }
+
+    // Actualizar datos de la práctica externa si se envía companyData
+    if (data.companyData) {
+      const [updatedExternal, externalError] = await updateInternshipExternal(
+        application.internshipExternalId,
+        studentId,
+        data.companyData
+      );
+      if (externalError) return [null, externalError];
+      application.internshipExternal = updatedExternal;
+    }
+
+    if (data.attachments) {
+      application.attachments = data.attachments;
+    }
+
+    application.updatedAt = new Date();
+    const saved = await practiceApplicationRepository.save(application);
+    return [saved, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function deleteOwnPracticeApplication(id, studentId) {
+  try {
+    const application = await practiceApplicationRepository.findOne({ where: { id }, relations: ["internshipExternal"] });
+    if (!application) return [null, "Solicitud no encontrada"];
+    if (application.studentId !== studentId) return [null, "No tienes permiso"];
+    if (!["pending", "needsInfo"].includes(application.status)) {
+      return [null, "Solo puedes eliminar solicitudes en estado pending o needsInfo"];
+    }
+
+    // Si es externa, eliminar primero la práctica externa ligada
+    if (application.applicationType === "external" && application.internshipExternalId) {
+      await deleteInternshipExternal(application.internshipExternalId, studentId);
+    }
+
+    await practiceApplicationRepository.remove(application);
+    return [{ message: "Solicitud eliminada" }, null];
   } catch (error) {
     return [null, error.message];
   }
