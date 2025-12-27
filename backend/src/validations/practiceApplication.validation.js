@@ -90,6 +90,21 @@ export const attachmentsValidation = Joi.object({
   "object.unknown": "No se permiten propiedades adicionales."
 });
 
+export const practiceApplicationUpdateValidation = Joi.object({
+  companyData: internshipExternalValidation.optional(),
+  attachments: Joi.array()
+    .items(Joi.string().max(255))
+    .max(5)
+    .optional()
+    .messages({
+      "array.max": "No puedes adjuntar mas de 5 documentos.",
+      "string.max": "El nombre del documento no puede superar los 255 caracteres."
+    })
+}).or("companyData", "attachments").unknown(false).messages({
+  "object.unknown": "No se permiten propiedades adicionales.",
+  "object.missing": "Debes enviar datos de empresa o adjuntos para actualizar."
+});
+
 // Validación para cierre de práctica (permite minAverage opcional)
 export const closeApplicationValidation = Joi.object({
   minAverage: Joi.number().min(1.0).max(7.0).optional(),

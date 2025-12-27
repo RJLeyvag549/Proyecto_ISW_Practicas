@@ -2,12 +2,13 @@
 import { AppDataSource } from "../config/configDb.js";
 import PracticeApplicationSchema from "../entity/practiceApplication.entity.js";
 import { sendEmail } from "../helpers/email.helper.js";
-import { createInternshipExternal } from "./internshipExternal.service.js";
+import { createInternshipExternal, updateInternshipExternal, deleteInternshipExternal } from "./internshipExternal.service.js";
 
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
 const documentRepository = AppDataSource.getRepository("Document");
 const userRepository = AppDataSource.getRepository("User");
 const internshipRepository = AppDataSource.getRepository("Internship");
+const internshipExternalRepository = AppDataSource.getRepository("InternshipExternal");
 
 export async function createPracticeApplication(studentId, data) {
   try {
@@ -148,8 +149,16 @@ export async function getAllPracticeApplications(filters) {
 
 export async function updatePracticeApplication(id, newStatus, coordinatorComments, coordinatorId) {
   try {
-    const application = await practiceApplicationRepository.findOneBy({ id });
+    const application = await practiceApplicationRepository.findOne({
+      where: { id },
+      relations: ["student", "internship", "internshipExternal"]
+    });
     if (!application) return [null, "Solicitud no encontrada"];
+
+    // No permitir modificar solicitudes ya rechazadas
+    if (application.status === "rejected") {
+      return [null, "No se puede modificar una solicitud que ya fue rechazada"];
+    }
 
     if (application.status === "accepted" && newStatus === "needsInfo") {
       return [null, "No se puede volver de accepted a needsInfo"];
@@ -165,16 +174,88 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
 
     await practiceApplicationRepository.save(application);
 
-    let subject, body;
-    if (newStatus === "accepted") {
-      subject = "Solicitud de practica aceptada";
-      body = "Tu solicitud ha sido aceptada.";
-    } else if (newStatus === "rejected") {
-      subject = "Solicitud de practica rechazada";
-      body = `Tu solicitud ha sido rechazada. Comentarios: ${coordinatorComments}`;
-    } else if (newStatus === "needsInfo") {
-      subject = "Informacion adicional requerida";
-      body = `Se requiere informacion adicional. Comentarios: ${coordinatorComments}`;
+    // Obtener el email del estudiante para enviar notificación
+    const student = application.student || await userRepository.findOneBy({ id: application.studentId });
+    
+    if (student && student.email) {
+      let subject, textBody, htmlBody;
+      const studentName = student.nombreCompleto || student.email;
+      const practiceName = application.internship?.title || 
+                          application.internshipExternal?.companyName || 
+                          "tu práctica";
+      
+      if (newStatus === "accepted") {
+        subject = "✅ Solicitud de Práctica Aceptada - Universidad del Bío-Bío";
+        textBody = `Hola ${studentName},\n\nTu solicitud de práctica para "${practiceName}" ha sido ACEPTADA.\n\n${coordinatorComments ? `Comentarios del encargado: ${coordinatorComments}` : ""}\n\nSaludos,\nSistema de Prácticas UBB`;
+        htmlBody = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #2d9b83; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Sistema de Prácticas UBB</h1>
+            </div>
+            <div style="padding: 30px; background-color: #f5f5f5;">
+              <h2 style="color: #2d9b83;">¡Felicitaciones, ${studentName}!</h2>
+              <p style="font-size: 16px;">Tu solicitud de práctica para <strong>"${practiceName}"</strong> ha sido <span style="color: #28a745; font-weight: bold;">ACEPTADA</span>.</p>
+              ${coordinatorComments ? `<div style="background-color: #e8f5e9; padding: 15px; border-left: 4px solid #28a745; margin: 20px 0;"><strong>Comentarios del encargado:</strong><br>${coordinatorComments}</div>` : ""}
+              <p>Ingresa al sistema para ver más detalles.</p>
+            </div>
+            <div style="background-color: #333; color: white; padding: 15px; text-align: center; font-size: 12px;">
+              Universidad del Bío-Bío - Sistema de Gestión de Prácticas
+            </div>
+          </div>
+        `;
+      } else if (newStatus === "rejected") {
+        subject = "❌ Solicitud de Práctica Rechazada - Universidad del Bío-Bío";
+        textBody = `Hola ${studentName},\n\nLamentamos informarte que tu solicitud de práctica para "${practiceName}" ha sido RECHAZADA.\n\nComentarios del encargado: ${coordinatorComments}\n\nSaludos,\nSistema de Prácticas UBB`;
+        htmlBody = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #2d9b83; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Sistema de Prácticas UBB</h1>
+            </div>
+            <div style="padding: 30px; background-color: #f5f5f5;">
+              <h2 style="color: #dc3545;">${studentName}, tu solicitud ha sido rechazada</h2>
+              <p style="font-size: 16px;">Tu solicitud de práctica para <strong>"${practiceName}"</strong> ha sido <span style="color: #dc3545; font-weight: bold;">RECHAZADA</span>.</p>
+              <div style="background-color: #ffebee; padding: 15px; border-left: 4px solid #dc3545; margin: 20px 0;">
+                <strong>Comentarios del encargado:</strong><br>${coordinatorComments}
+              </div>
+              <p>Si tienes dudas, puedes contactar al encargado de prácticas.</p>
+            </div>
+            <div style="background-color: #333; color: white; padding: 15px; text-align: center; font-size: 12px;">
+              Universidad del Bío-Bío - Sistema de Gestión de Prácticas
+            </div>
+          </div>
+        `;
+      } else if (newStatus === "needsInfo") {
+        subject = "📋 Se Requiere Información Adicional - Universidad del Bío-Bío";
+        textBody = `Hola ${studentName},\n\nTu solicitud de práctica para "${practiceName}" requiere información adicional.\n\nComentarios del encargado: ${coordinatorComments}\n\nPor favor, ingresa al sistema para actualizar tu solicitud.\n\nSaludos,\nSistema de Prácticas UBB`;
+        htmlBody = `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background-color: #2d9b83; padding: 20px; text-align: center;">
+              <h1 style="color: white; margin: 0;">Sistema de Prácticas UBB</h1>
+            </div>
+            <div style="padding: 30px; background-color: #f5f5f5;">
+              <h2 style="color: #ff9800;">${studentName}, necesitamos más información</h2>
+              <p style="font-size: 16px;">Tu solicitud de práctica para <strong>"${practiceName}"</strong> requiere <span style="color: #ff9800; font-weight: bold;">INFORMACIÓN ADICIONAL</span>.</p>
+              <div style="background-color: #fff3e0; padding: 15px; border-left: 4px solid #ff9800; margin: 20px 0;">
+                <strong>Comentarios del encargado:</strong><br>${coordinatorComments}
+              </div>
+              <p><strong>Por favor, ingresa al sistema para actualizar tu solicitud.</strong></p>
+            </div>
+            <div style="background-color: #333; color: white; padding: 15px; text-align: center; font-size: 12px;">
+              Universidad del Bío-Bío - Sistema de Gestión de Prácticas
+            </div>
+          </div>
+        `;
+      }
+
+      // Enviar el correo electrónico
+      if (subject && textBody) {
+        const [emailSent, emailError] = await sendEmail(student.email, subject, textBody, htmlBody);
+        if (emailError) {
+          console.warn(`[updatePracticeApplication] No se pudo enviar correo a ${student.email}: ${emailError}`);
+        } else {
+          console.log(`[updatePracticeApplication] Correo enviado exitosamente a ${student.email}`);
+        }
+      }
     }
 
     return [application, null];
@@ -195,6 +276,62 @@ export async function addPracticeApplicationAttachments(id, attachments, student
     application.attachments = attachments;
     await practiceApplicationRepository.save(application);
     return [application, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function updateOwnPracticeApplication(id, studentId, data) {
+  try {
+    const application = await practiceApplicationRepository.findOne({ where: { id }, relations: ["internshipExternal"] });
+    if (!application) return [null, "Solicitud no encontrada"];
+    if (application.studentId !== studentId) return [null, "No tienes permiso"];
+    if (!["pending", "needsInfo"].includes(application.status)) {
+      return [null, "Solo puedes editar solicitudes en estado pending o needsInfo"];
+    }
+    if (application.applicationType !== "external") {
+      return [null, "Solo se pueden editar solicitudes externas"];
+    }
+
+    // Actualizar datos de la práctica externa si se envía companyData
+    if (data.companyData) {
+      const [updatedExternal, externalError] = await updateInternshipExternal(
+        application.internshipExternalId,
+        studentId,
+        data.companyData
+      );
+      if (externalError) return [null, externalError];
+      application.internshipExternal = updatedExternal;
+    }
+
+    if (data.attachments) {
+      application.attachments = data.attachments;
+    }
+
+    application.updatedAt = new Date();
+    const saved = await practiceApplicationRepository.save(application);
+    return [saved, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function deleteOwnPracticeApplication(id, studentId) {
+  try {
+    const application = await practiceApplicationRepository.findOne({ where: { id }, relations: ["internshipExternal"] });
+    if (!application) return [null, "Solicitud no encontrada"];
+    if (application.studentId !== studentId) return [null, "No tienes permiso"];
+    if (!["pending", "needsInfo"].includes(application.status)) {
+      return [null, "Solo puedes eliminar solicitudes en estado pending o needsInfo"];
+    }
+
+    // Si es externa, eliminar primero la práctica externa ligada
+    if (application.applicationType === "external" && application.internshipExternalId) {
+      await deleteInternshipExternal(application.internshipExternalId, studentId);
+    }
+
+    await practiceApplicationRepository.remove(application);
+    return [{ message: "Solicitud eliminada" }, null];
   } catch (error) {
     return [null, error.message];
   }

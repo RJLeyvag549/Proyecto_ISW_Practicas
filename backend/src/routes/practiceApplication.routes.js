@@ -8,6 +8,8 @@ import {
   getApplicationById,
   getMyApplications,
   updateApplication,
+  updateOwnApplication,
+  deleteOwnApplication,
 } from "../controllers/practiceApplication.controller.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
 import { isAdmin, isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";
@@ -21,6 +23,8 @@ router.post("/internshipExternal", authenticateJwt, createApplication);       //
 // Rutas generales
 router.get("/my", authenticateJwt, getMyApplications);
 router.get("/:id", authenticateJwt, getApplicationById);
+router.put("/:id", authenticateJwt, updateOwnApplication);
+router.delete("/:id", authenticateJwt, deleteOwnApplication);
 router.get("/", authenticateJwt, isAdmin, getAllApplications);
 router.patch("/:id", authenticateJwt, isAdmin, updateApplication);
 router.patch("/:id/attachments", authenticateJwt, addAttachments);

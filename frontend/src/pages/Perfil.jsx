@@ -3,6 +3,8 @@ import { useAuth } from '@context/AuthContext';
 import { getMyProfile, changeMyPassword } from '@services/profile.service.js';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import '@styles/popup.css';
+import '@styles/profile.css';
+import ProfileEditModal from '@components/ProfileEditModal.jsx';
 
 const Perfil = () => {
   const { user } = useAuth();
@@ -12,6 +14,7 @@ const Perfil = () => {
   const [pwdForm, setPwdForm] = useState({ password: '', newPassword: '', confirmPassword: '' });
   const [pwdLoading, setPwdLoading] = useState(false);
   const [showPwdModal, setShowPwdModal] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -57,77 +60,82 @@ const Perfil = () => {
   };
 
   return (
-    <div className="profile-container" style={{ display: 'flex', justifyContent: 'center', padding: '32px 16px' }}>
-      <div className="profile-card" style={{ width: '90%', maxWidth: 1100, background: '#fff', borderRadius: 16, boxShadow: '0 8px 24px rgba(0,0,0,0.08)', padding: 24 }}>
-        <h1 className="profile-title" style={{ margin: 0, marginBottom: 16, color: '#003366', fontSize: '1.8rem', fontWeight: 700 }}>Mi Perfil</h1>
+    <div className="profile-container">
+      <div className="profile-card">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1 className="profile-title">Mi Perfil</h1>
+          <button className="app-btn-primary" onClick={() => setShowEditProfile(true)}>
+            <i className="fa-solid fa-user-pen"></i> Editar perfil
+          </button>
+        </div>
 
-        <section className="profile-section" style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(16,24,40,0.08)' }}>
-          <h2 style={{ margin: 0, marginBottom: 12, fontSize: '1.1rem', color: '#0b2a45', fontWeight: 700 }}>Datos de Usuario</h2>
-          <div className="profile-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px 20px' }}>
+        <section className="profile-section">
+          <h2 className="profile-title" style={{ fontSize: '1.1rem' }}>Datos de Usuario</h2>
+          <div className="profile-grid">
             <div>
-              <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Nombre:</span>
-              <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{user?.nombreCompleto || '-'}</span>
+              <span className="profile-label">Nombre:</span>
+              <span className="profile-value">{user?.nombreCompleto || '-'}</span>
             </div>
             <div>
-              <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Correo:</span>
-              <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{user?.email || '-'}</span>
+              <span className="profile-label">Correo:</span>
+              <span className="profile-value">{user?.email || '-'}</span>
             </div>
             <div>
-              <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>RUT:</span>
-              <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{user?.rut || '-'}</span>
+              <span className="profile-label">RUT:</span>
+              <span className="profile-value">{user?.rut || '-'}</span>
             </div>
             <div>
-              <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Rol:</span>
-              <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{user?.rol || '-'}</span>
+              <span className="profile-label">Rol:</span>
+              <span className="profile-value">{user?.rol || '-'}</span>
             </div>
           </div>
         </section>
 
-        <section className="profile-section" style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(16,24,40,0.08)' }}>
-          <h2 style={{ margin: 0, marginBottom: 12, fontSize: '1.1rem', color: '#0b2a45', fontWeight: 700 }}>Perfil Académico</h2>
+        <section className="profile-section">
+          <h2 className="profile-title" style={{ fontSize: '1.1rem' }}>Perfil Académico</h2>
           {loading && <p>Cargando perfil...</p>}
-          {error && <p style={{ color: '#ef4444' }}>{error}</p>}
+          {error && <p className="profile-error">{error}</p>}
           {!loading && !error && (
-            <div className="profile-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '12px 20px' }}>
+            <div className="profile-grid">
               <div>
-                <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Carrera:</span>
-                <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{profile?.career || '-'}</span>
-              </div>
-              <div>
-                <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Semestre:</span>
-                <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{profile?.semester ?? '-'}</span>
+                <span className="profile-label">Carrera:</span>
+                <span className="profile-value">{profile?.career || '-'}</span>
               </div>
               <div>
-                <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Promedio (GPA):</span>
-                <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{profile?.gpa ?? '-'}</span>
+                <span className="profile-label">Semestre:</span>
+                <span className="profile-value">{profile?.semester ?? '-'}</span>
               </div>
               <div>
-                <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Perfil Completo:</span>
-                <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{profile?.profileCompleted ? 'Sí' : 'No'}</span>
+                <span className="profile-label">Promedio (GPA):</span>
+                <span className="profile-value">{profile?.gpa ?? '-'}</span>
+              </div>
+              <div>
+                <span className="profile-label">Perfil Completo:</span>
+                <span className="profile-value">{profile?.profileCompleted ? 'Sí' : 'No'}</span>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
-                <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Biografía:</span>
-                <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{profile?.bio || '-'}</span>
+                <span className="profile-label">Biografía:</span>
+                <span className="profile-value">{profile?.bio || '-'}</span>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
-                <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Áreas de Interés:</span>
-                <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{profile?.areasOfInterest || '-'}</span>
+                <span className="profile-label">Áreas de Interés:</span>
+                <span className="profile-value">{profile?.areasOfInterest || '-'}</span>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
-                <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Conocimientos Previos:</span>
-                <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{profile?.previousKnowledge || '-'}</span>
+                <span className="profile-label">Conocimientos Previos:</span>
+                <span className="profile-value">{profile?.previousKnowledge || '-'}</span>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
-                <span className="label" style={{ display: 'block', fontSize: '0.8rem', color: '#64748b' }}>Comentarios:</span>
-                <span className="value" style={{ display: 'block', color: '#203040', fontWeight: 600 }}>{profile?.additionalComments || '-'}</span>
+                <span className="profile-label">Comentarios:</span>
+                <span className="profile-value">{profile?.additionalComments || '-'}</span>
               </div>
             </div>
           )}
         </section>
 
-        <section className="profile-section" style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid rgba(16,24,40,0.08)' }}>
-          <h2 style={{ margin: 0, marginBottom: 12, fontSize: '1.1rem', color: '#0b2a45', fontWeight: 700 }}>Seguridad</h2>
-          <button className="btn-primary" onClick={() => setShowPwdModal(true)} style={{ background: '#003366', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 14px', cursor: 'pointer' }}>
+        <section className="profile-section">
+          <h2 className="profile-title" style={{ fontSize: '1.1rem' }}>Seguridad</h2>
+          <button className="app-btn-primary" onClick={() => setShowPwdModal(true)}>
             Cambiar contraseña
           </button>
         </section>
@@ -155,10 +163,10 @@ const Perfil = () => {
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn-primary" type="submit" disabled={pwdLoading} style={{ background: '#003366', color: '#fff', border: 'none', borderRadius: 8, padding: '10px 14px', cursor: 'pointer' }}>
+                  <button className="app-btn-primary" type="submit" disabled={pwdLoading}>
                     {pwdLoading ? 'Guardando...' : 'Actualizar contraseña'}
                   </button>
-                  <button type="button" className="btn-secondary" onClick={() => setShowPwdModal(false)} style={{ background: '#fff', color: '#203040', border: '1px solid rgba(16,24,40,0.15)', borderRadius: 8, padding: '10px 14px', cursor: 'pointer' }}>
+                  <button type="button" className="app-btn-secondary" onClick={() => setShowPwdModal(false)}>
                     Cancelar
                   </button>
                 </div>
@@ -166,6 +174,17 @@ const Perfil = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {showEditProfile && (
+        <ProfileEditModal
+          onClose={() => setShowEditProfile(false)}
+          onSuccess={() => {
+            setShowEditProfile(false);
+            // refresh profile
+            (async () => { const data = await getMyProfile(); setProfile(data); })();
+          }}
+        />
       )}
     </div>
   );

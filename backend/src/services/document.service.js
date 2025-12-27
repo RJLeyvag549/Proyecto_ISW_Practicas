@@ -4,6 +4,7 @@ import { AppDataSource } from "../config/configDb.js";
 
 const documentRepository = AppDataSource.getRepository("Document");
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
+const internshipExternalRepository = AppDataSource.getRepository("InternshipExternal");
 
 
 export const DocumentService = {
@@ -46,6 +47,17 @@ export const DocumentService = {
     const document = await documentRepository.findOne({ where: { id: documentId } });
     if (!document) throw new Error("Documento no encontrado");
     return { filepath: document.filepath, filename: document.filename };
+  },
+
+  async getDocumentsByExternalId(externalId) {
+    try {
+      return await documentRepository.find({
+        where: { internshipExternalId: externalId },
+        order: { createdAt: "DESC" },
+      });
+    } catch (error) {
+      throw error;
+    }
   },
 
   async updateDocumentStatus(documentId, updateData) {

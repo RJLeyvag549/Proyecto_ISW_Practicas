@@ -64,6 +64,25 @@ export const DocumentController = {
     }
   },
 
+  async getDocumentsByExternal(req, res) {
+    try {
+      const documents = await DocumentService.getDocumentsByExternalId(
+        req.params.externalId
+      );
+      if (Array.isArray(documents) && documents.length === 0) {
+        return handleSuccess(res, 204);
+      }
+      return handleSuccess(
+        res,
+        200,
+        "Documentos obtenidos exitosamente",
+        documents,
+      );
+    } catch (error) {
+      return handleErrorServer(res, 500, error.message);
+    }
+  },
+
   async updateDocumentStatus(req, res) {
     try {
       const document = await DocumentService.updateDocumentStatus(

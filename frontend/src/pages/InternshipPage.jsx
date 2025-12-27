@@ -7,7 +7,7 @@ import StepSupervisor from "@components/createInternship/StepSupervisor.jsx";
 import StepDetails from "@components/createInternship/StepDetails.jsx";
 import InternshipViewModal from "@components/InternshipViewModal.jsx";
 import InternshipEditModal from "@components/InternshipEditModal.jsx";
-import { createApplication } from "@services/practiceApplication.service.js";
+import { applyToInternship } from "@services/practiceApplication.service.js";
 import '@styles/internship.css';
 
 export default function InternshipPage() {
@@ -161,10 +161,10 @@ export default function InternshipPage() {
           }
         });
 
-        const [response, error] = await createApplication(internship.id);
+        const result = await applyToInternship(internship.id);
 
-        if (error) {
-          Swal.fire('Error', error, 'error');
+        if (result.error) {
+          Swal.fire('Error', result.error, 'error');
         } else {
           Swal.fire({
             title: '¡Éxito!',
@@ -174,7 +174,7 @@ export default function InternshipPage() {
           });
           fetchOfertas();
         }
-      } catch (err) {
+      } catch {
         Swal.fire('Error', 'Hubo un problema al procesar tu solicitud.', 'error');
       }
     }

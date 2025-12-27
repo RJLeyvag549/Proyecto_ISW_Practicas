@@ -19,3 +19,12 @@ export async function processStudentRequest(id, payload) {
         return error.response?.data || { status: 'Error', message: 'Error processing request' };
     }
 }
+
+export async function getPendingStudent(id) {
+    try {
+        const { data } = await axios.get(`/students/pending/${id}`);
+        return formatUserData(data.data);
+    } catch (error) {
+        return error.response?.data || { status: 'Error', message: 'Error fetching student' };
+    }
+}
