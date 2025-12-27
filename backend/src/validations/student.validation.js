@@ -16,24 +16,21 @@ export const studentRegisterValidation = Joi.object({
     }),
   email: Joi.string()
     .email()
-    .pattern(/@gmail\.cl$/)
     .required()
     .messages({
       "string.email": "El formato del correo no es válido",
-      "string.pattern.base": "Debe ser un correo @gmail.cl",
       "string.empty": "El correo es requerido",
       "any.required": "El correo es requerido",
     }),
-  password: Joi.string()
-    .min(8)
-    .max(26)
-    .required()
-    .messages({
-      "string.min": "La contraseña debe tener al menos 8 caracteres.",
-      "string.max": "La contraseña debe tener como máximo 26 caracteres.",
-      "string.empty": "La contraseña es requerida.",
-      "any.required": "La contraseña es requerida."
-    }),
+  password: Joi.string().min(6).required().messages({
+    "string.min": "La contraseña debe tener al menos 6 caracteres",
+    "string.empty": "La contraseña es requerida",
+    "any.required": "La contraseña es requerida",
+  }),
+  carrera: Joi.string().required().messages({
+    "string.empty": "La carrera es requerida",
+    "any.required": "La carrera es requerida",
+  }),
 });
 
 export const approvalValidation = Joi.object({

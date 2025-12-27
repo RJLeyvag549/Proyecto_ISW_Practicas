@@ -9,6 +9,7 @@ import internshipRoutes from "./internship.routes.js";
 import practiceApplication from "./practiceApplication.routes.js";
 import documentRoutes from "./document.routes.js";
 import profileRoutes from "./profile.routes.js";
+import messageRoutes from "./message.routes.js";
 
 const router = Router();
 
@@ -21,6 +22,7 @@ router
   .use("/internships", internshipRoutes)
   .use("/practiceApp", practiceApplication)
   .use("/documents", documentRoutes)
-  .use("/profile", profileRoutes);
+  .use("/profile", profileRoutes)
+  .use("/messages", messageRoutes);
 
 export default router;

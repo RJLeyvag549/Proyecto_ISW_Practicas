@@ -7,26 +7,81 @@
   --text-dark: #00323a;
 }
 
+/* Logo shown on auth pages */
+.auth-logo {
+  position: absolute;
+  top: 2rem;
+  left: 2rem;
+  display: block;
+  width: 320px;
+  max-width: 38%;
+  height: auto;
+  margin: 0 0 1.2rem 0;
+  z-index: 2;
+  transition: left 500ms cubic-bezier(.2,.9,.2,1), right 500ms cubic-bezier(.2,.9,.2,1), transform 500ms;
+}
+
 .auth-page {
   display: flex;
   min-height: 100vh;
   width: 100%;
   font-family: inherit;
+  overflow: hidden;
+}
+
+/* avoid white seam during transforms */
+.auth-page {
+  background: var(--turq-100);
 }
 
 .auth-left {
-  flex: 1.05;
+  flex: 0 0 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 6vh 8vw;
-  background: linear-gradient(180deg, var(--turq-200) 0%, var(--turq-500) 100%);
+  background: var(--turq-500);
   color: #fff;
   position: relative;
   /* big rounded inner edge */
   border-top-right-radius: 140px;
   border-bottom-right-radius: 140px;
   box-shadow: inset -40px 0 60px rgba(0,0,0,0.06);
+}
+
+/* Prepare transitions for swapping animation */
+.auth-left,
+.auth-right {
+  transition: transform 500ms cubic-bezier(.2,.9,.2,1), border-radius 350ms ease;
+  will-change: transform, border-radius;
+}
+
+/* When auth-page has this class, swap positions by translating sections and swap radii */
+.auth-page.auth-swap .auth-left {
+  transform: translateX(100%);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top-left-radius: 140px;
+  border-bottom-left-radius: 140px;
+}
+.auth-page.auth-swap .auth-right {
+  transform: translateX(-100%);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  border-top-right-radius: 140px;
+  border-bottom-right-radius: 140px;
+}
+
+/* When left block moves to the right, place the logo on its right edge */
+.auth-page.auth-swap .auth-left .auth-logo {
+  left: auto;
+  right: 2rem;
+}
+
+/* When not swapped ensure logo is on left */
+.auth-page:not(.auth-swap) .auth-left .auth-logo {
+  left: 2rem;
+  right: auto;
 }
 
 .left-content {
@@ -61,7 +116,7 @@
 }
 
 .auth-right {
-  flex: 0.95;
+  flex: 0 0 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -128,6 +183,14 @@
     width: 100%;
     padding: 3rem 2rem;
     text-align: center;
+  }
+
+  /* On smaller screens keep logo inline above content */
+  .auth-logo {
+    position: static;
+    width: 220px;
+    max-width: 48%;
+    margin: 0 auto 1rem auto;
   }
   .auth-right {
     padding: 3rem 1.5rem;

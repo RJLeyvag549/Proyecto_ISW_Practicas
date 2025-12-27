@@ -1,46 +1,64 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { register } from '@services/auth.service.js';
 import Form from "@components/Form";
 import useRegister from '@hooks/auth/useRegister.jsx';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import '@styles/form.css';
 import '@styles/auth.css';
+import logoUBB from '@assets/b-ubb.png';
 
 const Register = () => {
-	const navigate = useNavigate();
-	const {
+    const navigate = useNavigate();
+    const {
         errorEmail,
         errorRut,
         errorData,
         handleInputChange
     } = useRegister();
 
-const registerSubmit = async (data) => {
-    try {
-        const response = await register(data);
-        if (response.status === 'Success') {
-            showSuccessAlert('¡Registrado!','Usuario registrado exitosamente.');
-            setTimeout(() => {
-                navigate('/auth');
-            }, 3000)
-        } else if (response.status === 'Client error') {
-            errorData(response.details);
+    const registerSubmit = async (data) => {
+        try {
+            const response = await register(data);
+            if (response.status === 'Success') {
+                showSuccessAlert('¡Registrado!','Usuario registrado exitosamente.');
+                const page = document.querySelector('.auth-page');
+                if (page) page.classList.remove('auth-swap');
+                setTimeout(() => navigate('/auth'), 1000);
+            } else if (response.status === 'Client error') {
+                errorData(response.details);
+            }
+        } catch (error) {
+            console.error("Error al registrar un usuario: ", error);
+            showErrorAlert('Cancelado', 'Ocurrió un error al registrarse.');
         }
-    } catch (error) {
-        console.error("Error al registrar un usuario: ", error);
-        showErrorAlert('Cancelado', 'Ocurrió un error al registrarse.');
     }
-}
 
-const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
+    const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
+    useEffect(() => {
+        // Ensure the register page mounts showing the swapped layout
+        const page = document.querySelector('.auth-page');
+        if (page) page.classList.add('auth-swap');
+        return () => {
+            if (page) page.classList.remove('auth-swap');
+        }
+    }, []);
 
     return (
         <main className="auth-page">
             <section className="auth-left">
                 <div className="left-content">
+                    <img src={logoUBB} alt="Universidad B-UBB" className="auth-logo" />
                     <h2>Hola, ¡Bienvenido!</h2>
                     <p className="left-sub">¿Ya tienes una cuenta?</p>
-                    <Link to="/auth" className="btn-outline">Iniciar sesión</Link>
+                    <a href="/auth" onClick={(e) => {
+                        e.preventDefault();
+                        const page = document.querySelector('.auth-page');
+                        if (page) {
+                            page.classList.remove('auth-swap');
+                            setTimeout(() => navigate('/auth'), 450);
+                        } else navigate('/auth');
+                    }} className="btn-outline">Iniciar sesión</a>
                 </div>
             </section>
             <section className="auth-right">
@@ -63,16 +81,13 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                             {
                                 label: "Correo electrónico",
                                 name: "email",
-                                placeholder: "example@gmail.cl",
+                                placeholder: "example@correo.com",
                                 fieldType: 'input',
                                 type: "email",
                                 required: true,
-                                minLength: 15,
-                                maxLength: 35,
+                                minLength: 6,
+                                maxLength: 100,
                                 errorMessageData: errorEmail,
-                                validate: {
-                                    emailDomain: (value) => value.endsWith('@gmail.cl') || 'El correo debe terminar en @gmail.cl'
-                                },
                                 onChange: (e) => handleInputChange('email', e.target.value)
                             },
                             {
@@ -102,6 +117,18 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                                 patternMessage: "Debe contener solo letras y números",
                             },
                             {
+                                label: "Carrera",
+                                name: "carrera",
+                                placeholder: "Ingeniería en Informática",
+                                fieldType: 'input',
+                                type: "text",
+                                required: true,
+                                minLength: 3,
+                                maxLength: 100,
+                                pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9]+$/,
+                                patternMessage: "Debe ser el nombre de la carrera",
+                            },
+                            {
                                 fieldType: 'checkbox',
                                 name: "termsAccepted",
                                 checkboxLabel: (
@@ -117,7 +144,14 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                         onSubmit={registerSubmit}
                         footerContent={
                             <p>
-                                ¿Ya tienes cuenta? <Link to="/auth">¡Inicia sesión aquí!</Link>
+                                ¿Ya tienes cuenta? <a href="/auth" onClick={(e) => {
+                                    e.preventDefault();
+                                    const page = document.querySelector('.auth-page');
+                                    if (page) {
+                                        page.classList.remove('auth-swap');
+                                        setTimeout(() => navigate('/auth'), 450);
+                                    } else navigate('/auth');
+                                }}>¡Inicia sesión aquí!</a>
                             </p>
                         }
                     />

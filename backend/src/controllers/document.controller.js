@@ -9,9 +9,36 @@ import {
 
 export const DocumentController = {
 
+  async getAllDocuments(req, res) {
+    try {
+      const documents = await DocumentService.getAllDocuments();
+      return handleSuccess(res, 200, "Documentos obtenidos", documents);
+    } catch (error) {
+      return handleErrorServer(res, 500, error.message);
+    }
+  },
+
+  async downloadDocument(req, res) {
+    try {
+      const { filepath, filename } = await DocumentService.getDocumentPath(req.params.documentId);
+      return res.download(filepath, filename);
+    } catch (error) {
+      return handleErrorServer(res, 500, error.message);
+    }
+  },
+
   async uploadDocument(req, res) {
     try {
-      const document = await DocumentService.createDocument(req.body, req.file);
+      if (!req.file) {
+        return handleErrorClient(res, 400, "Archivo requerido");
+      }
+
+      const documentData = {
+        ...req.body,
+        uploadedBy: req.user?.id,
+      };
+
+      const document = await DocumentService.createDocument(documentData, req.file);
       return handleSuccess(res, 201, "Documento subido exitosamente", document);
     } catch (error) {
       return handleErrorServer(res, 500, error.message);
@@ -72,6 +99,44 @@ export const DocumentController = {
     try {
       await DocumentService.deleteDocument(req.params.documentId);
       return handleSuccess(res, 200, "Documento eliminado exitosamente");
+    } catch (error) {
+      return handleErrorServer(res, 500, error.message);
+    }
+  },
+
+  async getGradeStatistics(req, res) {
+    try {
+      const statistics = await DocumentService.getGradeStatistics(
+        req.params.practiceId
+      );
+      return handleSuccess(res, 200, "Estadísticas obtenidas", statistics);
+    } catch (error) {
+      return handleErrorServer(res, 500, error.message);
+    }
+  },
+
+  async getStudentAverages(req, res) {
+    try {
+      const averages = await DocumentService.getStudentAverages();
+      return handleSuccess(res, 200, "Promedios obtenidos", averages);
+    } catch (error) {
+      return handleErrorServer(res, 500, error.message);
+    }
+  },
+
+  async getMyDocuments(req, res) {
+    try {
+      const documents = await DocumentService.getMyDocuments(req.user.id);
+      return handleSuccess(res, 200, "Documentos obtenidos", documents);
+    } catch (error) {
+      return handleErrorServer(res, 500, error.message);
+    }
+  },
+
+  async getMyAverage(req, res) {
+    try {
+      const average = await DocumentService.getMyAverage(req.user.id);
+      return handleSuccess(res, 200, "Promedio obtenido", average);
     } catch (error) {
       return handleErrorServer(res, 500, error.message);
     }

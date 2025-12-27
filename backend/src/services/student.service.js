@@ -15,9 +15,9 @@ export async function registerStudentService(userData) {
 
     if (existingUser) {
       if (existingUser.email === userData.email)
-        return [null, createErrorMessage('email', 'El correo ya está registrado')];
+        return [null, createErrorMessage("email", "El correo ya está registrado")];
       if (existingUser.rut === userData.rut)
-        return [null, createErrorMessage('rut', 'El RUT ya está registrado')];
+        return [null, createErrorMessage("rut", "El RUT ya está registrado")];
     }
 
     const hashedPassword = await encryptPassword(userData.password);
@@ -32,14 +32,26 @@ export async function registerStudentService(userData) {
     await sendEmail(
       userData.email,
       "Registro pendiente de aprobación",
-      "Tu cuenta ha sido creada exitosamente y está pendiente de aprobación por el encargado de prácticas. Te notificaremos cuando tu cuenta sea revisada."
+      `Hola ${userData.nombreCompleto || ''},\n\nTu cuenta ha sido creada exitosamente y está pendiente de aprobación por el encargado de prácticas. Te notificaremos cuando tu cuenta sea revisada.\n\nSaludos,\nEquipo de Prácticas`,
+      `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #2b7cff, #4aa3ff); color: white; padding: 20px; border-radius: 8px; text-align: center;">
+            <h1 style="margin:0; font-size:20px">Registro pendiente de aprobación</h1>
+          </div>
+          <div style="background-color: #ffffff; padding: 20px; border-radius: 0 0 8px 8px;">
+            <p>Hola ${userData.nombreCompleto || ''},</p>
+            <p>Tu cuenta ha sido creada exitosamente y está pendiente de aprobación por el encargado de prácticas. Te notificaremos cuando tu cuenta sea revisada.</p>
+            <p>Saludos,<br/><strong>Equipo de Prácticas</strong></p>
+          </div>
+        </div>
+      `
     );
 
     const { password, ...userWithoutPassword } = newUser;
     return [userWithoutPassword, null];
   } catch (error) {
     const createErrorMessage = (dataInfo, message) => ({ dataInfo, message });
-    return [null, createErrorMessage('server', error.message)];
+    return [null, createErrorMessage("server", error.message)];
   }
 }
 
@@ -50,7 +62,7 @@ export async function getPendingStudentsService() {
         status: "pending",
         rol: "estudiante",
       },
-      select: ["id", "nombreCompleto", "rut", "email", "createdAt"],
+      select: ["id", "nombreCompleto", "rut", "email", "carrera", "createdAt"],
     });
     return [pendingStudents, null];
   } catch (error) {
@@ -82,11 +94,40 @@ export async function approveStudentService(studentId, approvalData, approverId)
     const emailSubject = approvalData.approved
       ? "Registro aprobado"
       : "Registro rechazado";
-    const emailBody = approvalData.approved
-      ? "Tu cuenta ha sido aprobada. Ya puedes acceder al sistema."
-      : `Tu cuenta ha sido rechazada. Motivo: ${approvalData.rejectionReason}`;
 
-    await sendEmail(student.email, emailSubject, emailBody);
+    const emailText = approvalData.approved
+      ? `Hola ${student.nombreCompleto || ''},\n\nTu cuenta ha sido aprobada. Ya puedes acceder al sistema.\n\nSaludos,\nEquipo de Prácticas`
+      : `Hola ${student.nombreCompleto || ''},\n\nTu cuenta ha sido rechazada. Motivo: ${approvalData.rejectionReason}\n\nSaludos,\nEquipo de Prácticas`;
+
+    const emailHtml = approvalData.approved
+      ? `
+        <div style="font-family: Arial, sans-serif; max-width:600px;margin:0 auto;">
+          <div style="background:#dff7e0;padding:18px;border-radius:8px;text-align:center;color:#1a7f2e;">
+            <h2 style="margin:0">Registro aprobado</h2>
+          </div>
+          <div style="background:#fff;padding:20px;border-radius:0 0 8px 8px;">
+            <p>Hola ${student.nombreCompleto || ''},</p>
+            <p>Tu cuenta ha sido <strong>aprobada</strong>. Ya puedes acceder al sistema con tus credenciales.</p>
+            <p>Saludos,<br/><strong>Equipo de Prácticas</strong></p>
+          </div>
+        </div>
+      `
+      : `
+        <div style="font-family: Arial, sans-serif; max-width:600px;margin:0 auto;">
+          <div style="background:#ffe6e6;padding:18px;border-radius:8px;text-align:center;color:#b30000;">
+            <h2 style="margin:0">Registro rechazado</h2>
+          </div>
+          <div style="background:#fff;padding:20px;border-radius:0 0 8px 8px;">
+            <p>Hola ${student.nombreCompleto || ''},</p>
+            <p>Tu cuenta ha sido <strong>rechazada</strong>.</p>
+            <p><strong>Motivo:</strong> ${approvalData.rejectionReason || 'No especificado'}</p>
+            <p>Si crees que hay un error, contacta con el encargado de prácticas.</p>
+            <p>Saludos,<br/><strong>Equipo de Prácticas</strong></p>
+          </div>
+        </div>
+      `;
+
+    await sendEmail(student.email, emailSubject, emailText, emailHtml);
 
     return [{ message: "Estudiante procesado con éxito" }, null];
   } catch (error) {
