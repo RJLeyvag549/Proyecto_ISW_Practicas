@@ -8,24 +8,28 @@ import InternshipPage from '@pages/InternshipPage';
 import PracticeApplicationsPage from '@pages/PracticeApplicationsPage';
 import MyApplicationsPage from '@pages/MyApplicationsPage';
 import AvailableInternshipsPage from '@pages/AvailableInternshipsPage';
+import StudentDocumentsPage from '@pages/StudentDocumentsPage';
+import UploadDocuments from '@pages/UploadDocuments';
+import MyDocuments from '@pages/MyDocuments';
 import Register from '@pages/Register';
 import Terminos from '@pages/Terminos';
 import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
 import ProtectedRoute from '@components/ProtectedRoute';
 import Perfil from '@pages/Perfil';
+import ConsultasPage from '@pages/ConsultasPage';
 import '@styles/styles.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Root/>,
-    errorElement: <Error404/>,
+    element: <Root />,
+    errorElement: <Error404 />,
     children: [
       {
         path: '/home',
-        element: <Home/>
+        element: <Home />
       },
       {
         path: '/users',
@@ -46,16 +50,24 @@ const router = createBrowserRouter([
       {
         path: '/admin/internships',
         element: (
-          <ProtectedRoute allowedRoles={['administrador']}>
+          <ProtectedRoute allowedRoles={['administrador', 'estudiante', 'usuario']}>
             <InternshipPage />
           </ProtectedRoute>
         ),
       },
       {
-        path: '/admin/applications',
+          path: '/admin/applications',
+          element: (
+            <ProtectedRoute allowedRoles={['administrador']}>
+              <PracticeApplicationsPage />
+            </ProtectedRoute>
+         ),
+       },
+       {
+        path: '/admin/documents',
         element: (
           <ProtectedRoute allowedRoles={['administrador']}>
-            <PracticeApplicationsPage />
+            <StudentDocumentsPage />
           </ProtectedRoute>
         ),
       },
@@ -66,12 +78,36 @@ const router = createBrowserRouter([
             <MyApplicationsPage />
           </ProtectedRoute>
         ),
+       },
+       {
+        path: '/upload-documents',
+        element: (
+          <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>
+            <UploadDocuments />
+          </ProtectedRoute>
+        ),
       },
       {
         path: '/available-internships',
         element: (
           <ProtectedRoute allowedRoles={['estudiante']}>
             <AvailableInternshipsPage />
+          </ProtectedRoute>
+         ),
+       },
+       {
+        path: '/my-documents',
+        element: (
+          <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>
+            <MyDocuments />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/consultas',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador', 'estudiante', 'usuario']}>
+            <ConsultasPage />
           </ProtectedRoute>
         ),
       },
@@ -87,18 +123,18 @@ const router = createBrowserRouter([
   },
   {
     path: '/auth',
-    element: <Login/>
+    element: <Login />
   },
   {
     path: '/register',
-    element: <Register/>
+    element: <Register />
   },
   {
     path: '/terminos',
-    element: <Terminos/>
+    element: <Terminos />
   }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <RouterProvider router={router}/>
+  <RouterProvider router={router} />
 );

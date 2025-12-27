@@ -28,9 +28,17 @@ export async function getUsersService() {
   try {
     const userRepository = AppDataSource.getRepository(User);
 
-    const users = await userRepository.find();
+    // Exclude users that are still pending approval so they don't appear
+    // in the main users list. Only return users whose status is different
+    // from 'pending' (e.g., approved, rejected, etc.).
+    const users = await userRepository
+      .createQueryBuilder('user')
+      .where('user.status != :status', { status: 'pending' })
+      .getMany();
 
-    if (!users || users.length === 0) return [null, "No hay usuarios"];
+    // Return an empty array (not an error) when there are no users to allow
+    // controllers to respond with 204 No Content if desired.
+    if (!users || users.length === 0) return [[], null];
 
     const usersData = users.map(({ password, ...user }) => user);
 

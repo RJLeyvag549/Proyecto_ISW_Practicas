@@ -15,6 +15,7 @@ export async function createInternshipService(companyId, supervisorId, internshi
 
     const newInternship = await internshipRepository.save({
       ...internshipData,
+      occupiedSlots: 0,
       company,
       supervisor
     });
@@ -27,7 +28,10 @@ export async function createInternshipService(companyId, supervisorId, internshi
 
 export async function getAllInternshipsService() {
   try {
-    const internships = await internshipRepository.find({ relations: ["company", "supervisor"] });
+    const internships = await internshipRepository.find({
+      relations: ["company", "supervisor"],
+      order: { applicationDeadline: "ASC" }
+    });
     return [internships, null];
   } catch (error) {
     return [null, error.message];
@@ -61,6 +65,14 @@ export async function updateInternshipService(id, updateData) {
       internship.supervisor = supervisor;
     }
 
+    if (updateData.totalSlots) {
+      internship.totalSlots = updateData.totalSlots;
+    }
+
+    if (updateData.occupiedSlots !== undefined) {
+      internship.occupiedSlots = updateData.occupiedSlots;
+    }
+
     const updatedInternship = await internshipRepository.save({ ...internship, ...updateData });
     return [updatedInternship, null];
   } catch (error) {
@@ -83,7 +95,11 @@ export async function deleteInternshipService(id) {
 // Funciones extra
 export async function getInternshipsByCompanyService(companyId) {
   try {
-    const internships = await internshipRepository.find({ where: { company: { id: companyId } }, relations: ["supervisor"] });
+    const internships = await internshipRepository.find({
+      where: { company: { id: companyId } },
+      relations: ["supervisor"],
+      order: { applicationDeadline: "ASC" }
+    });
     return [internships, null];
   } catch (error) {
     return [null, error.message];
@@ -94,7 +110,8 @@ export async function getInternshipsBySupervisorService(companyId, supervisorId)
   try {
     const internships = await internshipRepository.find({
       where: { company: { id: companyId }, supervisor: { id: supervisorId } },
-      relations: ["supervisor"]
+      relations: ["supervisor"],
+      order: { applicationDeadline: "ASC" }
     });
     return [internships, null];
   } catch (error) {

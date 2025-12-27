@@ -11,8 +11,8 @@ export async function login(dataUser) {
         });
         const { status, data } = response;
         if (status === 200) {
-            const { nombreCompleto, email, rut, rol } = jwtDecode(data.data.token);
-            const userData = { nombreCompleto, email, rut, rol };
+            const { id, nombreCompleto, email, rut, rol } = jwtDecode(data.data.token);
+            const userData = { id, nombreCompleto, email, rut, rol };
             sessionStorage.setItem('usuario', JSON.stringify(userData));
             axios.defaults.headers.common['Authorization'] = `Bearer ${data.data.token}`;
             cookies.set('jwt-auth', data.data.token, {path:'/'});
@@ -29,10 +29,11 @@ export async function register(data) {
         const { nombreCompleto, email, rut, password } = dataRegister
         // Send registration as a student so it goes into pending approval
         const response = await axios.post('/students/register', {
-            nombreCompleto,
-            email,
-            rut,
-            password
+                nombreCompleto,
+                email,
+                rut,
+                password,
+                carrera: dataRegister.carrera
         });
         return response.data;
     } catch (error) {

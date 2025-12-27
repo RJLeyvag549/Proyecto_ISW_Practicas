@@ -56,9 +56,9 @@ export async function createPracticeApplication(studentId, data) {
       }
 
       const existingApplication = await practiceApplicationRepository.findOne({
-        where: { 
-          studentId, 
-          internshipExternalId: internshipExternal.id 
+        where: {
+          studentId,
+          internshipExternalId: internshipExternal.id
         },
       });
       if (existingApplication) {
@@ -95,7 +95,7 @@ export async function getPracticeApplicationById(id, requester) {
       where: { id },
       relations: ["student", "internship", "internshipExternal"]
     });
-    
+
     if (!application) return [null, "Solicitud no encontrada"];
 
     if (application.studentId !== requester.id && requester.rol !== "administrador") {
