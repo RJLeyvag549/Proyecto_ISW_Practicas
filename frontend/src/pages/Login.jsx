@@ -1,10 +1,11 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { login } from '@services/auth.service.js';
 import { showErrorAlert } from '@helpers/sweetAlert.js';
 import Form from '@components/Form';
 import useLogin from '@hooks/auth/useLogin.jsx';
 import '@styles/form.css';
 import '@styles/auth.css';
+import logoUBB from '@assets/b-ubb.png';
 
 const Login = () => {
     const navigate = useNavigate();
@@ -33,13 +34,25 @@ const Login = () => {
         }
     };
 
+    const handleGoToRegister = (e) => {
+        e.preventDefault();
+        const page = document.querySelector('.auth-page');
+        if (page) {
+            page.classList.add('auth-swap');
+            setTimeout(() => navigate('/register'), 450);
+        } else {
+            navigate('/register');
+        }
+    }
+
     return (
         <main className="auth-page">
             <section className="auth-left">
                 <div className="left-content">
+                    <img src={logoUBB} alt="Universidad B-UBB" className="auth-logo" />
                     <h2>Hola, ¡Bienvenido!</h2>
                     <p className="left-sub">¿No tienes una cuenta?</p>
-                    <Link to="/register" className="btn-outline">Regístrate</Link>
+                    <a href="/register" onClick={handleGoToRegister} className="btn-outline">Regístrate</a>
                 </div>
             </section>
             <section className="auth-right">
@@ -78,7 +91,7 @@ const Login = () => {
                         onSubmit={loginSubmit}
                         footerContent={
                             <p>
-                                ¿No tienes cuenta? <Link to="/register">¡Regístrate aquí!</Link>
+                                ¿No tienes cuenta? <a href="/register" onClick={handleGoToRegister}>¡Regístrate aquí!</a>
                             </p>
                         }
                     />

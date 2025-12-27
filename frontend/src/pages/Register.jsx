@@ -1,10 +1,12 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { register } from '@services/auth.service.js';
 import Form from "@components/Form";
 import useRegister from '@hooks/auth/useRegister.jsx';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import '@styles/form.css';
 import '@styles/auth.css';
+import logoUBB from '@assets/b-ubb.png';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -20,6 +22,8 @@ const Register = () => {
             const response = await register(data);
             if (response.status === 'Success') {
                 showSuccessAlert('¡Registrado!','Usuario registrado exitosamente.');
+                const page = document.querySelector('.auth-page');
+                if (page) page.classList.remove('auth-swap');
                 setTimeout(() => navigate('/auth'), 1000);
             } else if (response.status === 'Client error') {
                 errorData(response.details);
@@ -31,14 +35,30 @@ const Register = () => {
     }
 
     const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
+    useEffect(() => {
+        // Ensure the register page mounts showing the swapped layout
+        const page = document.querySelector('.auth-page');
+        if (page) page.classList.add('auth-swap');
+        return () => {
+            if (page) page.classList.remove('auth-swap');
+        }
+    }, []);
 
     return (
         <main className="auth-page">
             <section className="auth-left">
                 <div className="left-content">
+                    <img src={logoUBB} alt="Universidad B-UBB" className="auth-logo" />
                     <h2>Hola, ¡Bienvenido!</h2>
                     <p className="left-sub">¿Ya tienes una cuenta?</p>
-                    <Link to="/auth" className="btn-outline">Iniciar sesión</Link>
+                    <a href="/auth" onClick={(e) => {
+                        e.preventDefault();
+                        const page = document.querySelector('.auth-page');
+                        if (page) {
+                            page.classList.remove('auth-swap');
+                            setTimeout(() => navigate('/auth'), 450);
+                        } else navigate('/auth');
+                    }} className="btn-outline">Iniciar sesión</a>
                 </div>
             </section>
             <section className="auth-right">
@@ -124,7 +144,14 @@ const Register = () => {
                         onSubmit={registerSubmit}
                         footerContent={
                             <p>
-                                ¿Ya tienes cuenta? <Link to="/auth">¡Inicia sesión aquí!</Link>
+                                ¿Ya tienes cuenta? <a href="/auth" onClick={(e) => {
+                                    e.preventDefault();
+                                    const page = document.querySelector('.auth-page');
+                                    if (page) {
+                                        page.classList.remove('auth-swap');
+                                        setTimeout(() => navigate('/auth'), 450);
+                                    } else navigate('/auth');
+                                }}>¡Inicia sesión aquí!</a>
                             </p>
                         }
                     />
