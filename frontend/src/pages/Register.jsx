@@ -7,32 +7,30 @@ import '@styles/form.css';
 import '@styles/auth.css';
 
 const Register = () => {
-	const navigate = useNavigate();
-	const {
+    const navigate = useNavigate();
+    const {
         errorEmail,
         errorRut,
         errorData,
         handleInputChange
     } = useRegister();
 
-const registerSubmit = async (data) => {
-    try {
-        const response = await register(data);
-        if (response.status === 'Success') {
-            showSuccessAlert('¡Registrado!','Usuario registrado exitosamente.');
-            setTimeout(() => {
-                navigate('/auth');
-            }, 3000)
-        } else if (response.status === 'Client error') {
-            errorData(response.details);
+    const registerSubmit = async (data) => {
+        try {
+            const response = await register(data);
+            if (response.status === 'Success') {
+                showSuccessAlert('¡Registrado!','Usuario registrado exitosamente.');
+                setTimeout(() => navigate('/auth'), 1000);
+            } else if (response.status === 'Client error') {
+                errorData(response.details);
+            }
+        } catch (error) {
+            console.error("Error al registrar un usuario: ", error);
+            showErrorAlert('Cancelado', 'Ocurrió un error al registrarse.');
         }
-    } catch (error) {
-        console.error("Error al registrar un usuario: ", error);
-        showErrorAlert('Cancelado', 'Ocurrió un error al registrarse.');
     }
-}
 
-const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
+    const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
 
     return (
         <main className="auth-page">
@@ -63,16 +61,13 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                             {
                                 label: "Correo electrónico",
                                 name: "email",
-                                placeholder: "example@gmail.cl",
+                                placeholder: "example@correo.com",
                                 fieldType: 'input',
                                 type: "email",
                                 required: true,
-                                minLength: 15,
-                                maxLength: 35,
+                                minLength: 6,
+                                maxLength: 100,
                                 errorMessageData: errorEmail,
-                                validate: {
-                                    emailDomain: (value) => value.endsWith('@gmail.cl') || 'El correo debe terminar en @gmail.cl'
-                                },
                                 onChange: (e) => handleInputChange('email', e.target.value)
                             },
                             {
@@ -100,6 +95,18 @@ const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d
                                 maxLength: 26,
                                 pattern: /^[a-zA-Z0-9]+$/,
                                 patternMessage: "Debe contener solo letras y números",
+                            },
+                            {
+                                label: "Carrera",
+                                name: "carrera",
+                                placeholder: "Ingeniería en Informática",
+                                fieldType: 'input',
+                                type: "text",
+                                required: true,
+                                minLength: 3,
+                                maxLength: 100,
+                                pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9]+$/,
+                                patternMessage: "Debe ser el nombre de la carrera",
                             },
                             {
                                 fieldType: 'checkbox',

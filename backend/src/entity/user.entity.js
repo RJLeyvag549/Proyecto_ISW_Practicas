@@ -33,6 +33,11 @@ const UserSchema = new EntitySchema({
       length: 255,
       nullable: false,
     },
+    carrera: {
+      type: "varchar",
+      length: 100,
+      nullable: true,
+    },
     rut: {
       type: "varchar",
       length: 12,
