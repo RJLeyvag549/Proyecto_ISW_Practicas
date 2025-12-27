@@ -51,28 +51,33 @@ export default function InternshipPage() {
     }
   }, []);
 
-  // Efecto para la carga inicial
   useEffect(() => {
     fetchOfertas();
   }, [fetchOfertas]);
 
-  // Vigilante de Ofertas Vencidas (Cada 30 minutos)
+  useEffect(() => {
+    if (viewMode === 'wizard' && userRole !== 'administrador') {
+      setViewMode('list');
+    }
+  }, [viewMode, userRole]);
+
   useEffect(() => {
     const intervalId = setInterval(() => {
       const ahora = new Date();
       const minutos = ahora.getMinutes();
 
-      // Solo disparar en el minuto 0 o 30
-      if (minutos === 0 || minutos === 30) {
+      if (minutos === 0 || minutos === 20 || minutos === 40) {
         verificarOfertasVencidas(ofertasRef.current);
       }
     }, 60000);
 
     return () => clearInterval(intervalId);
-  }, []); // El watcher ahora es totalmente estático, usa el ref para la lógica
+  }, []);
 
   const verificarOfertasVencidas = (listaOfertas) => {
     if (!listaOfertas || listaOfertas.length === 0) return;
+
+    if (userRole !== 'administrador') return;
 
     const hoy = new Date();
     hoy.setHours(0, 0, 0, 0);

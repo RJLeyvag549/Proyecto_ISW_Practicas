@@ -14,6 +14,7 @@ import Error404 from '@pages/Error404';
 import Root from '@pages/Root';
 import ProtectedRoute from '@components/ProtectedRoute';
 import Perfil from '@pages/Perfil';
+import ConsultasPage from '@pages/ConsultasPage';
 import '@styles/styles.css';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -72,6 +73,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>
             <MyDocuments />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: '/consultas',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador', 'estudiante', 'usuario']}>
+            <ConsultasPage />
           </ProtectedRoute>
         ),
       },
