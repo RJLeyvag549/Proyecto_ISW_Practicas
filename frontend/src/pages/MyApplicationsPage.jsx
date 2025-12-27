@@ -3,7 +3,7 @@ import Swal from "sweetalert2";
 import ApplicationCard from "@components/ApplicationCard.jsx";
 import ApplicationViewModal from "@components/ApplicationViewModal.jsx";
 import ExternalApplicationModal from "@components/ExternalApplicationModal.jsx";
-import { getMyApplications } from "@services/practiceApplication.service.js";
+import { getMyApplications, deleteOwnApplication } from "@services/practiceApplication.service.js";
 import '@styles/applications.css';
 
 export default function MyApplicationsPage() {
@@ -16,6 +16,7 @@ export default function MyApplicationsPage() {
     const [showViewModal, setShowViewModal] = useState(false);
     const [showExternalModal, setShowExternalModal] = useState(false);
     const [selectedApplication, setSelectedApplication] = useState(null);
+    const [autoEdit, setAutoEdit] = useState(false);
 
     useEffect(() => {
         fetchMyApplications();
@@ -51,7 +52,56 @@ export default function MyApplicationsPage() {
 
     const handleView = (application) => {
         setSelectedApplication(application);
+        setAutoEdit(false);
         setShowViewModal(true);
+    };
+
+    const handleEdit = (application) => {
+        setSelectedApplication(application);
+        setAutoEdit(true);
+        setShowViewModal(true);
+    };
+
+    const handleDelete = async (application) => {
+        const result = await Swal.fire({
+            title: '¿Eliminar solicitud?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc3545',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+
+        if (!result.isConfirmed) return;
+
+        try {
+            const response = await deleteOwnApplication(application.id);
+            if (response?.error) {
+                await Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: response.error,
+                    confirmButtonColor: '#6cc4c2'
+                });
+            } else {
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Eliminada! ',
+                    text: 'La solicitud ha sido eliminada correctamente.',
+                    confirmButtonColor: '#6cc4c2'
+                });
+                fetchMyApplications();
+            }
+        } catch (error) {
+            await Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Ocurrió un error al eliminar la solicitud.',
+                confirmButtonColor: '#6cc4c2'
+            });
+        }
     };
 
     // Filtrar por estado
@@ -155,7 +205,8 @@ export default function MyApplicationsPage() {
                             key={app.id}
                             data={app}
                             onView={handleView}
-                            onUpdateStatus={() => {}} // Estudiantes no pueden cambiar estado
+                            onEdit={handleEdit}
+                            onDelete={handleDelete}
                         />
                     ))
                 ) : (
@@ -170,9 +221,11 @@ export default function MyApplicationsPage() {
             {showViewModal && (
                 <ApplicationViewModal
                     application={selectedApplication}
+                    autoEdit={autoEdit}
                     onClose={() => {
                         setShowViewModal(false);
                         setSelectedApplication(null);
+                        setAutoEdit(false);
                     }}
                     onDelete={fetchMyApplications}
                 />

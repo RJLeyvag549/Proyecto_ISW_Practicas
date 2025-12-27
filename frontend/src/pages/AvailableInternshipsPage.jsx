@@ -85,7 +85,8 @@ export default function AvailableInternshipsPage() {
     };
 
     // Filtrar ofertas
-    const filteredInternships = internships.filter(i =>
+    const list = Array.isArray(internships) ? internships : [];
+    const filteredInternships = list.filter(i =>
         i.title?.toLowerCase().includes(filter.toLowerCase()) ||
         i.company?.name?.toLowerCase().includes(filter.toLowerCase())
     );
