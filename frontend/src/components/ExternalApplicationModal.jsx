@@ -48,10 +48,120 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
         setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
     };
 
+    // Validaciones del Paso 1: Empresa
+    const validateStep1 = () => {
+        if (!formData.companyName?.trim()) {
+            setError('El nombre de la empresa es obligatorio.');
+            return false;
+        }
+        if (formData.companyName.length < 2) {
+            setError('El nombre de la empresa debe tener al menos 2 caracteres.');
+            return false;
+        }
+        
+        if (!formData.companyAddress?.trim()) {
+            setError('La dirección de la empresa es obligatoria.');
+            return false;
+        }
+        if (formData.companyAddress.length < 10) {
+            setError('La dirección debe tener al menos 10 caracteres.');
+            return false;
+        }
+        
+        // Validar email de empresa si se ingresó
+        if (formData.companyEmail && formData.companyEmail.trim()) {
+            if (!/^\S+@\S+\.\S+$/.test(formData.companyEmail)) {
+                setError('El email de la empresa debe tener un formato válido.');
+                return false;
+            }
+        }
+        
+        return true;
+    };
+
+    // Validaciones del Paso 2: Supervisor
+    const validateStep2 = () => {
+        if (!formData.supervisorName?.trim()) {
+            setError('El nombre del supervisor es obligatorio.');
+            return false;
+        }
+        if (formData.supervisorName.length < 3) {
+            setError('El nombre del supervisor debe tener al menos 3 caracteres.');
+            return false;
+        }
+        
+        if (!formData.supervisorPosition?.trim()) {
+            setError('El cargo del supervisor es obligatorio.');
+            return false;
+        }
+        if (formData.supervisorPosition.length < 3) {
+            setError('El cargo debe tener al menos 3 caracteres.');
+            return false;
+        }
+        
+        if (!formData.supervisorEmail?.trim()) {
+            setError('El email del supervisor es obligatorio.');
+            return false;
+        }
+        if (!/^\S+@\S+\.\S+$/.test(formData.supervisorEmail)) {
+            setError('El email del supervisor debe tener un formato válido.');
+            return false;
+        }
+        
+        return true;
+    };
+
+    // Validaciones del Paso 3: Práctica
+    const validateStep3 = () => {
+        if (!formData.title?.trim()) {
+            setError('El título de la práctica es obligatorio.');
+            return false;
+        }
+        if (formData.title.length < 5) {
+            setError('El título debe tener al menos 5 caracteres.');
+            return false;
+        }
+        
+        if (!formData.description?.trim()) {
+            setError('La descripción de la práctica es obligatoria.');
+            return false;
+        }
+        if (formData.description.length < 20) {
+            setError('La descripción debe tener al menos 20 caracteres.');
+            return false;
+        }
+        
+        if (!formData.activities?.trim()) {
+            setError('Las actividades a desarrollar son obligatorias.');
+            return false;
+        }
+        if (formData.activities.length < 20) {
+            setError('Las actividades deben tener al menos 20 caracteres.');
+            return false;
+        }
+        
+        if (!formData.estimatedDuration?.trim()) {
+            setError('La duración estimada es obligatoria.');
+            return false;
+        }
+
+        if (!formData.schedule?.trim()) {
+            setError('El horario es obligatorio.');
+            return false;
+        }
+        
+        return true;
+    };
+
     const handleNext = (e) => {
         if (e) e.preventDefault();
         setError('');
-        setStep(step + 1);
+        
+        if (step === 1 && validateStep1()) {
+            setStep(2);
+        } else if (step === 2 && validateStep2()) {
+            setStep(3);
+        }
     };
 
     const handleBack = (e) => {
@@ -63,6 +173,10 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+
+        // Validar paso 3 antes de enviar
+        if (!validateStep3()) return;
+
         setLoading(true);
 
         try {

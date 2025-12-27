@@ -235,6 +235,7 @@
 .card-actions .btn-view { color: #2563eb; }
 .card-actions .btn-edit { color: #d97706; }
 .card-actions .btn-delete { color: #dc2626; }
+.card-actions .btn-status { color: #7c3aed; }
 
 .card-actions button:hover {
     transform: translateY(-1px);

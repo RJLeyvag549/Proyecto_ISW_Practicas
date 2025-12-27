@@ -24,7 +24,7 @@ const formatDate = (dateString) => {
     });
 };
 
-const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false }) => {
+const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false, isAdmin = false }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -132,10 +132,15 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
 
     const statusInfo = getStatusInfo(application.status);
     const isExternal = application.applicationType === 'external';
-    const student = application.student || {};
+    
+    // Si es estudiante (no admin), usar datos del sessionStorage
+    const loggedUser = !isAdmin ? JSON.parse(sessionStorage.getItem('usuario') || '{}') : {};
+    const student = isAdmin ? (application.student || {}) : loggedUser;
+    
     const internship = application.internship || {};
     const externalData = application.internshipExternal || {};
-    const isEditable = isExternal && ['pending', 'needsInfo'].includes(application.status);
+    // Solo el estudiante puede editar/eliminar (no el admin)
+    const isEditable = !isAdmin && isExternal && ['pending', 'needsInfo'].includes(application.status);
 
     useEffect(() => {
         if (autoEdit && isEditable) {

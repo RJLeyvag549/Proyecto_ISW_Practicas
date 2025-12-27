@@ -19,11 +19,16 @@ const formatDate = (dateString) => {
     });
 };
 
-const ApplicationCard = ({ data, onView, onEdit, onDelete }) => {
+const ApplicationCard = ({ data, onView, onEdit, onDelete, onUpdateStatus, isAdmin = false }) => {
     const statusInfo = getStatusInfo(data.status);
     const studentName = data.student?.nombreCompleto || 'Estudiante';
     const isExternal = data.applicationType === 'external';
-    const isEditable = isExternal && ['pending', 'needsInfo'].includes(data.status);
+    
+    // Solo el estudiante puede editar/eliminar solicitudes externas pendientes
+    const isEditable = !isAdmin && isExternal && ['pending', 'needsInfo'].includes(data.status);
+    
+    // El admin puede cambiar estado si está pendiente, necesita info o rechazada (no aprobada)
+    const canChangeStatus = isAdmin && ['pending', 'needsInfo', 'rejected'].includes(data.status);
     
     // Obtener nombre de empresa
     const companyName = isExternal 
@@ -60,12 +65,22 @@ const ApplicationCard = ({ data, onView, onEdit, onDelete }) => {
                         <i className="fa-solid fa-calendar"></i>
                         <span>Enviada: {formatDate(data.createdAt)}</span>
                     </div>
-                    {data.attachments && (
-                        <div className="detail-item">
-                            <i className="fa-solid fa-paperclip"></i>
-                            <span>Documentos adjuntos</span>
-                        </div>
-                    )}
+                    {(() => {
+                        try {
+                            const attachments = JSON.parse(data.attachments || '[]');
+                            if (Array.isArray(attachments) && attachments.length > 0) {
+                                return (
+                                    <div className="detail-item">
+                                        <i className="fa-solid fa-paperclip"></i>
+                                        <span>{attachments.length} documento{attachments.length > 1 ? 's' : ''} adjunto{attachments.length > 1 ? 's' : ''}</span>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        } catch {
+                            return null;
+                        }
+                    })()}
                 </div>
             </div>
 
@@ -73,6 +88,8 @@ const ApplicationCard = ({ data, onView, onEdit, onDelete }) => {
                 <button className="btn-view" onClick={() => onView(data)} title="Ver detalles">
                     <i className="fa-solid fa-eye"></i>
                 </button>
+                
+                {/* Botones para estudiante: editar y eliminar */}
                 {isEditable && (
                     <>
                         <button className="btn-edit" onClick={() => onEdit?.(data)} title="Editar">
@@ -82,6 +99,13 @@ const ApplicationCard = ({ data, onView, onEdit, onDelete }) => {
                             <i className="fa-solid fa-trash"></i>
                         </button>
                     </>
+                )}
+                
+                {/* Botón para admin: cambiar estado */}
+                {canChangeStatus && (
+                    <button className="btn-status" onClick={() => onUpdateStatus?.(data)} title="Cambiar estado">
+                        <i className="fa-solid fa-exchange-alt"></i>
+                    </button>
                 )}
             </div>
         </div>

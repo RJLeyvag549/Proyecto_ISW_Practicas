@@ -8,6 +8,7 @@ import '@styles/applications.css';
 
 export default function PracticeApplicationsPage() {
     const [applications, setApplications] = useState([]);
+    const [allApplications, setAllApplications] = useState([]); // Para mantener todas y calcular contadores
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("");
     const [statusFilter, setStatusFilter] = useState("");
@@ -19,24 +20,25 @@ export default function PracticeApplicationsPage() {
 
     useEffect(() => {
         fetchApplications();
-    }, [statusFilter]);
+    }, []);
 
     const fetchApplications = async () => {
         try {
             setLoading(true);
-            const filters = {};
-            if (statusFilter) filters.status = statusFilter;
-            
-            const data = await getAllApplications(filters);
+            // Siempre cargar todas las solicitudes (sin filtro de estado)
+            const data = await getAllApplications({});
             if (data.error) {
                 console.error("Error:", data.error);
                 setApplications([]);
+                setAllApplications([]);
             } else {
                 setApplications(data || []);
+                setAllApplications(data || []);
             }
         } catch (error) {
             console.error("Error al obtener solicitudes:", error);
             setApplications([]);
+            setAllApplications([]);
         } finally {
             setLoading(false);
         }
@@ -69,7 +71,7 @@ export default function PracticeApplicationsPage() {
         fetchApplications();
     };
 
-    // Filtrar por búsqueda de texto
+    // Filtrar por búsqueda de texto Y por estado
     const filteredApplications = applications.filter(app => {
         const studentName = app.student?.nombreCompleto?.toLowerCase() || '';
         const companyName = app.applicationType === 'external'
@@ -77,16 +79,19 @@ export default function PracticeApplicationsPage() {
             : app.internship?.company?.name?.toLowerCase() || '';
         
         const searchTerm = filter.toLowerCase();
-        return studentName.includes(searchTerm) || companyName.includes(searchTerm);
+        const matchesSearch = studentName.includes(searchTerm) || companyName.includes(searchTerm);
+        const matchesStatus = !statusFilter || app.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
     });
 
-    // Contadores por estado
+    // Contadores por estado (usando todas las solicitudes, no las filtradas)
     const statusCounts = {
-        all: applications.length,
-        pending: applications.filter(a => a.status === 'pending').length,
-        accepted: applications.filter(a => a.status === 'accepted').length,
-        rejected: applications.filter(a => a.status === 'rejected').length,
-        needsInfo: applications.filter(a => a.status === 'needsInfo').length,
+        all: allApplications.length,
+        pending: allApplications.filter(a => a.status === 'pending').length,
+        accepted: allApplications.filter(a => a.status === 'accepted').length,
+        rejected: allApplications.filter(a => a.status === 'rejected').length,
+        needsInfo: allApplications.filter(a => a.status === 'needsInfo').length,
     };
 
     if (loading && applications.length === 0) {
@@ -159,6 +164,7 @@ export default function PracticeApplicationsPage() {
                             data={app}
                             onView={handleView}
                             onUpdateStatus={handleUpdateStatus}
+                            isAdmin={true}
                         />
                     ))
                 ) : (
@@ -177,6 +183,7 @@ export default function PracticeApplicationsPage() {
                         setShowViewModal(false);
                         setSelectedApplication(null);
                     }}
+                    isAdmin={true}
                 />
             )}
 

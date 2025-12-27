@@ -91,10 +91,15 @@ export async function deleteOwnApplication(id) {
 // Actualizar estado de solicitud (admin)
 export async function updateApplicationStatus(id, status, coordinatorComments = '') {
     try {
-        const { data } = await axios.patch(`/practiceApp/${id}`, { status, coordinatorComments });
+        const payload = { status };
+        // Solo incluir comentarios si no están vacíos
+        if (coordinatorComments && coordinatorComments.trim()) {
+            payload.coordinatorComments = coordinatorComments.trim();
+        }
+        const { data } = await axios.patch(`/practiceApp/${id}`, payload);
         return data;
     } catch (error) {
-        return { error: error.response?.data?.message || 'Error al actualizar solicitud' };
+        return { error: error.response?.data?.message || error.response?.data?.details || 'Error al actualizar solicitud' };
     }
 }
 
