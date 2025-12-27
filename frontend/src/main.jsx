@@ -76,6 +76,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['estudiante']}>
             <MyApplicationsPage />
+          </ProtectedRoute>
         ),
        },
        {
@@ -91,6 +92,7 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute allowedRoles={['estudiante']}>
             <AvailableInternshipsPage />
+          </ProtectedRoute>
          ),
        },
        {
