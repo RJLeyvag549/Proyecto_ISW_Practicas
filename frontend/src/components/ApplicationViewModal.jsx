@@ -97,10 +97,21 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         setEditError('');
+        // Sanitizar datos opcionales: si están vacíos, no enviarlos para pasar validación Joi
+        const optionalKeys = [
+            'companyIndustry', 'companyWebsite', 'companyPhone', 'companyEmail',
+            'supervisorPhone', 'department', 'schedule', 'specialtyArea'
+        ];
+        const cleanCompanyData = { ...editFormData };
+        optionalKeys.forEach((key) => {
+            if (cleanCompanyData[key] !== undefined && typeof cleanCompanyData[key] === 'string' && cleanCompanyData[key].trim() === '') {
+                delete cleanCompanyData[key];
+            }
+        });
         setIsUpdating(true);
 
         try {
-            const response = await updateOwnApplication(application.id, editFormData, editAttachments);
+            const response = await updateOwnApplication(application.id, cleanCompanyData, editAttachments);
             
             if (response.error) {
                 setEditError(response.error);
@@ -221,243 +232,246 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
             <div className="app-modal-overlay" onClick={() => setShowEditModal(false)}>
                 <div className="app-modal-content" onClick={(e) => e.stopPropagation()}>
                     <div className="app-modal-header">
-                        <h2>Editar Solicitud de Práctica Externa</h2>
+                        <h2>Editar Solicitud Externa</h2>
                         <button className="app-btn-close" onClick={() => setShowEditModal(false)}>
                             <i className="fa-solid fa-times"></i>
                         </button>
                     </div>
 
-                    <form onSubmit={handleEditSubmit} className="app-modal-form">
+                    <form onSubmit={handleEditSubmit}>
                         <div className="app-modal-body">
                             {editError && (
-                                <div className="alert alert-error">
-                                    <i className="fa-solid fa-exclamation-circle"></i>
+                                <div className="app-error-message">
+                                    <i className="fa-solid fa-exclamation-triangle"></i>
                                     {editError}
                                 </div>
                             )}
 
-                            {/* Información de la Empresa */}
-                            <div className="form-section">
-                                <h3>Información de la Empresa</h3>
-                                <div className="form-group">
-                                    <label>Nombre de la Empresa *</label>
-                                    <input 
+                            {/* Datos de la Empresa */}
+                            <h3 className="step-title">Datos de la Empresa</h3>
+                            
+                            <div className="form-row">
+                                <div className="app-form-group">
+                                    <label>Nombre de la Empresa <span className="required">*</span></label>
+                                    <input
                                         type="text"
                                         name="companyName"
                                         value={editFormData.companyName}
                                         onChange={handleEditChange}
-                                        required
+                                        placeholder="Ej: Empresa Tecnológica S.A."
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Dirección *</label>
-                                    <input 
-                                        type="text"
-                                        name="companyAddress"
-                                        value={editFormData.companyAddress}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Industria</label>
-                                    <input 
+
+                                <div className="app-form-group">
+                                    <label>Industria/Rubro</label>
+                                    <input
                                         type="text"
                                         name="companyIndustry"
                                         value={editFormData.companyIndustry}
                                         onChange={handleEditChange}
+                                        placeholder="Ej: Tecnología"
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Sitio Web</label>
-                                    <input 
-                                        type="text"
-                                        name="companyWebsite"
-                                        value={editFormData.companyWebsite}
-                                        onChange={handleEditChange}
-                                    />
-                                </div>
-                                <div className="form-group">
+                            </div>
+
+                            <div className="app-form-group">
+                                <label>Dirección <span className="required">*</span></label>
+                                <input
+                                    type="text"
+                                    name="companyAddress"
+                                    value={editFormData.companyAddress}
+                                    onChange={handleEditChange}
+                                    placeholder="Ej: Av. Principal 123, Concepción"
+                                />
+                            </div>
+
+                            <div className="form-row">
+                                <div className="app-form-group">
                                     <label>Teléfono</label>
-                                    <input 
-                                        type="tel"
+                                    <input
+                                        type="text"
                                         name="companyPhone"
                                         value={editFormData.companyPhone}
                                         onChange={handleEditChange}
+                                        placeholder="Ej: +56 9 1234 5678"
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Email</label>
-                                    <input 
+
+                                <div className="app-form-group">
+                                    <label>Email de contacto</label>
+                                    <input
                                         type="text"
                                         inputMode="email"
                                         name="companyEmail"
                                         value={editFormData.companyEmail}
                                         onChange={handleEditChange}
+                                        placeholder="Ej: contacto@empresa.cl"
                                     />
                                 </div>
                             </div>
 
-                            {/* Información del Supervisor */}
-                            <div className="form-section">
-                                <h3>Información del Supervisor</h3>
-                                <div className="form-group">
-                                    <label>Nombre Completo *</label>
-                                    <input 
+                            <div className="app-form-group">
+                                <label>Sitio Web</label>
+                                <input
+                                    type="text"
+                                    name="companyWebsite"
+                                    value={editFormData.companyWebsite}
+                                    onChange={handleEditChange}
+                                    placeholder="Ej: https://www.empresa.cl"
+                                />
+                            </div>
+
+                            {/* Datos del Supervisor */}
+                            <h3 className="step-title">Datos del Supervisor</h3>
+                            
+                            <div className="form-row">
+                                <div className="app-form-group">
+                                    <label>Nombre Completo <span className="required">*</span></label>
+                                    <input
                                         type="text"
                                         name="supervisorName"
                                         value={editFormData.supervisorName}
                                         onChange={handleEditChange}
-                                        required
+                                        placeholder="Ej: Juan Pérez González"
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Cargo *</label>
-                                    <input 
+
+                                <div className="app-form-group">
+                                    <label>Cargo <span className="required">*</span></label>
+                                    <input
                                         type="text"
                                         name="supervisorPosition"
                                         value={editFormData.supervisorPosition}
                                         onChange={handleEditChange}
-                                        required
+                                        placeholder="Ej: Jefe de Desarrollo"
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Email *</label>
-                                    <input 
+                            </div>
+
+                            <div className="form-row">
+                                <div className="app-form-group">
+                                    <label>Email <span className="required">*</span></label>
+                                    <input
                                         type="text"
                                         inputMode="email"
                                         name="supervisorEmail"
                                         value={editFormData.supervisorEmail}
                                         onChange={handleEditChange}
-                                        required
+                                        placeholder="Ej: supervisor@empresa.cl"
                                     />
                                 </div>
-                                <div className="form-group">
+
+                                <div className="app-form-group">
                                     <label>Teléfono</label>
-                                    <input 
-                                        type="tel"
+                                    <input
+                                        type="text"
                                         name="supervisorPhone"
                                         value={editFormData.supervisorPhone}
                                         onChange={handleEditChange}
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Departamento</label>
-                                    <input 
-                                        type="text"
-                                        name="department"
-                                        value={editFormData.department}
-                                        onChange={handleEditChange}
+                                        placeholder="Ej: +56 9 8765 4321"
                                     />
                                 </div>
                             </div>
 
-                            {/* Información de la Práctica */}
-                            <div className="form-section">
-                                <h3>Información de la Práctica</h3>
-                                <div className="form-group">
-                                    <label>Título *</label>
-                                    <input 
-                                        type="text"
-                                        name="title"
-                                        value={editFormData.title}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Descripción *</label>
-                                    <textarea 
-                                        name="description"
-                                        value={editFormData.description}
-                                        onChange={handleEditChange}
-                                        rows="4"
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Actividades a Desarrollar *</label>
-                                    <textarea 
-                                        name="activities"
-                                        value={editFormData.activities}
-                                        onChange={handleEditChange}
-                                        rows="4"
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
-                                    <label>Duración Estimada *</label>
-                                    <input 
+                            <div className="app-form-group">
+                                <label>Departamento</label>
+                                <input
+                                    type="text"
+                                    name="department"
+                                    value={editFormData.department}
+                                    onChange={handleEditChange}
+                                    placeholder="Ej: TI"
+                                />
+                            </div>
+
+                            {/* Datos de la Práctica */}
+                            <h3 className="step-title">Datos de la Práctica</h3>
+                            
+                            <div className="app-form-group">
+                                <label>Título de la Práctica <span className="required">*</span></label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={editFormData.title}
+                                    onChange={handleEditChange}
+                                    placeholder="Ej: Desarrollo de Sistema Web"
+                                />
+                            </div>
+
+                            <div className="app-form-group">
+                                <label>Descripción <span className="required">*</span></label>
+                                <textarea
+                                    name="description"
+                                    value={editFormData.description}
+                                    onChange={handleEditChange}
+                                    placeholder="Describe brevemente en qué consiste la práctica..."
+                                    rows={3}
+                                />
+                            </div>
+
+                            <div className="app-form-group">
+                                <label>Actividades a Desarrollar <span className="required">*</span></label>
+                                <textarea
+                                    name="activities"
+                                    value={editFormData.activities}
+                                    onChange={handleEditChange}
+                                    placeholder="Lista las principales actividades que realizarás..."
+                                    rows={3}
+                                />
+                            </div>
+
+                            <div className="form-row">
+                                <div className="app-form-group">
+                                    <label>Duración Estimada <span className="required">*</span></label>
+                                    <input
                                         type="text"
                                         name="estimatedDuration"
                                         value={editFormData.estimatedDuration}
                                         onChange={handleEditChange}
-                                        required
+                                        placeholder="Ej: 3 meses - 360 horas"
                                     />
                                 </div>
-                                <div className="form-group">
-                                    <label>Horarios *</label>
-                                    <textarea 
-                                        name="schedule"
-                                        value={editFormData.schedule}
-                                        onChange={handleEditChange}
-                                        rows="3"
-                                        required
-                                    />
-                                </div>
-                                <div className="form-group">
+
+                                <div className="app-form-group">
                                     <label>Área de Especialidad</label>
-                                    <input 
+                                    <input
                                         type="text"
                                         name="specialtyArea"
                                         value={editFormData.specialtyArea}
                                         onChange={handleEditChange}
+                                        placeholder="Ej: Desarrollo Web"
                                     />
                                 </div>
                             </div>
 
-                            {/* Documentos Adjuntos */}
-                            <div className="form-section">
-                                <h3>Documentos</h3>
-                                <div className="form-group">
-                                    <label>Agregar archivos (próximamente)</label>
-                                    <input type="file" multiple accept=".pdf,.jpg,.jpeg,.png" onChange={handleAddFiles} disabled />
-                                    <small className="text-muted">La funcionalidad de subida de archivos se implementará próximamente</small>
-                                </div>
-                                {editAttachments?.length > 0 && (
-                                    <div className="file-list">
-                                        {editAttachments.map((doc, index) => (
-                                            <div key={index} className="file-item">
-                                                <span><i className="fa-solid fa-file" /> {doc}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                            <div className="app-form-group">
+                                <label>Horarios <span className="required">*</span></label>
+                                <textarea
+                                    name="schedule"
+                                    value={editFormData.schedule}
+                                    onChange={handleEditChange}
+                                    placeholder="Ej: Lunes a Viernes 9:00-18:00"
+                                    rows={2}
+                                />
                             </div>
                         </div>
 
                         <div className="app-modal-footer">
-                            <button 
-                                type="submit"
-                                className="app-btn-success"
-                                disabled={isUpdating}
-                            >
+                            <button type="button" className="app-btn-secondary" onClick={() => setShowEditModal(false)}>
+                                Cancelar
+                            </button>
+                            <button type="submit" className="app-btn-primary" disabled={isUpdating}>
                                 {isUpdating ? (
                                     <>
-                                        <i className="fa-solid fa-spinner fa-spin"></i> Guardando...
+                                        <i className="fa-solid fa-spinner fa-spin"></i>
+                                        Guardando...
                                     </>
                                 ) : (
                                     <>
-                                        <i className="fa-solid fa-save"></i> Guardar Cambios
+                                        <i className="fa-solid fa-save"></i>
+                                        Guardar Cambios
                                     </>
                                 )}
-                            </button>
-                            <button 
-                                type="button"
-                                className="app-btn-secondary"
-                                onClick={() => setShowEditModal(false)}
-                            >
-                                Cancelar
                             </button>
                         </div>
                     </form>
@@ -531,6 +545,18 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                                     <span>{externalData.companyIndustry || 'N/A'}</span>
                                 </div>
                                 <div className="info-item">
+                                    <label>Teléfono Empresa:</label>
+                                    <span>{externalData.companyPhone || 'N/A'}</span>
+                                </div>
+                                <div className="info-item">
+                                    <label>Email Empresa:</label>
+                                    <span>{externalData.companyEmail || 'N/A'}</span>
+                                </div>
+                                <div className="info-item">
+                                    <label>Sitio Web:</label>
+                                    <span>{externalData.companyWebsite || 'N/A'}</span>
+                                </div>
+                                <div className="info-item">
                                     <label>Supervisor:</label>
                                     <span>{externalData.supervisorName || 'N/A'}</span>
                                 </div>
@@ -541,6 +567,10 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                                 <div className="info-item">
                                     <label>Email Supervisor:</label>
                                     <span>{externalData.supervisorEmail || 'N/A'}</span>
+                                </div>
+                                <div className="info-item">
+                                    <label>Teléfono Supervisor:</label>
+                                    <span>{externalData.supervisorPhone || 'N/A'}</span>
                                 </div>
                                 <div className="info-item">
                                     <label>Departamento:</label>
@@ -555,8 +585,20 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                                     <span>{externalData.description || 'N/A'}</span>
                                 </div>
                                 <div className="info-item">
+                                    <label>Actividades:</label>
+                                    <span>{externalData.activities || 'N/A'}</span>
+                                </div>
+                                <div className="info-item">
                                     <label>Duración Estimada:</label>
                                     <span>{externalData.estimatedDuration || 'N/A'}</span>
+                                </div>
+                                <div className="info-item">
+                                    <label>Horarios:</label>
+                                    <span>{externalData.schedule || 'N/A'}</span>
+                                </div>
+                                <div className="info-item">
+                                    <label>Área de Especialidad:</label>
+                                    <span>{externalData.specialtyArea || 'N/A'}</span>
                                 </div>
                             </div>
                         ) : (

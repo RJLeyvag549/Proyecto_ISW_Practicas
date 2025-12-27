@@ -74,7 +74,9 @@ export async function updateOwnApplication(id, companyData, attachments = []) {
         const { data } = await axios.put(`/practiceApp/${id}`, { companyData, attachments });
         return data;
     } catch (error) {
-        return { error: error.response?.data?.message || 'Error al editar solicitud' };
+        const err = error.response?.data;
+        const message = err?.details || err?.message || 'Error al editar solicitud';
+        return { error: message };
     }
 }
 
