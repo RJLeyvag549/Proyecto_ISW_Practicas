@@ -2,6 +2,17 @@ import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { getAllCompanies, createCompany, updateCompany, deleteCompany } from "../../services/company.service.js";
 
+const validarEmail = (email) => {
+    const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return regex.test(email);
+};
+
+const validarSitioWeb = (url) => {
+    if (!url) return true;
+    const regex = /^(https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/[\w-]*)*$/;
+    return regex.test(url);
+};
+
 const StepCompany = ({ onNext, initialData }) => {
     const [companies, setCompanies] = useState([]);
     const [selectedCompanyId, setSelectedCompanyId] = useState(initialData?.id || "");
@@ -16,6 +27,11 @@ const StepCompany = ({ onNext, initialData }) => {
         address: "",
         contactEmail: "",
         contactPhone: "",
+        websiteUrl: ""
+    });
+
+    const [errors, setErrors] = useState({
+        contactEmail: "",
         websiteUrl: ""
     });
 
@@ -36,13 +52,30 @@ const StepCompany = ({ onNext, initialData }) => {
         e.preventDefault();
         setLoading(true);
 
+        if (!validarEmail(companyForm.contactEmail)) {
+            Swal.fire("Error", "El correo electrónico no es válido", "error");
+            setLoading(false);
+            return;
+        }
+
+        if (companyForm.websiteUrl && !validarSitioWeb(companyForm.websiteUrl)) {
+            Swal.fire("Error", "El sitio web ingresado no es válido", "error");
+            setLoading(false);
+            return;
+        }
+
+        let websiteUrl = companyForm.websiteUrl?.trim() || "";
+        if (websiteUrl && !/^https?:\/\//i.test(websiteUrl)) {
+            websiteUrl = `https://${websiteUrl}`;
+        }
+
         const payload = {
             name: companyForm.name.trim(),
             industry: companyForm.industry.trim(),
             address: companyForm.address.trim(),
             contactEmail: companyForm.contactEmail.trim(),
             contactPhone: companyForm.contactPhone?.trim() || "",
-            websiteUrl: companyForm.websiteUrl?.trim() || ""
+            websiteUrl
         };
 
         try {
@@ -220,8 +253,13 @@ const StepCompany = ({ onNext, initialData }) => {
                         <input
                             type="email" placeholder="Email de Contacto" required
                             value={companyForm.contactEmail}
-                            onChange={e => setCompanyForm({ ...companyForm, contactEmail: e.target.value })}
+                            onChange={e => {
+                                const value = e.target.value;
+                                setCompanyForm({ ...companyForm, contactEmail: value });
+                                setErrors({ ...errors, contactEmail: validarEmail(value) ? "" : "El correo electrónico no es válido" });
+                            }}
                         />
+                        {errors.contactEmail && <small className="error-text">{errors.contactEmail}</small>}
                         <input
                             type="text" placeholder="Teléfono"
                             value={companyForm.contactPhone}
@@ -230,8 +268,13 @@ const StepCompany = ({ onNext, initialData }) => {
                         <input
                             type="text" placeholder="Sitio Web"
                             value={companyForm.websiteUrl}
-                            onChange={e => setCompanyForm({ ...companyForm, websiteUrl: e.target.value })}
+                            onChange={e => {
+                                const value = e.target.value;
+                                setCompanyForm({ ...companyForm, websiteUrl: value });
+                                setErrors({ ...errors, websiteUrl: validarUrl(value) ? "" : "El sitio web no es válido" });
+                            }}
                         />
+                        {errors.websiteUrl && <small className="error-text">{errors.websiteUrl}</small>}
                     </div>
 
                     <div className="form-actions">

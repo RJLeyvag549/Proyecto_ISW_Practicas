@@ -17,6 +17,12 @@ const StepSupervisor = ({ onNext, onBack, companyId, initialData }) => {
         specialtyArea: ""
     });
 
+    const validarEmail = (email) => {
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return regex.test(email);
+    };
+
+
     useEffect(() => {
         if (companyId) {
             fetchSupervisors();
@@ -41,6 +47,12 @@ const StepSupervisor = ({ onNext, onBack, companyId, initialData }) => {
     const handleSaveSupervisor = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        if (!validarEmail(supervisorForm.email)) {
+            Swal.fire("Error", "El correo electrónico del supervisor no es válido", "error");
+            setLoading(false);
+            return;
+        }
 
         if (!companyId) {
             Swal.fire("Error", "ID de empresa no encontrado. Por favor, vuelve al paso anterior.", "error");

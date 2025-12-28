@@ -389,6 +389,55 @@
     animation: spin 1s linear infinite;
 }
 
+.sidebar-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.refresh-icon-button {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary, #666);
+    cursor: pointer;
+    padding: 12px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.refresh-icon-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--primary-color, #5ab3b1);
+}
+
+.refresh-icon-button i {
+    font-size: 1.3rem;
+}
+
+.refresh-icon-button:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+
+/* Animación de rotación */
+.spinning i {
+    animation: rotation 1s infinite linear;
+}
+
+@keyframes rotation {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(359deg);
+    }
+}
+
 @keyframes spin {
     0% {
         transform: rotate(0deg);
@@ -455,4 +504,25 @@
     .message-content {
         max-width: 90%;
     }
+}
+
+.student-chat .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 15px 20px;
+}
+
+.chat-user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.sidebar-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
 }
