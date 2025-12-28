@@ -100,9 +100,10 @@ export async function deleteOwnApplication(id) {
 }
 
 // Actualizar estado de solicitud (admin)
-export async function updateApplicationStatus(id, status, coordinatorComments = '') {
+export async function updateApplicationStatus(id, status, coordinatorComments = '', force = false) {
     try {
         const payload = { status };
+        if (force) payload.force = true;
         // Solo incluir comentarios si no están vacíos
         if (coordinatorComments && coordinatorComments.trim()) {
             payload.coordinatorComments = coordinatorComments.trim();
@@ -110,7 +111,10 @@ export async function updateApplicationStatus(id, status, coordinatorComments = 
         const { data } = await axios.patch(`/practiceApplications/${id}`, payload);
         return data;
     } catch (error) {
-        return { error: error.response?.data?.message || error.response?.data?.details || 'Error al actualizar solicitud' };
+        const err = error.response?.data;
+        // El backend envía el mensaje descriptivo en `details` (handleErrorClient).
+        const message = err?.details || err?.message || 'Error al actualizar solicitud';
+        return { error: message };
     }
 }
 
