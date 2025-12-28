@@ -39,6 +39,34 @@ const StudentDocumentsPage = () => {
     return acc;
   }, {});
 
+  const calculateStudentAverage = (docs = []) => {
+    const graded = docs.filter((d) => d.grade !== null && d.grade !== undefined);
+    if (graded.length === 0) {
+      return { average: null, totalWeight: 0, isComplete: false };
+    }
+
+    const totalWeight = graded.reduce((sum, d) => sum + Number(d.weight || 0), 0);
+    const useWeighted = totalWeight > 0;
+
+    let avg = 0;
+    if (useWeighted) {
+      const weightedSum = graded.reduce(
+        (sum, d) => sum + Number(d.grade) * (Number(d.weight || 0) / 100),
+        0
+      );
+      avg = weightedSum;
+    } else {
+      const simple = graded.reduce((sum, d) => sum + Number(d.grade), 0) / graded.length;
+      avg = simple;
+    }
+
+    return {
+      average: Number(avg.toFixed(2)),
+      totalWeight,
+      isComplete: useWeighted ? totalWeight === 100 : graded.length > 0,
+    };
+  };
+
   const statistics = {
     total: documents.length,
     approved: documents.filter(d => d.status === 'approved').length,
@@ -132,6 +160,24 @@ const StudentDocumentsPage = () => {
     return colors[status] || '#f59e0b';
   };
 
+  const getDocumentTypeName = (type) => {
+    const map = {
+      PROGRESS_REPORT: 'Informe de Avance',
+      FINAL_REPORT: 'Informe Final',
+      PERFORMANCE_EVALUATION: 'Desempeño',
+    };
+    return map[type] || type || 'Sin tipo';
+  };
+
+  const getDocumentTypeColor = (type) => {
+    const map = {
+      PROGRESS_REPORT: '#3b82f6',
+      FINAL_REPORT: '#8b5cf6',
+      PERFORMANCE_EVALUATION: '#ec4899',
+    };
+    return map[type] || '#6b7280';
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -171,8 +217,7 @@ const StudentDocumentsPage = () => {
       ) : (
         <div className="students-list">
           {Object.entries(groupedByStudent).map(([student, docs]) => {
-            const studentId = docs[0]?.uploadedBy;
-            const avgData = studentAverages[studentId];
+            const avgData = calculateStudentAverage(docs);
             return (
             <div key={student} className="student-card">
               <div
@@ -183,11 +228,10 @@ const StudentDocumentsPage = () => {
               >
                 <div className="student-info">
                   <span className="student-name">{student}</span>
-                  {avgData && avgData.average !== null && (
-                    <span className={`average-badge ${avgData.isComplete ? 'complete' : 'incomplete'}`}>
-                      Promedio: {avgData.average} ({avgData.totalWeight}%)
-                    </span>
-                  )}
+                  <span className={`average-badge ${avgData?.isComplete ? 'complete' : 'incomplete'}`}>
+                    Promedio: {avgData?.average !== null && avgData?.average !== undefined ? avgData.average : '-'}
+                    {` (${avgData?.totalWeight ?? 0}%)`}
+                  </span>
                 </div>
                 <span className="doc-count">{docs.length} documentos</span>
                 <span className="toggle-icon">
@@ -211,6 +255,13 @@ const StudentDocumentsPage = () => {
                         )}
                       </div>
                       <span
+                        className="type-badge"
+                        style={{ background: getDocumentTypeColor(doc.type) }}
+                        title={doc.type}
+                      >
+                        {getDocumentTypeName(doc.type)}
+                      </span>
+                      <span
                         className={`status-badge ${getStatusBadgeClass(
                           doc.status
                         )}`}
@@ -227,26 +278,26 @@ const StudentDocumentsPage = () => {
                       <div className="doc-actions">
                         <button
                           onClick={() => handleReview(doc)}
-                          className="btn-icon"
+                          className="btn-icon btn-review"
                           title="Revisar"
                         >
-                          ✏️
+                          <i className="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button
                           onClick={() =>
                             handleDownload(doc.id, doc.filename)
                           }
-                          className="btn-icon"
+                          className="btn-icon btn-download"
                           title="Descargar"
                         >
-                          ⬇️
+                          <i className="fa-solid fa-download"></i>
                         </button>
                         <button
                           onClick={() => handleDelete(doc.id)}
                           className="btn-icon btn-danger"
                           title="Eliminar"
                         >
-                          🗑️
+                          <i className="fa-solid fa-trash"></i>
                         </button>
                       </div>
                     </div>
@@ -266,6 +317,7 @@ const StudentDocumentsPage = () => {
             <div className="modal-content">
               <div className="doc-details">
                 <p><strong>Archivo:</strong> {selectedDoc.filename}</p>
+                <p><strong>Tipo:</strong> <span style={{ color: getDocumentTypeColor(selectedDoc.type), fontWeight: 'bold' }}>{getDocumentTypeName(selectedDoc.type)}</span></p>
                 <p><strong>Estudiante:</strong> {selectedDoc.uploader?.nombreCompleto || selectedDoc.uploadedBy}</p>
                 <p><strong>Fecha:</strong> {selectedDoc.createdAt ? new Date(selectedDoc.createdAt).toLocaleDateString() : '-'}</p>
               </div>

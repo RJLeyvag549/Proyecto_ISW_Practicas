@@ -34,7 +34,6 @@ const NavbarInferior = () => {
         {userRole === 'estudiante' && (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
-            <li><NavLink to="/upload-documents">Subir Documentos</NavLink></li>
             <li><NavLink to="/my-documents">Mis Documentos</NavLink></li>
             <li><NavLink to="/perfil">Mi Perfil</NavLink></li>
             <li><NavLink to="/consultas">Consultas</NavLink></li>
@@ -45,14 +44,17 @@ const NavbarInferior = () => {
         {userRole !== 'administrador' && userRole !== 'estudiante' && (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
-            <li><NavLink to="/upload-documents">Subir Documentos</NavLink></li>
             <li><NavLink to="/my-documents">Mis Documentos</NavLink></li>
             <li><NavLink to="/perfil">Mi Perfil</NavLink></li>
             <li><NavLink to="/consultas">Consultas</NavLink></li>
           </>
         )}
+<<<<<<< HEAD
 
 
+=======
+        
+>>>>>>> 0630c1782180812f6d129e22004e8111814e1a11
       </ul>
     </nav>
   );

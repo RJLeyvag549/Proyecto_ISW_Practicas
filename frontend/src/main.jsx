@@ -8,7 +8,6 @@ import InternshipPage from '@pages/InternshipPage';
 import PracticeApplicationsPage from '@pages/PracticeApplicationsPage';
 import MyApplicationsPage from '@pages/MyApplicationsPage';
 import StudentDocumentsPage from '@pages/StudentDocumentsPage';
-import UploadDocuments from '@pages/UploadDocuments';
 import MyDocuments from '@pages/MyDocuments';
 import Register from '@pages/Register';
 import Terminos from '@pages/Terminos';
@@ -77,6 +76,7 @@ const router = createBrowserRouter([
             <MyApplicationsPage />
           </ProtectedRoute>
         ),
+<<<<<<< HEAD
       },
       {
         path: '/upload-documents',
@@ -86,6 +86,9 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+=======
+       },
+>>>>>>> 0630c1782180812f6d129e22004e8111814e1a11
       {
         path: '/my-documents',
         element: (

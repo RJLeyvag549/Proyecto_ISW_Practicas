@@ -7,6 +7,12 @@ const MyDocuments = () => {
   const [documents, setDocuments] = useState([]);
   const [average, setAverage] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [applications, setApplications] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [file, setFile] = useState(null);
+  const [docType, setDocType] = useState("PROGRESS_REPORT");
+  const [period, setPeriod] = useState("");
+  const [practiceId, setPracticeId] = useState("");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -28,6 +34,28 @@ const MyDocuments = () => {
     fetchData();
   }, [fetchData]);
 
+  useEffect(() => {
+    // Cargar prácticas del estudiante para selección
+    (async () => {
+      try {
+        const res = await api.get("/practiceApplications/my");
+        const list = Array.isArray(res.data?.data) ? res.data.data : [];
+        console.log("Prácticas del estudiante:", list);
+        // Solo prácticas aceptadas y no cerradas
+        const enabled = list.filter((a) => a.status === "accepted" && !a.isClosed);
+        console.log("Prácticas filtradas (aceptadas y no cerradas):", enabled);
+        setApplications(enabled);
+        if (enabled.length > 0) {
+          setPracticeId(String(enabled[0].id));
+        }
+      } catch (error) {
+        console.error("Error cargando prácticas:", error);
+        Swal.fire("Error", "No se pudieron cargar tus prácticas", "error");
+        setApplications([]);
+      }
+    })();
+  }, []);
+
   const handleDownload = async (id, fileName) => {
     try {
       const response = await api.get(`/documents/${id}/download`, {
@@ -42,6 +70,46 @@ const MyDocuments = () => {
       link.parentNode.removeChild(link);
     } catch {
       Swal.fire("Error", "No se pudo descargar el archivo", "error");
+    }
+  };
+
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!file) {
+      Swal.fire("Archivo requerido", "Selecciona un documento", "warning");
+      return;
+    }
+    if (!practiceId) {
+      Swal.fire("Práctica requerida", "Selecciona la práctica destino", "warning");
+      return;
+    }
+    if (docType === "PROGRESS_REPORT" && !period.trim()) {
+      Swal.fire("Período requerido", "Ingresa el período del informe de avance", "warning");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("document", file);
+      formData.append("type", docType);
+      formData.append("practiceApplicationId", Number(practiceId));
+      if (docType === "PROGRESS_REPORT") formData.append("period", period.trim());
+
+      await api.post("/documents/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      Swal.fire("Listo", "Documento subido exitosamente", "success");
+      setFile(null);
+      setPeriod("");
+      // Refrescar datos
+      fetchData();
+    } catch (err) {
+      const msg = err?.response?.data?.message || "No se pudo subir el documento";
+      Swal.fire("Error", msg, "error");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -85,6 +153,75 @@ const MyDocuments = () => {
     <div className="my-documents-container">
       <div className="header">
         <h2>Mis Documentos</h2>
+      </div>
+
+      <div className="upload-card">
+        <h3>Subir Documento</h3>
+        <form className="upload-form" onSubmit={handleUpload}>
+          <div className="form-row">
+            <label>Práctica</label>
+            <select
+              value={practiceId}
+              onChange={(e) => setPracticeId(e.target.value)}
+              disabled={applications.length === 0 || uploading}
+            >
+              {applications.length === 0 ? (
+                <option value="">No tienes prácticas aceptadas</option>
+              ) : (
+                <>
+                  <option value="">Selecciona una práctica</option>
+                  {applications.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      #{a.id} - {a.internship?.title || a.internshipExternal?.companyName || "Práctica"}
+                    </option>
+                  ))}
+                </>
+              )}
+            </select>
+          </div>
+
+          <div className="form-row">
+            <label>Tipo de documento</label>
+            <select value={docType} onChange={(e) => setDocType(e.target.value)} disabled={uploading}>
+              <option value="PROGRESS_REPORT">Informe de avance</option>
+              <option value="FINAL_REPORT">Informe final</option>
+              <option value="PERFORMANCE_EVALUATION">Desempeño</option>
+            </select>
+          </div>
+
+          {docType === "PROGRESS_REPORT" && (
+            <div className="form-row">
+              <label>Período</label>
+              <input
+                type="text"
+                placeholder="Ej: Semana 1-2, Mes 1, etc."
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                disabled={uploading}
+              />
+            </div>
+          )}
+
+          <div className="form-row">
+            <label>Archivo</label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              disabled={uploading}
+            />
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="submit"
+              className="btn-upload"
+              disabled={uploading || applications.length === 0 || !practiceId}
+            >
+              {uploading ? "Subiendo..." : "Subir"}
+            </button>
+          </div>
+        </form>
       </div>
 
       {average && average.average !== null && (

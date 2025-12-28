@@ -18,6 +18,20 @@ export const DocumentService = {
       throw new Error("Práctica no encontrada");
     }
 
+    // Validar que el documento se suba a una práctica aceptada del propio estudiante
+    const uploaderId = Number(documentData.uploadedBy);
+    if (practiceApplication.studentId !== uploaderId) {
+      throw new Error("No puedes subir documentos a una práctica de otro estudiante");
+    }
+
+    if (practiceApplication.status !== "accepted") {
+      throw new Error("Solo puedes subir documentos cuando la práctica está aceptada");
+    }
+
+    if (practiceApplication.isClosed) {
+      throw new Error("No se pueden subir documentos a una práctica cerrada");
+    }
+
     const document = documentRepository.create({
       ...documentData,
       uploadedBy: Number(documentData.uploadedBy),

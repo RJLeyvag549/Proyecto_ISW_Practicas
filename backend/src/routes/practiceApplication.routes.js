@@ -20,16 +20,14 @@ const router = Router();
 router.post("/internship/:internshipId", authenticateJwt, createApplication); // Para ofertas existentes
 router.post("/internshipExternal", authenticateJwt, createApplication);       // Para externas
 
-// Rutas generales
+// Rutas generales (las específicas primero, luego las dinámicas)
 router.get("/my", authenticateJwt, getMyApplications);
+router.post("/:id/close", authenticateJwt, isAdminOrCoordinator, closeApplication);
 router.get("/:id", authenticateJwt, getApplicationById);
 router.put("/:id", authenticateJwt, updateOwnApplication);
 router.delete("/:id", authenticateJwt, deleteOwnApplication);
 router.get("/", authenticateJwt, isAdmin, getAllApplications);
 router.patch("/:id", authenticateJwt, isAdmin, updateApplication);
 router.patch("/:id/attachments", authenticateJwt, addAttachments);
-
-// Cerrar práctica (admin o coordinador)
-router.post("/:id/close", authenticateJwt, isAdminOrCoordinator, closeApplication);
 
 export default router;
