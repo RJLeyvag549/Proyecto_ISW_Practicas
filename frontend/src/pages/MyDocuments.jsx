@@ -3,6 +3,7 @@ import api from "../services/root.service";
 import Swal from "sweetalert2";
 import "../styles/myDocuments.css";
 
+// pagina de documentos del estudiante (subir y ver sus propios documentos)
 const MyDocuments = () => {
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,6 +14,7 @@ const MyDocuments = () => {
   const [period, setPeriod] = useState("");
   const [practiceId, setPracticeId] = useState("");
 
+  // obtener etiqueta de la practica (titulo o nombre de empresa)
   const getPracticeLabel = (doc) => {
     return (
       doc?.practiceApplication?.internship?.title ||
@@ -21,6 +23,7 @@ const MyDocuments = () => {
     );
   };
 
+  // obtener documentos del estudiante
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
@@ -38,13 +41,13 @@ const MyDocuments = () => {
   }, [fetchData]);
 
   useEffect(() => {
-    // Cargar prácticas del estudiante para selección
+    // cargar practicas del estudiante para seleccion
     (async () => {
       try {
         const res = await api.get("/practiceApplications/my");
         const list = Array.isArray(res.data?.data) ? res.data.data : [];
         console.log("Prácticas del estudiante:", list);
-        // Solo prácticas aceptadas y no cerradas
+        // solo practicas aceptadas y no cerradas
         const enabled = list.filter((a) => a.status === "accepted" && !a.isClosed);
         console.log("Prácticas filtradas (aceptadas y no cerradas):", enabled);
         setApplications(enabled);
@@ -76,6 +79,7 @@ const MyDocuments = () => {
     }
   };
 
+  // subir nuevo documento
   const handleUpload = async (e) => {
     e.preventDefault();
     if (!file) {
@@ -106,7 +110,7 @@ const MyDocuments = () => {
       Swal.fire("Listo", "Documento subido exitosamente", "success");
       setFile(null);
       setPeriod("");
-      // Refrescar datos
+      // refrescar datos
       fetchData();
     } catch (err) {
       const msg = err?.response?.data?.message || "No se pudo subir el documento";
@@ -116,6 +120,7 @@ const MyDocuments = () => {
     }
   };
 
+  // obtener clase css segun el estado del documento
   const getStatusBadgeClass = (status) => {
     const statusMap = {
       pending: "status-pending",
@@ -125,6 +130,7 @@ const MyDocuments = () => {
     return statusMap[status] || "status-pending";
   };
 
+  // obtener color segun el estado del documento
   const getStatusColor = (status) => {
     const colors = {
       pending: "#f59e0b",
@@ -134,6 +140,7 @@ const MyDocuments = () => {
     return colors[status] || "#f59e0b";
   };
 
+  // obtener texto en espanol del estado
   const getStatusText = (status) => {
     const texts = {
       pending: "Pendiente",
@@ -143,6 +150,7 @@ const MyDocuments = () => {
     return texts[status] || status;
   };
 
+  // calcular promedio ponderado de documentos
   const calculateAverage = (docs = []) => {
     const graded = docs.filter(
       (d) => d.status === "approved" && d.grade !== null && d.grade !== undefined
@@ -173,6 +181,7 @@ const MyDocuments = () => {
     };
   };
 
+  // agrupar documentos por practica
   const groupedByPractice = documents.reduce((acc, doc) => {
     const label = getPracticeLabel(doc);
     if (!acc[label]) acc[label] = [];

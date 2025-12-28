@@ -8,7 +8,7 @@ import {
 } from "../handlers/responseHandlers.js";
 
 export const DocumentController = {
-
+//tener todos los documentos
   async getAllDocuments(req, res) {
     try {
       const documents = await DocumentService.getAllDocuments();
@@ -17,7 +17,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//descargar documento
   async downloadDocument(req, res) {
     try {
       const { filepath, filename } = await DocumentService.getDocumentPath(req.params.documentId);
@@ -26,7 +26,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//subir documento
   async uploadDocument(req, res) {
     try {
       if (!req.file) {
@@ -44,7 +44,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//actualizar estado del documento
   async updateDocumentStatus(req, res) {
     try {
       const document = await DocumentService.updateDocumentStatus(
@@ -56,7 +56,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//eliminar documento
   async deleteDocument(req, res) {
     try {
       await DocumentService.deleteDocument(req.params.documentId);
@@ -65,7 +65,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//obtener documentos agrupados por estudiante y práctica
   async getGroupedByStudentPractice(req, res) {
     try {
       const grouped = await DocumentService.getDocumentsGroupedByStudentAndPractice();
@@ -74,7 +74,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//obtener mis documentos
   async getMyDocuments(req, res) {
     try {
       const documents = await DocumentService.getMyDocuments(req.user.id);
@@ -83,7 +83,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//obtener promedio del usuario
   async getMyAverage(req, res) {
     try {
       const average = await DocumentService.getMyAverage(req.user.id);

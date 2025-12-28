@@ -1,6 +1,6 @@
 "use strict";
 import Joi from "joi";
-
+//validacion para crear documento
 export const createDocumentSchema = Joi.object({
   practiceApplicationId: Joi.number().required(),
   type: Joi.string()
@@ -14,7 +14,7 @@ export const createDocumentSchema = Joi.object({
   comments: Joi.string().optional(),
   uploadedBy: Joi.number().optional(),
 });
-
+//validacion para actualizar documento (estado, nota, peso, comentarios)
 export const updateDocumentSchema = Joi.object({
   status: Joi.string().valid("pending", "approved", "rejected").optional(),
   comments: Joi.string().optional().allow(""),

@@ -4,6 +4,7 @@ import { closeApplication } from '../services/practiceApplication.service';
 import Swal from 'sweetalert2';
 import '../styles/studentDocuments.css';
 
+//pagina de documentos para administrador/coordinador (revisar documentos de estudiantes)
 const StudentDocumentsPage = () => {
   const [groupedStudents, setGroupedStudents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,6 +13,7 @@ const StudentDocumentsPage = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [reviewData, setReviewData] = useState({ status: 'pending', grade: null, weight: 0, comments: '' });
 
+  //obtener documentos agrupados por estudiante y practica
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
     try {
@@ -40,6 +42,7 @@ const StudentDocumentsPage = () => {
     return acc;
   }, { total: 0, approved: 0, pending: 0, rejected: 0 });
 
+  // eliminar documento
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Eliminar documento',
@@ -61,6 +64,7 @@ const StudentDocumentsPage = () => {
     }
   };
 
+  // descargar documento
   const handleDownload = async (id, fileName) => {
     try {
       const response = await api.get(`/documents/${id}/download`, {
@@ -78,6 +82,7 @@ const StudentDocumentsPage = () => {
     }
   };
 
+  // abrir modal para revisar documento
   const handleReview = (doc) => {
     setSelectedDoc(doc);
     setReviewData({ 
@@ -89,6 +94,7 @@ const StudentDocumentsPage = () => {
     setShowModal(true);
   };
 
+  // guardar revision del documento (estado, nota, peso, comentarios)
   const handleSaveReview = async () => {
     if (!selectedDoc) return;
 
@@ -108,6 +114,7 @@ const StudentDocumentsPage = () => {
     }
   };
 
+  // cerrar practica cuando el peso total sea 100%
   const handleClosePractice = async (practiceApplicationId, average) => {
     const result = await Swal.fire({
       title: 'Cerrar Práctica',
@@ -152,6 +159,7 @@ const StudentDocumentsPage = () => {
     }
   };
 
+  // obtener clase css segun el estado
   const getStatusBadgeClass = (status) => {
     const statusMap = {
       pending: 'status-pending',
@@ -161,6 +169,7 @@ const StudentDocumentsPage = () => {
     return statusMap[status] || 'status-pending';
   };
 
+  // obtener color segun el estado
   const getStatusColor = (status) => {
     const colors = {
       pending: '#f59e0b',
@@ -170,6 +179,7 @@ const StudentDocumentsPage = () => {
     return colors[status] || '#f59e0b';
   };
 
+  // obtener nombre en espanol del tipo de documento
   const getDocumentTypeName = (type) => {
     const map = {
       PROGRESS_REPORT: 'Informe de Avance',
@@ -179,6 +189,7 @@ const StudentDocumentsPage = () => {
     return map[type] || type || 'Sin tipo';
   };
 
+  // obtener color segun el tipo de documento
   const getDocumentTypeColor = (type) => {
     const map = {
       PROGRESS_REPORT: '#3b82f6',

@@ -5,8 +5,9 @@ import { AppDataSource } from "../config/configDb.js";
 const documentRepository = AppDataSource.getRepository("Document");
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
 
-
+//servicio de documentos
 export const DocumentService = {
+  //funcion para calcular el promedio de documentos
   _calculateAverage(docs = []) {
     const graded = docs.filter(
       (d) => d.status === "approved" && d.grade !== null && d.grade !== undefined
@@ -36,7 +37,7 @@ export const DocumentService = {
       isComplete: useWeighted ? totalWeight === 100 : graded.length > 0,
     };
   },
-
+//funcion para obtener la etiqueta de practica
   _getPracticeLabel(doc) {
     return (
       doc?.practiceApplication?.internship?.title ||
@@ -44,7 +45,7 @@ export const DocumentService = {
       (doc?.practiceApplicationId ? `Práctica #${doc.practiceApplicationId}` : "Práctica")
     );
   },
-
+//obtener todos los documentos
   async getAllDocuments() {
     return documentRepository.find({
       relations: [
@@ -56,7 +57,7 @@ export const DocumentService = {
       order: { createdAt: "DESC" },
     });
   },
-
+//obtener documentos agrupados por estudiante y practica
   async getDocumentsGroupedByStudentAndPractice() {
     const docs = await documentRepository.find({
       relations: [
@@ -127,13 +128,13 @@ export const DocumentService = {
 
     return students;
   },
-
+//obtener ruta del documento
   async getDocumentPath(documentId) {
     const document = await documentRepository.findOne({ where: { id: documentId } });
     if (!document) throw new Error("Documento no encontrado");
     return { filepath: document.filepath, filename: document.filename };
   },
-
+//obtener mis documentos
   async getMyDocuments(userId) {
     return documentRepository.find({
       where: { uploadedBy: userId },
@@ -145,7 +146,7 @@ export const DocumentService = {
       order: { createdAt: "DESC" },
     });
   },
-
+//obtener mi promedio
   async getMyAverage(userId) {
     const documents = await documentRepository.find({
       where: {
@@ -185,7 +186,7 @@ export const DocumentService = {
       isComplete: totalWeight === 100,
     };
   },
-
+//subir documento
   async createDocument(documentData, file) {
     const practiceApplication = await practiceApplicationRepository.findOne({
       where: { id: documentData.practiceApplicationId },
@@ -219,7 +220,7 @@ export const DocumentService = {
 
     return documentRepository.save(document);
   },
-
+//actualizar estado y notas del documento
   async updateDocumentStatus(documentId, updateData) {
     const document = await documentRepository.findOne({
       where: { id: documentId },
@@ -237,7 +238,7 @@ export const DocumentService = {
     Object.assign(document, payload);
     return documentRepository.save(document);
   },
-
+//eliminar documento
   async deleteDocument(documentId) {
     const result = await documentRepository.delete(documentId);
     if (result.affected === 0) {
