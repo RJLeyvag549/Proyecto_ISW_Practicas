@@ -44,38 +44,38 @@ export const internshipExternalValidation = Joi.object({
     }),
 
   companyIndustry: Joi.string()
+    .allow("")
     .min(3)
     .max(100)
     .optional()
-    .allow("")
     .messages({
       "string.min": "La industria debe tener al menos 3 caracteres.",
       "string.max": "La industria no puede superar los 100 caracteres."
     }),
 
   companyWebsite: Joi.string()
+    .allow("")
     .uri()
     .max(255)
     .optional()
-    .allow("")
     .messages({
       "string.uri": "El sitio web debe ser una URL válida.",
       "string.max": "El sitio web no puede superar los 255 caracteres."
     }),
 
   companyPhone: Joi.string()
+    .allow("")
     .pattern(/^[+]?[\d\s\-()]{7,25}$/)
     .optional()
-    .allow("")
     .messages({
       "string.pattern.base": "El teléfono de la empresa debe tener un formato válido (ej: +56 9 1234 5678)."
     }),
 
   companyEmail: Joi.string()
+    .allow("")
     .email()
     .max(255)
     .optional()
-    .allow("")
     .messages({
       "string.email": "El email de la empresa debe tener un formato válido.",
       "string.max": "El email no puede superar los 255 caracteres."
@@ -112,18 +112,18 @@ export const internshipExternalValidation = Joi.object({
     }),
 
   supervisorPhone: Joi.string()
+    .allow("")
     .pattern(/^[+]?[\d\s\-()]{7,25}$/)
     .optional()
-    .allow("")
     .messages({
       "string.pattern.base": "El teléfono del supervisor debe tener un formato válido (ej: +56 9 1234 5678)."
     }),
 
   department: Joi.string()
+    .allow("")
     .min(3)
     .max(100)
     .optional()
-    .allow("")
     .messages({
       "string.min": "El departamento debe tener al menos 3 caracteres.",
       "string.max": "El departamento no puede superar los 100 caracteres."
@@ -150,20 +150,20 @@ export const internshipExternalValidation = Joi.object({
     }),
 
   schedule: Joi.string()
+    .allow("")
     .min(5)
     .max(1000)
     .optional()
-    .allow("")
     .messages({
       "string.min": "Los horarios deben tener al menos 5 caracteres.",
       "string.max": "Los horarios no pueden superar los 1000 caracteres."
     }),
 
   specialtyArea: Joi.string()
+    .allow("")
     .min(3)
     .max(100)
     .optional()
-    .allow("")
     .messages({
       "string.min": "El área de especialidad debe tener al menos 3 caracteres.",
       "string.max": "El área de especialidad no puede superar los 100 caracteres."

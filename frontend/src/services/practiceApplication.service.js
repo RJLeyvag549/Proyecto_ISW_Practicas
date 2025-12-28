@@ -6,7 +6,7 @@ export async function getAllApplications(filters = {}) {
         if (filters.status) params.append('status', filters.status);
         if (filters.studentId) params.append('studentId', filters.studentId);
         
-        const { data } = await axios.get(`/practiceApp?${params.toString()}`);
+        const { data } = await axios.get(`/practiceApplications?${params.toString()}`);
         return data.data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al obtener solicitudes' };
@@ -16,7 +16,7 @@ export async function getAllApplications(filters = {}) {
 // Obtener mis solicitudes (estudiante)
 export async function getMyApplications() {
     try {
-        const { data } = await axios.get('/practiceApp/my');
+        const { data } = await axios.get('/practiceApplications/my');
         return data.data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al obtener solicitudes' };
@@ -26,7 +26,7 @@ export async function getMyApplications() {
 // Obtener solicitud por ID
 export async function getApplicationById(id) {
     try {
-        const { data } = await axios.get(`/practiceApp/${id}`);
+        const { data } = await axios.get(`/practiceApplications/${id}`);
         return data.data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al obtener solicitud' };
@@ -46,12 +46,16 @@ export async function applyToInternship(internshipId) {
 // Crear solicitud externa
 export async function applyExternal(companyData) {
     try {
-        const { data } = await axios.post('/practiceApp/internshipExternal', { 
+        const payload = { 
             applicationType: "external",
             companyData
         });
         return data;
     } catch (error) {
+        console.error('Error completo:', error);
+        console.error('Error response:', error.response);
+        console.error('Error data:', error.response?.data);
+        
         const errorData = error.response?.data;
         // Manejar diferentes formatos de error del backend
         let errorMessage = 'Error al crear solicitud';
@@ -81,7 +85,7 @@ export async function updateOwnApplication(id, companyData) {
 // Eliminar solicitud externa (estudiante)
 export async function deleteOwnApplication(id) {
     try {
-        const { data } = await axios.delete(`/practiceApp/${id}`);
+        const { data } = await axios.delete(`/practiceApplications/${id}`);
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al eliminar solicitud' };
@@ -89,17 +93,21 @@ export async function deleteOwnApplication(id) {
 }
 
 // Actualizar estado de solicitud (admin)
-export async function updateApplicationStatus(id, status, coordinatorComments = '') {
+export async function updateApplicationStatus(id, status, coordinatorComments = '', force = false) {
     try {
         const payload = { status };
+        if (force) payload.force = true;
         // Solo incluir comentarios si no están vacíos
         if (coordinatorComments && coordinatorComments.trim()) {
             payload.coordinatorComments = coordinatorComments.trim();
         }
-        const { data } = await axios.patch(`/practiceApp/${id}`, payload);
+        const { data } = await axios.patch(`/practiceApplications/${id}`, payload);
         return data;
     } catch (error) {
-        return { error: error.response?.data?.message || error.response?.data?.details || 'Error al actualizar solicitud' };
+        const err = error.response?.data;
+        // El backend envía el mensaje descriptivo en `details` (handleErrorClient).
+        const message = err?.details || err?.message || 'Error al actualizar solicitud';
+        return { error: message };
     }
 }
 
@@ -123,7 +131,7 @@ export async function uploadAttachmentsFiles(id, fileObjects = []) {
 // Cerrar práctica (admin/coordinador)
 export async function closeApplication(id, minAverage = 4.0) {
     try {
-        const { data } = await axios.post(`/practiceApp/${id}/close`, { minAverage });
+        const { data } = await axios.post(`/practiceApplications/${id}/close`, { minAverage });
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al cerrar práctica' };

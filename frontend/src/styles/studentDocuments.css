@@ -149,6 +149,76 @@
     background: #fafbfc;
 }
 
+.practice-section {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.practice-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.practice-title {
+    font-weight: 700;
+    color: #0ea5e9;
+}
+
+.practice-count {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.practice-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-close-practice {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-close-practice:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-close-practice:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+}
+
+.btn-close-practice i {
+    font-size: 1rem;
+}
+
 .document-item {
     display: flex;
     align-items: center;
@@ -242,10 +312,46 @@
     cursor: pointer;
     font-size: 1rem;
     transition: all 0.2s;
+    border-radius: 6px;
 }
 
 .btn-icon:hover {
     transform: scale(1.2);
+}
+
+.btn-icon.btn-review {
+    color: #2563eb;
+}
+
+.btn-icon.btn-review:hover {
+    color: #1d4ed8;
+}
+
+.btn-icon.btn-download {
+    color: #10b981;
+}
+
+.btn-icon.btn-download:hover {
+    color: #0f9c73;
+}
+
+.btn-icon.btn-danger {
+    color: #ef4444;
+}
+
+.btn-icon.btn-danger:hover {
+    color: #dc2626;
+}
+
+.type-badge {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #fff;
+    min-width: 140px;
+    text-align: center;
 }
 
 .modal-overlay {

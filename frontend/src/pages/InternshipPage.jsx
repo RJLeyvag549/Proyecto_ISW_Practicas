@@ -8,7 +8,7 @@ import StepDetails from "@components/createInternship/StepDetails.jsx";
 import InternshipViewModal from "@components/InternshipViewModal.jsx";
 import InternshipEditModal from "@components/InternshipEditModal.jsx";
 import { applyToInternship } from "@services/practiceApplication.service.js";
-import '@styles/internship.css';
+import '../styles/internship.css';
 
 export default function InternshipPage() {
   const [ofertas, setOfertas] = useState([]);
@@ -300,9 +300,9 @@ export default function InternshipPage() {
                   <h3>No hay ofertas disponibles</h3>
                   {userRole === 'administrador' ? (
                     <>
-                      <p>Aún no se han publicado ofertas de práctica. ¡Se el primero en crear una!</p>
+                      <p>Aún no se han publicado ofertas de práctica.</p>
                       <button className="btn-primary" onClick={handleCreateClick}>
-                        + Crear mi primera oferta
+                        + Crear la primera oferta
                       </button>
                     </>
                   ) : (

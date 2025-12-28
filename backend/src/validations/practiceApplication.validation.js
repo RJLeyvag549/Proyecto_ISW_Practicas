@@ -50,6 +50,10 @@ export const statusUpdateValidation = Joi.object({
       "any.only": "El estado debe ser uno de: accepted, rejected, needsInfo."
     }),
 
+  // Permite confirmar explícitamente una segunda aprobación para el mismo estudiante.
+  // Solo se usa cuando el backend devuelve una advertencia y el encargado confirma.
+  force: Joi.boolean().optional(),
+
   coordinatorComments: Joi.string()
     .max(1000)
     .when("status", {
