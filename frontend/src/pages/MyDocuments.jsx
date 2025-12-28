@@ -5,7 +5,6 @@ import "../styles/myDocuments.css";
 
 const MyDocuments = () => {
   const [documents, setDocuments] = useState([]);
-  const [average, setAverage] = useState(null);
   const [loading, setLoading] = useState(true);
   const [applications, setApplications] = useState([]);
   const [uploading, setUploading] = useState(false);
@@ -14,15 +13,19 @@ const MyDocuments = () => {
   const [period, setPeriod] = useState("");
   const [practiceId, setPracticeId] = useState("");
 
+  const getPracticeLabel = (doc) => {
+    return (
+      doc?.practiceApplication?.internship?.title ||
+      doc?.practiceApplication?.internshipExternal?.companyName ||
+      (doc?.practiceApplicationId ? `Práctica #${doc.practiceApplicationId}` : "Práctica")
+    );
+  };
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [docsResponse, avgResponse] = await Promise.all([
-        api.get("/documents/my-documents"),
-        api.get("/documents/my-average")
-      ]);
+      const docsResponse = await api.get("/documents/my-documents");
       setDocuments(docsResponse.data?.data || []);
-      setAverage(avgResponse.data?.data || null);
     } catch {
       Swal.fire("Error", "No se pudieron cargar los documentos", "error");
     } finally {
@@ -140,6 +143,43 @@ const MyDocuments = () => {
     return texts[status] || status;
   };
 
+  const calculateAverage = (docs = []) => {
+    const graded = docs.filter(
+      (d) => d.status === "approved" && d.grade !== null && d.grade !== undefined
+    );
+    if (graded.length === 0) {
+      return { average: null, totalWeight: 0, isComplete: false };
+    }
+
+    const totalWeight = graded.reduce((sum, d) => sum + Number(d.weight || 0), 0);
+    const useWeighted = totalWeight > 0;
+
+    let avg = 0;
+    if (useWeighted) {
+      const weightedSum = graded.reduce(
+        (sum, d) => sum + Number(d.grade) * (Number(d.weight || 0) / 100),
+        0
+      );
+      avg = weightedSum;
+    } else {
+      const simple = graded.reduce((sum, d) => sum + Number(d.grade), 0) / graded.length;
+      avg = simple;
+    }
+
+    return {
+      average: Number(avg.toFixed(2)),
+      totalWeight,
+      isComplete: useWeighted ? totalWeight === 100 : graded.length > 0,
+    };
+  };
+
+  const groupedByPractice = documents.reduce((acc, doc) => {
+    const label = getPracticeLabel(doc);
+    if (!acc[label]) acc[label] = [];
+    acc[label].push(doc);
+    return acc;
+  }, {});
+
   if (loading) {
     return (
       <div className="loading">
@@ -224,26 +264,6 @@ const MyDocuments = () => {
         </form>
       </div>
 
-      {average && average.average !== null && (
-        <div className="average-card">
-          <div className="average-header">
-            <h3>Promedio de Práctica</h3>
-            <span className={`average-value ${average.isComplete ? "complete" : "incomplete"}`}>
-              {average.average}
-            </span>
-          </div>
-          <div className="average-details">
-            <p>
-              <strong>Ponderación:</strong> {average.totalWeight}%
-              {!average.isComplete && " (Faltan documentos por calificar)"}
-            </p>
-            {average.isComplete && (
-              <p className="complete-message">✓ Todos los documentos calificados</p>
-            )}
-          </div>
-        </div>
-      )}
-
       <div className="documents-stats">
         <div className="stat-item">
           <span className="stat-label">Total</span>
@@ -268,68 +288,88 @@ const MyDocuments = () => {
           <p>No has subido documentos todavía</p>
         </div>
       ) : (
-        <div className="documents-grid">
-          {documents.map((doc) => (
-            <div key={doc.id} className="document-card">
-              <div className="document-header">
-                <h4 className="document-title">{doc.filename}</h4>
-                <span
-                  className={`status-badge ${getStatusBadgeClass(doc.status)}`}
-                  style={{ background: getStatusColor(doc.status) }}
-                >
-                  {getStatusText(doc.status)}
-                </span>
+        <div className="practice-groups">
+          {Object.entries(groupedByPractice).map(([practice, docs]) => (
+            <div key={practice} className="practice-block">
+              <div className="practice-header">
+                <h3 className="practice-title">{practice}</h3>
+                <div className="practice-meta">
+                  <span className="practice-count">{docs.length} documentos</span>
+                  {(() => {
+                    const avg = calculateAverage(docs);
+                    return (
+                      <span className={`practice-average ${avg?.isComplete ? "complete" : "incomplete"}`}>
+                        Promedio: {avg?.average ?? "-"} ({avg?.totalWeight ?? 0}%)
+                      </span>
+                    );
+                  })()}
+                </div>
               </div>
-
-              <div className="document-info">
-                <div className="info-row">
-                  <span className="info-label">Fecha:</span>
-                  <span className="info-value">
-                    {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "-"}
-                  </span>
-                </div>
-
-                <div className="info-row">
-                  <span className="info-label">Tipo:</span>
-                  <span className="info-value">{doc.type || "-"}</span>
-                </div>
-
-                {doc.period && (
-                  <div className="info-row">
-                    <span className="info-label">Período:</span>
-                    <span className="info-value">{doc.period}</span>
-                  </div>
-                )}
-
-                {doc.status === "approved" && (
-                  <>
-                    <div className="info-row grade-row">
-                      <span className="info-label">Calificación:</span>
-                      <span className="grade-value">{doc.grade || "-"}</span>
+              <div className="documents-grid">
+                {docs.map((doc) => (
+                  <div key={doc.id} className="document-card">
+                    <div className="document-header">
+                      <h4 className="document-title">{doc.filename}</h4>
+                      <span
+                        className={`status-badge ${getStatusBadgeClass(doc.status)}`}
+                        style={{ background: getStatusColor(doc.status) }}
+                      >
+                        {getStatusText(doc.status)}
+                      </span>
                     </div>
 
-                    <div className="info-row">
-                      <span className="info-label">Ponderación:</span>
-                      <span className="weight-value">{doc.weight || 0}%</span>
+                    <div className="document-info">
+                      <div className="info-row">
+                        <span className="info-label">Fecha:</span>
+                        <span className="info-value">
+                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "-"}
+                        </span>
+                      </div>
+
+                      <div className="info-row">
+                        <span className="info-label">Tipo:</span>
+                        <span className="info-value">{doc.type || "-"}</span>
+                      </div>
+
+                      {doc.period && (
+                        <div className="info-row">
+                          <span className="info-label">Período:</span>
+                          <span className="info-value">{doc.period}</span>
+                        </div>
+                      )}
+
+                      {doc.status === "approved" && (
+                        <>
+                          <div className="info-row grade-row">
+                            <span className="info-label">Calificación:</span>
+                            <span className="grade-value">{doc.grade || "-"}</span>
+                          </div>
+
+                          <div className="info-row">
+                            <span className="info-label">Ponderación:</span>
+                            <span className="weight-value">{doc.weight || 0}%</span>
+                          </div>
+                        </>
+                      )}
+
+                      {doc.comments && (
+                        <div className="feedback-section">
+                          <span className="feedback-label">Retroalimentación:</span>
+                          <p className="feedback-text">{doc.comments}</p>
+                        </div>
+                      )}
                     </div>
-                  </>
-                )}
 
-                {doc.comments && (
-                  <div className="feedback-section">
-                    <span className="feedback-label">Retroalimentación:</span>
-                    <p className="feedback-text">{doc.comments}</p>
+                    <div className="document-actions">
+                      <button
+                        onClick={() => handleDownload(doc.id, doc.filename)}
+                        className="btn-download"
+                      >
+                        Descargar
+                      </button>
+                    </div>
                   </div>
-                )}
-              </div>
-
-              <div className="document-actions">
-                <button
-                  onClick={() => handleDownload(doc.id, doc.filename)}
-                  className="btn-download"
-                >
-                  Descargar
-                </button>
+                ))}
               </div>
             </div>
           ))}

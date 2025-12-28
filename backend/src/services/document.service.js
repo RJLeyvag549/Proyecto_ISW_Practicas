@@ -7,53 +7,7 @@ const practiceApplicationRepository = AppDataSource.getRepository("PracticeAppli
 
 
 export const DocumentService = {
-  async createDocument(documentData, file) {
-    const practiceApplication = await practiceApplicationRepository.findOne({
-      where: { id: documentData.practiceApplicationId },
-      relations: ["student"],
-    });
-
-    if (!practiceApplication) {
-      throw new Error("Práctica no encontrada");
-    }
-
-    // Validar que el documento se suba a una práctica aceptada del propio estudiante
-    const uploaderId = Number(documentData.uploadedBy);
-    if (practiceApplication.studentId !== uploaderId) {
-      throw new Error("No puedes subir documentos a una práctica de otro estudiante");
-    }
-
-    if (practiceApplication.status !== "accepted") {
-      throw new Error("Solo puedes subir documentos cuando la práctica está aceptada");
-    }
-
-    if (practiceApplication.isClosed) {
-      throw new Error("No se pueden subir documentos a una práctica cerrada");
-    }
-
-    const document = documentRepository.create({
-      ...documentData,
-      uploadedBy: Number(documentData.uploadedBy),
-      filename: file.originalname,
-      filepath: file.path,
-      status: "pending",
-    });
-
-    return documentRepository.save(document);
-  },
-
-  async getAllDocuments() {
-    return documentRepository.find({
-      relations: [
-        "uploader",
-        "practiceApplication",
-        "practiceApplication.internship",
-        "practiceApplication.internshipExternal",
-      ],
-      order: { createdAt: "DESC" },
-    });
-  },
-
+  // Helpers
   _calculateAverage(docs = []) {
     const graded = docs.filter(
       (d) => d.status === "approved" && d.grade !== null && d.grade !== undefined
@@ -90,6 +44,19 @@ export const DocumentService = {
       doc?.practiceApplication?.internshipExternal?.companyName ||
       (doc?.practiceApplicationId ? `Práctica #${doc.practiceApplicationId}` : "Práctica")
     );
+  },
+
+  // Queries
+  async getAllDocuments() {
+    return documentRepository.find({
+      relations: [
+        "uploader",
+        "practiceApplication",
+        "practiceApplication.internship",
+        "practiceApplication.internshipExternal",
+      ],
+      order: { createdAt: "DESC" },
+    });
   },
 
   async getDocumentsGroupedByStudentAndPractice() {
@@ -148,7 +115,6 @@ export const DocumentService = {
         average: this._calculateAverage(practice.documents),
       }));
 
-      // Flatten docs to compute overall student average
       const allDocs = practices.flatMap((p) => p.documents);
       const overallAverage = this._calculateAverage(allDocs);
 
@@ -168,6 +134,93 @@ export const DocumentService = {
     const document = await documentRepository.findOne({ where: { id: documentId } });
     if (!document) throw new Error("Documento no encontrado");
     return { filepath: document.filepath, filename: document.filename };
+  },
+
+  async getMyDocuments(userId) {
+    return documentRepository.find({
+      where: { uploadedBy: userId },
+      relations: [
+        "practiceApplication",
+        "practiceApplication.internship",
+        "practiceApplication.internshipExternal",
+      ],
+      order: { createdAt: "DESC" },
+    });
+  },
+
+  async getMyAverage(userId) {
+    const documents = await documentRepository.find({
+      where: {
+        uploadedBy: userId,
+        status: "approved",
+      },
+    });
+
+    const gradedDocuments = documents.filter((doc) => doc.grade !== null && doc.grade !== undefined);
+
+    if (gradedDocuments.length === 0) {
+      return {
+        documents: [],
+        average: null,
+        totalWeight: 0,
+        isComplete: false,
+      };
+    }
+
+    const totalWeight = gradedDocuments.reduce((sum, doc) => sum + Number(doc.weight || 0), 0);
+    const weightedSum = gradedDocuments.reduce((sum, doc) => {
+      return sum + Number(doc.grade) * (Number(doc.weight || 0) / 100);
+    }, 0);
+
+    return {
+      documents: gradedDocuments.map((doc) => ({
+        id: doc.id,
+        filename: doc.filename,
+        type: doc.type,
+        grade: Number(doc.grade),
+        weight: Number(doc.weight || 0),
+        comments: doc.comments,
+        createdAt: doc.createdAt,
+      })),
+      average: weightedSum > 0 ? Number(weightedSum.toFixed(2)) : null,
+      totalWeight,
+      isComplete: totalWeight === 100,
+    };
+  },
+
+  // Commands
+  async createDocument(documentData, file) {
+    const practiceApplication = await practiceApplicationRepository.findOne({
+      where: { id: documentData.practiceApplicationId },
+      relations: ["student"],
+    });
+
+    if (!practiceApplication) {
+      throw new Error("Práctica no encontrada");
+    }
+
+    const uploaderId = Number(documentData.uploadedBy);
+    if (practiceApplication.studentId !== uploaderId) {
+      throw new Error("No puedes subir documentos a una práctica de otro estudiante");
+    }
+
+    if (practiceApplication.status !== "accepted") {
+      throw new Error("Solo puedes subir documentos cuando la práctica está aceptada");
+    }
+
+    if (practiceApplication.isClosed) {
+      throw new Error("No se pueden subir documentos a una práctica cerrada");
+    }
+
+    const document = documentRepository.create({
+      ...documentData,
+      uploadedBy: Number(documentData.uploadedBy),
+      filename: file.originalname,
+      filepath: file.path,
+      status: "pending",
+    });
+
+    return documentRepository.save(document);
   },
 
   async updateDocumentStatus(documentId, updateData) {
@@ -194,52 +247,5 @@ export const DocumentService = {
       throw new Error("Documento no encontrado");
     }
     return { success: true };
-  },
-
-  async getMyDocuments(userId) {
-    return documentRepository.find({
-      where: { uploadedBy: userId },
-      order: { createdAt: "DESC" },
-    });
-  },
-
-  async getMyAverage(userId) {
-    const documents = await documentRepository.find({
-      where: { 
-        uploadedBy: userId,
-        status: "approved"
-      },
-    });
-
-    const gradedDocuments = documents.filter(doc => doc.grade !== null && doc.grade !== undefined);
-
-    if (gradedDocuments.length === 0) {
-      return {
-        documents: [],
-        average: null,
-        totalWeight: 0,
-        isComplete: false
-      };
-    }
-
-    const totalWeight = gradedDocuments.reduce((sum, doc) => sum + Number(doc.weight || 0), 0);
-    const weightedSum = gradedDocuments.reduce((sum, doc) => {
-      return sum + (Number(doc.grade) * (Number(doc.weight || 0) / 100));
-    }, 0);
-
-    return {
-      documents: gradedDocuments.map(doc => ({
-        id: doc.id,
-        filename: doc.filename,
-        type: doc.type,
-        grade: Number(doc.grade),
-        weight: Number(doc.weight || 0),
-        comments: doc.comments,
-        createdAt: doc.createdAt
-      })),
-      average: weightedSum > 0 ? Number(weightedSum.toFixed(2)) : null,
-      totalWeight,
-      isComplete: totalWeight === 100
-    };
   },
 };

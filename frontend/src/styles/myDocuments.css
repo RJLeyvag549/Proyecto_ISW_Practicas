@@ -15,57 +15,6 @@
     margin: 0;
 }
 
-.average-card {
-    background: linear-gradient(135deg, #6cc4c2 0%, #5ab3b1 100%);
-    border-radius: 12px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    color: white;
-    box-shadow: 0 4px 6px rgba(108, 196, 194, 0.2);
-}
-
-.average-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-}
-
-.average-header h3 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.average-value {
-    font-size: 2.5rem;
-    font-weight: 700;
-    padding: 0.5rem 1rem;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 8px;
-}
-
-.average-value.complete {
-    background: rgba(16, 185, 129, 0.3);
-}
-
-.average-value.incomplete {
-    background: rgba(245, 158, 11, 0.3);
-}
-
-.average-details {
-    font-size: 0.95rem;
-}
-
-.average-details p {
-    margin: 0.3rem 0;
-}
-
-.complete-message {
-    color: #d1fae5;
-    font-weight: 600;
-}
-
 .documents-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -121,6 +70,71 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1.5rem;
+}
+
+.practice-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.practice-block {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.practice-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+}
+
+.practice-title {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0ea5e9;
+}
+
+.practice-count {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.practice-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.practice-average {
+    background: #eef2ff;
+    color: #4338ca;
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.practice-average.complete {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.practice-average.incomplete {
+    background: #fef3c7;
+    color: #92400e;
 }
 
 .document-card {

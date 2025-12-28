@@ -78,7 +78,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: '/uploads-documents',
+        path: '/my-documents',
         element: (
           <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>
             <MyDocuments />
