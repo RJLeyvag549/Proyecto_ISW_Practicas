@@ -9,17 +9,17 @@ const __dirname = path.dirname(__filename);
 
 const uploadsDir = path.resolve(__dirname, "../../../uploads");
 const documentsDir = path.join(uploadsDir, "documents");
-
+// Crear carpeta uploads si no existe
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
   console.log("=> Carpeta uploads creada:", uploadsDir);
 }
-
+// Crear carpeta documents si no existe
 if (!fs.existsSync(documentsDir)) {
   fs.mkdirSync(documentsDir, { recursive: true });
   console.log("=> Carpeta uploads/documents creada:", documentsDir);
 }
-
+// Configuración de almacenamiento
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, documentsDir);
@@ -31,7 +31,7 @@ const storage = multer.diskStorage({
     cb(null, `${timestamp}-${random}-${safeName}`);
   },
 });
-
+// Filtro de tipos de archivo
 function fileFilter(req, file, cb) {
   const allowedTypes = [
     "application/pdf",
@@ -50,7 +50,7 @@ function fileFilter(req, file, cb) {
     cb(new Error("Tipo de archivo no permitido. Solo se permiten PDF, Word, Excel e imágenes."), false);
   }
 }
-
+// Configuración de multer
 export const upload = multer({
   storage,
   fileFilter,

@@ -126,14 +126,20 @@ export async function updateApplication(req, res) {
     if (error)
       return handleErrorClient(res, 400, "Error de validacion", error.message);
 
-    const { status, coordinatorComments } = req.body;
+    const { status, coordinatorComments, force } = req.body;
     const coordinatorId = req.user.id;
     const [application, serviceError] = await updatePracticeApplication(
       parseInt(id),
       status,
       coordinatorComments,
-      coordinatorId
+      coordinatorId,
+      Boolean(force)
     );
+
+    // Advertencia confirmable: no es error, se devuelve al cliente para que confirme.
+    if (serviceError && typeof serviceError === "object" && serviceError.warning) {
+      return res.status(200).json(serviceError);
+    }
 
     if (serviceError)
       return handleErrorClient(res, 400, "Error al actualizar la solicitud", serviceError);

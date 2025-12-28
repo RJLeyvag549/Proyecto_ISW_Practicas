@@ -56,8 +56,29 @@ export default function PracticeApplicationsPage() {
 
     const handleStatusSubmit = async (id, status, comments) => {
         const result = await updateApplicationStatus(id, status, comments);
-        
-        if (result.error) {
+
+        // Advertencia: el estudiante ya tiene otra solicitud aprobada.
+        // Pedimos confirmación y, si acepta, reenviamos con force=true.
+        if (result?.warning && result?.code === 'STUDENT_ALREADY_HAS_ACCEPTED_APPLICATION') {
+            const confirm = await Swal.fire({
+                icon: 'warning',
+                title: 'Estudiante ya tiene una solicitud aprobada',
+                text: result.message || '¿Estás seguro que deseas aprobar esta solicitud también?',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, aprobar igual',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#6cc4c2'
+            });
+
+            if (!confirm.isConfirmed) {
+                return;
+            }
+
+            const forced = await updateApplicationStatus(id, status, comments, true);
+            if (forced.error) {
+                throw new Error(forced.error);
+            }
+        } else if (result.error) {
             throw new Error(result.error);
         }
 

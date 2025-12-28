@@ -1,7 +1,7 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-
+//esquema de documento
 const DocumentSchema = new EntitySchema({
   name: "Document",
   tableName: "documents",
@@ -80,6 +80,7 @@ const DocumentSchema = new EntitySchema({
     },
   },
   relations: {
+    //relacion id
     practiceApplication: {
       type: "many-to-one",
       target: "PracticeApplication",
@@ -87,6 +88,7 @@ const DocumentSchema = new EntitySchema({
       nullable: true,
       onDelete: "CASCADE",
     },
+    //relacion id de practica externa
     internshipExternal: {
       type: "many-to-one",
       target: "InternshipExternal",
@@ -94,13 +96,14 @@ const DocumentSchema = new EntitySchema({
       nullable: true,
       onDelete: "CASCADE",
     },
+    //relacion con usuario que sube el documento
     uploader: {
       type: "many-to-one",
       target: "User",
       joinColumn: { name: "uploadedBy" },
       nullable: false,
     },
-  },// 
+  },
   indices: [
     {
       name: "IDX_DOCUMENT_PRIMARY",

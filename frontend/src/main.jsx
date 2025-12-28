@@ -7,9 +7,7 @@ import AdminRequests from '@pages/AdminRequests';
 import InternshipPage from '@pages/InternshipPage';
 import PracticeApplicationsPage from '@pages/PracticeApplicationsPage';
 import MyApplicationsPage from '@pages/MyApplicationsPage';
-import AvailableInternshipsPage from '@pages/AvailableInternshipsPage';
 import StudentDocumentsPage from '@pages/StudentDocumentsPage';
-import UploadDocuments from '@pages/UploadDocuments';
 import MyDocuments from '@pages/MyDocuments';
 import Register from '@pages/Register';
 import Terminos from '@pages/Terminos';
@@ -56,14 +54,14 @@ const router = createBrowserRouter([
         ),
       },
       {
-          path: '/admin/applications',
-          element: (
-            <ProtectedRoute allowedRoles={['administrador']}>
-              <PracticeApplicationsPage />
-            </ProtectedRoute>
-         ),
-       },
-       {
+        path: '/admin/applications',
+        element: (
+          <ProtectedRoute allowedRoles={['administrador']}>
+            <PracticeApplicationsPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: '/admin/documents',
         element: (
           <ProtectedRoute allowedRoles={['administrador']}>
@@ -78,24 +76,8 @@ const router = createBrowserRouter([
             <MyApplicationsPage />
           </ProtectedRoute>
         ),
-       },
-       {
-        path: '/upload-documents',
-        element: (
-          <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>
-            <UploadDocuments />
-          </ProtectedRoute>
-        ),
       },
       {
-        path: '/available-internships',
-        element: (
-          <ProtectedRoute allowedRoles={['estudiante']}>
-            <AvailableInternshipsPage />
-          </ProtectedRoute>
-         ),
-       },
-       {
         path: '/my-documents',
         element: (
           <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>

@@ -27,8 +27,9 @@ const ApplicationCard = ({ data, onView, onEdit, onDelete, onUpdateStatus, isAdm
     // Solo el estudiante puede editar/eliminar solicitudes externas pendientes
     const isEditable = !isAdmin && isExternal && ['pending', 'needsInfo'].includes(data.status);
     
-    // El admin puede cambiar estado si está pendiente, necesita info o rechazada (no aprobada)
-    const canChangeStatus = isAdmin && ['pending', 'needsInfo', 'rejected'].includes(data.status);
+    // El admin puede cambiar estado solo si está pendiente o necesita info.
+    // Si fue rechazada, no debe poder modificarse (regla de negocio).
+    const canChangeStatus = isAdmin && ['pending', 'needsInfo'].includes(data.status);
     
     // Obtener nombre de empresa
     const companyName = isExternal 

@@ -8,7 +8,7 @@ import {
 } from "../handlers/responseHandlers.js";
 
 export const DocumentController = {
-
+//tener todos los documentos
   async getAllDocuments(req, res) {
     try {
       const documents = await DocumentService.getAllDocuments();
@@ -17,7 +17,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//descargar documento
   async downloadDocument(req, res) {
     try {
       const { filepath, filename } = await DocumentService.getDocumentPath(req.params.documentId);
@@ -26,7 +26,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//subir documento
   async uploadDocument(req, res) {
     try {
       if (!req.file) {
@@ -44,45 +44,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
-  async getDocumentsByPractice(req, res) {
-    try {
-      const documents = await DocumentService.getDocumentsByPracticeId(
-        req.params.practiceId
-      );
-      if (Array.isArray(documents) && documents.length === 0) {
-        return handleSuccess(res, 204);
-      }
-      return handleSuccess(
-        res,
-        200,
-        "Documentos obtenidos exitosamente",
-        documents,
-      );
-    } catch (error) {
-      return handleErrorServer(res, 500, error.message);
-    }
-  },
-
-  async getDocumentsByExternal(req, res) {
-    try {
-      const documents = await DocumentService.getDocumentsByExternalId(
-        req.params.externalId
-      );
-      if (Array.isArray(documents) && documents.length === 0) {
-        return handleSuccess(res, 204);
-      }
-      return handleSuccess(
-        res,
-        200,
-        "Documentos obtenidos exitosamente",
-        documents,
-      );
-    } catch (error) {
-      return handleErrorServer(res, 500, error.message);
-    }
-  },
-
+//actualizar estado del documento
   async updateDocumentStatus(req, res) {
     try {
       const document = await DocumentService.updateDocumentStatus(
@@ -94,7 +56,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//eliminar documento
   async deleteDocument(req, res) {
     try {
       await DocumentService.deleteDocument(req.params.documentId);
@@ -103,27 +65,16 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
-  async getGradeStatistics(req, res) {
+//obtener documentos agrupados por estudiante y práctica
+  async getGroupedByStudentPractice(req, res) {
     try {
-      const statistics = await DocumentService.getGradeStatistics(
-        req.params.practiceId
-      );
-      return handleSuccess(res, 200, "Estadísticas obtenidas", statistics);
+      const grouped = await DocumentService.getDocumentsGroupedByStudentAndPractice();
+      return handleSuccess(res, 200, "Documentos agrupados", grouped);
     } catch (error) {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
-  async getStudentAverages(req, res) {
-    try {
-      const averages = await DocumentService.getStudentAverages();
-      return handleSuccess(res, 200, "Promedios obtenidos", averages);
-    } catch (error) {
-      return handleErrorServer(res, 500, error.message);
-    }
-  },
-
+//obtener mis documentos
   async getMyDocuments(req, res) {
     try {
       const documents = await DocumentService.getMyDocuments(req.user.id);
@@ -132,7 +83,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-
+//obtener promedio del usuario
   async getMyAverage(req, res) {
     try {
       const average = await DocumentService.getMyAverage(req.user.id);

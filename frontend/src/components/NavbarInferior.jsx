@@ -25,16 +25,15 @@ const NavbarInferior = () => {
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
             <li><NavLink to="/admin/applications">Solicitudes de Práctica</NavLink></li>
               <li><NavLink to="/admin/requests">Solicitudes de Registro</NavLink></li>
-            <li><NavLink to="/admin/documents">Documentos de Estudiantes</NavLink></li>
+              <li><NavLink to="/admin/documents">Documentos Práctica</NavLink></li>
             <li><NavLink to="/users">Usuarios Registrados</NavLink></li>
             <li><NavLink to="/consultas">Consultas</NavLink></li>
           </>
         )}
-        
+
         {userRole === 'estudiante' && (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
-            <li><NavLink to="/upload-documents">Subir Documentos</NavLink></li>
             <li><NavLink to="/my-documents">Mis Documentos</NavLink></li>
             <li><NavLink to="/perfil">Mi Perfil</NavLink></li>
             <li><NavLink to="/consultas">Consultas</NavLink></li>
@@ -45,18 +44,11 @@ const NavbarInferior = () => {
         {userRole !== 'administrador' && userRole !== 'estudiante' && (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
-            <li><NavLink to="/upload-documents">Subir Documentos</NavLink></li>
             <li><NavLink to="/my-documents">Mis Documentos</NavLink></li>
             <li><NavLink to="/perfil">Mi Perfil</NavLink></li>
             <li><NavLink to="/consultas">Consultas</NavLink></li>
           </>
         )}
-        
-        <li>
-          <button onClick={logoutSubmit} className="logout-link">
-            Cerrar sesión
-          </button>
-        </li>
 
       </ul>
     </nav>

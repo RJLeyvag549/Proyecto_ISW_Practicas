@@ -21,6 +21,7 @@ router.post("/internship/:internshipId", authenticateJwt, createApplication);
 router.post("/internshipExternal", authenticateJwt, createApplication);
 
 router.get("/my", authenticateJwt, getMyApplications);
+router.post("/:id/close", authenticateJwt, isAdminOrCoordinator, closeApplication);
 router.get("/:id", authenticateJwt, getApplicationById);
 router.put("/:id", authenticateJwt, updateOwnApplication);
 router.delete("/:id", authenticateJwt, deleteOwnApplication);

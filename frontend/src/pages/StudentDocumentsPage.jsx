@@ -1,26 +1,24 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../services/root.service';
+import { closeApplication } from '../services/practiceApplication.service';
 import Swal from 'sweetalert2';
 import '../styles/studentDocuments.css';
 
+//pagina de documentos para administrador/coordinador (revisar documentos de estudiantes)
 const StudentDocumentsPage = () => {
-  const [documents, setDocuments] = useState([]);
+  const [groupedStudents, setGroupedStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedStudent, setExpandedStudent] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [reviewData, setReviewData] = useState({ status: 'pending', grade: null, weight: 0, comments: '' });
-  const [studentAverages, setStudentAverages] = useState({});
 
+  //obtener documentos agrupados por estudiante y practica
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
     try {
-      const [docsResponse, avgResponse] = await Promise.all([
-        api.get('/documents'),
-        api.get('/documents/averages')
-      ]);
-      setDocuments(docsResponse.data?.data || []);
-      setStudentAverages(avgResponse.data?.data || {});
+      const response = await api.get('/documents/grouped');
+      setGroupedStudents(response.data?.data || []);
     } catch {
       Swal.fire('Error', 'No se pudieron cargar los documentos', 'error');
     } finally {
@@ -32,20 +30,19 @@ const StudentDocumentsPage = () => {
     fetchDocuments();
   }, [fetchDocuments]);
 
-  const groupedByStudent = documents.reduce((acc, doc) => {
-    const student = doc.uploader?.nombreCompleto || `Usuario ${doc.uploadedBy ?? 'desconocido'}`;
-    if (!acc[student]) acc[student] = [];
-    acc[student].push(doc);
+  const statistics = groupedStudents.reduce((acc, student) => {
+    student.practices.forEach((p) => {
+      p.documents.forEach((d) => {
+        acc.total += 1;
+        if (d.status === 'approved') acc.approved += 1;
+        if (d.status === 'pending') acc.pending += 1;
+        if (d.status === 'rejected') acc.rejected += 1;
+      });
+    });
     return acc;
-  }, {});
+  }, { total: 0, approved: 0, pending: 0, rejected: 0 });
 
-  const statistics = {
-    total: documents.length,
-    approved: documents.filter(d => d.status === 'approved').length,
-    pending: documents.filter(d => d.status === 'pending').length,
-    rejected: documents.filter(d => d.status === 'rejected').length,
-  };
-
+  // eliminar documento
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Eliminar documento',
@@ -59,7 +56,7 @@ const StudentDocumentsPage = () => {
     if (result.isConfirmed) {
       try {
         await api.delete(`/documents/${id}`);
-        setDocuments(documents.filter(d => d.id !== id));
+        fetchDocuments();
         Swal.fire('Eliminado', 'Documento eliminado', 'success');
       } catch {
         Swal.fire('Error', 'No se pudo eliminar', 'error');
@@ -67,6 +64,7 @@ const StudentDocumentsPage = () => {
     }
   };
 
+  // descargar documento
   const handleDownload = async (id, fileName) => {
     try {
       const response = await api.get(`/documents/${id}/download`, {
@@ -84,6 +82,7 @@ const StudentDocumentsPage = () => {
     }
   };
 
+  // abrir modal para revisar documento
   const handleReview = (doc) => {
     setSelectedDoc(doc);
     setReviewData({ 
@@ -95,6 +94,7 @@ const StudentDocumentsPage = () => {
     setShowModal(true);
   };
 
+  // guardar revision del documento (estado, nota, peso, comentarios)
   const handleSaveReview = async () => {
     if (!selectedDoc) return;
 
@@ -114,6 +114,52 @@ const StudentDocumentsPage = () => {
     }
   };
 
+  // cerrar practica cuando el peso total sea 100%
+  const handleClosePractice = async (practiceApplicationId, average) => {
+    const result = await Swal.fire({
+      title: 'Cerrar Práctica',
+      html: `
+        <p>¿Está seguro de cerrar esta práctica?</p>
+        <p style="margin-top: 10px;"><strong>Promedio final: ${average}</strong></p>
+        <p style="color: #666; font-size: 14px; margin-top: 5px;">Esta acción no se puede deshacer.</p>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#6cc4c2',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, cerrar práctica',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await closeApplication(practiceApplicationId);
+      
+      if (response.error) {
+        Swal.fire('Error', response.error, 'error');
+        return;
+      }
+
+      Swal.fire({
+        title: '¡Práctica cerrada!',
+        html: `
+          <p>La práctica ha sido cerrada exitosamente.</p>
+          <p style="margin-top: 10px;"><strong>Promedio final: ${response.data?.finalAverage || average}</strong></p>
+          <p style="margin-top: 5px;"><strong>Resultado: ${response.data?.finalResult === 'approved' ? 'Aprobada' : 'Reprobada'}</strong></p>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#6cc4c2'
+      });
+      
+      fetchDocuments();
+    } catch (error) {
+      console.error('Error al cerrar práctica:', error);
+      Swal.fire('Error', 'No se pudo cerrar la práctica', 'error');
+    }
+  };
+
+  // obtener clase css segun el estado
   const getStatusBadgeClass = (status) => {
     const statusMap = {
       pending: 'status-pending',
@@ -123,6 +169,7 @@ const StudentDocumentsPage = () => {
     return statusMap[status] || 'status-pending';
   };
 
+  // obtener color segun el estado
   const getStatusColor = (status) => {
     const colors = {
       pending: '#f59e0b',
@@ -130,6 +177,26 @@ const StudentDocumentsPage = () => {
       rejected: '#ef4444',
     };
     return colors[status] || '#f59e0b';
+  };
+
+  // obtener nombre en espanol del tipo de documento
+  const getDocumentTypeName = (type) => {
+    const map = {
+      PROGRESS_REPORT: 'Informe de Avance',
+      FINAL_REPORT: 'Informe Final',
+      PERFORMANCE_EVALUATION: 'Desempeño',
+    };
+    return map[type] || type || 'Sin tipo';
+  };
+
+  // obtener color segun el tipo de documento
+  const getDocumentTypeColor = (type) => {
+    const map = {
+      PROGRESS_REPORT: '#3b82f6',
+      FINAL_REPORT: '#8b5cf6',
+      PERFORMANCE_EVALUATION: '#ec4899',
+    };
+    return map[type] || '#6b7280';
   };
 
   if (loading) {
@@ -144,7 +211,7 @@ const StudentDocumentsPage = () => {
   return (
     <div className="documents-container">
       <div className="header">
-        <h2>Documentos de Estudiantes</h2>
+        <h2>Documentos Práctica</h2>
       </div>
 
       <div className="statistics">
@@ -166,89 +233,113 @@ const StudentDocumentsPage = () => {
         </div>
       </div>
 
-      {Object.entries(groupedByStudent).length === 0 ? (
+      {groupedStudents.length === 0 ? (
         <div className="empty">No hay documentos</div>
       ) : (
         <div className="students-list">
-          {Object.entries(groupedByStudent).map(([student, docs]) => {
-            const studentId = docs[0]?.uploadedBy;
-            const avgData = studentAverages[studentId];
+          {groupedStudents.map((student) => {
             return (
-            <div key={student} className="student-card">
+            <div key={student.studentId} className="student-card">
               <div
                 className="student-header"
                 onClick={() =>
-                  setExpandedStudent(expandedStudent === student ? null : student)
+                  setExpandedStudent(expandedStudent === student.studentId ? null : student.studentId)
                 }
               >
                 <div className="student-info">
-                  <span className="student-name">{student}</span>
-                  {avgData && avgData.average !== null && (
-                    <span className={`average-badge ${avgData.isComplete ? 'complete' : 'incomplete'}`}>
-                      Promedio: {avgData.average} ({avgData.totalWeight}%)
-                    </span>
-                  )}
+                  <span className="student-name">{student.studentName}</span>
                 </div>
-                <span className="doc-count">{docs.length} documentos</span>
+                <span className="doc-count">{student.totalDocuments} documentos</span>
                 <span className="toggle-icon">
-                  {expandedStudent === student ? '▼' : '▶'}
+                  {expandedStudent === student.studentId ? '▼' : '▶'}
                 </span>
               </div>
 
-              {expandedStudent === student && (
+              {expandedStudent === student.studentId && (
                 <div className="documents-list">
-                  {docs.map((doc) => (
-                    <div key={doc.id} className="document-item">
-                      <div className="doc-info">
-                        <p className="doc-name">{doc.filename}</p>
-                        <p className="doc-meta">
-                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : 'Fecha no disponible'}
-                        </p>
-                        {doc.comments && (
-                          <p className="doc-comments">
-                            <strong>Comentarios:</strong> {doc.comments}
-                          </p>
-                        )}
+                  {student.practices.map((practice) => (
+                    <div key={`${practice.practiceApplicationId}-${practice.practiceLabel}`} className="practice-section">
+                      <div className="practice-header">
+                        <span className="practice-title">{practice.practiceLabel}</span>
+                        <div className="practice-meta">
+                          <span className="practice-count">{practice.documents.length} documentos</span>
+                          <span className={`average-badge ${practice?.average?.isComplete ? 'complete' : 'incomplete'}`}>
+                            Promedio práctica: {practice?.average?.average ?? '-'} ({practice?.average?.totalWeight ?? 0}%)
+                          </span>
+                          {practice?.average?.isComplete && 
+                           practice?.average?.totalWeight === 100 && 
+                           practice.practiceApplicationId && (
+                            <button
+                              onClick={() => handleClosePractice(practice.practiceApplicationId, practice.average.average)}
+                              className="btn-close-practice"
+                              title="Cerrar práctica (peso total 100%)"
+                            >
+                              <i className="fa-solid fa-check-circle"></i> Cerrar Práctica
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <span
-                        className={`status-badge ${getStatusBadgeClass(
-                          doc.status
-                        )}`}
-                        style={{ background: getStatusColor(doc.status) }}
-                      >
-                        {doc.status}
-                      </span>
-                      <span className="grade-badge">
-                        {doc.grade ? `${doc.grade}` : '-'}
-                      </span>
-                      <span className="weight-badge">
-                        {doc.weight ? `${doc.weight}%` : '0%'}
-                      </span>
-                      <div className="doc-actions">
-                        <button
-                          onClick={() => handleReview(doc)}
-                          className="btn-icon"
-                          title="Revisar"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          onClick={() =>
-                            handleDownload(doc.id, doc.filename)
-                          }
-                          className="btn-icon"
-                          title="Descargar"
-                        >
-                          ⬇️
-                        </button>
-                        <button
-                          onClick={() => handleDelete(doc.id)}
-                          className="btn-icon btn-danger"
-                          title="Eliminar"
-                        >
-                          🗑️
-                        </button>
-                      </div>
+                      {practice.documents.map((doc) => (
+                        <div key={doc.id} className="document-item">
+                          <div className="doc-info">
+                            <p className="doc-name">{doc.filename}</p>
+                            <p className="doc-meta">
+                              {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : 'Fecha no disponible'}
+                            </p>
+                            {doc.comments && (
+                              <p className="doc-comments">
+                                <strong>Comentarios:</strong> {doc.comments}
+                              </p>
+                            )}
+                          </div>
+                          <span
+                            className="type-badge"
+                            style={{ background: getDocumentTypeColor(doc.type) }}
+                            title={doc.type}
+                          >
+                            {getDocumentTypeName(doc.type)}
+                          </span>
+                          <span
+                            className={`status-badge ${getStatusBadgeClass(
+                              doc.status
+                            )}`}
+                            style={{ background: getStatusColor(doc.status) }}
+                          >
+                            {doc.status}
+                          </span>
+                          <span className="grade-badge">
+                            {doc.grade ? `${doc.grade}` : '-'}
+                          </span>
+                          <span className="weight-badge">
+                            {doc.weight ? `${doc.weight}%` : '0%'}
+                          </span>
+                          <div className="doc-actions">
+                            <button
+                              onClick={() => handleReview(doc)}
+                              className="btn-icon btn-review"
+                              title="Revisar"
+                            >
+                              <i className="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button
+                              onClick={() =>
+                                handleDownload(doc.id, doc.filename)
+                              }
+                              className="btn-icon btn-download"
+                              title="Descargar"
+                            >
+                              <i className="fa-solid fa-download"></i>
+                            </button>
+                            <button
+                              onClick={() => handleDelete(doc.id)}
+                              className="btn-icon btn-danger"
+                              title="Eliminar"
+                            >
+                              <i className="fa-solid fa-trash"></i>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   ))}
                 </div>
@@ -266,6 +357,7 @@ const StudentDocumentsPage = () => {
             <div className="modal-content">
               <div className="doc-details">
                 <p><strong>Archivo:</strong> {selectedDoc.filename}</p>
+                <p><strong>Tipo:</strong> <span style={{ color: getDocumentTypeColor(selectedDoc.type), fontWeight: 'bold' }}>{getDocumentTypeName(selectedDoc.type)}</span></p>
                 <p><strong>Estudiante:</strong> {selectedDoc.uploader?.nombreCompleto || selectedDoc.uploadedBy}</p>
                 <p><strong>Fecha:</strong> {selectedDoc.createdAt ? new Date(selectedDoc.createdAt).toLocaleDateString() : '-'}</p>
               </div>
