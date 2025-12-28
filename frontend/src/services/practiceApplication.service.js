@@ -47,13 +47,22 @@ export async function applyToInternship(internshipId, attachments = []) {
 // Crear solicitud externa
 export async function applyExternal(companyData, attachments = []) {
     try {
-        const { data } = await axios.post('/practiceApplications/internshipExternal', { 
+        const payload = { 
             applicationType: "external",
             companyData, 
             attachments 
-        });
+        };
+        
+        console.log('Enviando solicitud externa:', payload);
+        console.log('companyData:', companyData);
+        
+        const { data } = await axios.post('/practiceApplications/internshipExternal', payload);
         return data;
     } catch (error) {
+        console.error('Error completo:', error);
+        console.error('Error response:', error.response);
+        console.error('Error data:', error.response?.data);
+        
         const errorData = error.response?.data;
         // Manejar diferentes formatos de error del backend
         let errorMessage = 'Error al crear solicitud';
