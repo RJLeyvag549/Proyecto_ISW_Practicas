@@ -4,7 +4,6 @@ import { AppDataSource } from "../config/configDb.js";
 
 const documentRepository = AppDataSource.getRepository("Document");
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
-const internshipExternalRepository = AppDataSource.getRepository("InternshipExternal");
 
 
 export const DocumentService = {
@@ -43,35 +42,132 @@ export const DocumentService = {
     return documentRepository.save(document);
   },
 
-  async getDocumentsByPracticeId(practiceId) {
+  async getAllDocuments() {
     return documentRepository.find({
-      where: { practiceApplicationId: practiceId },
+      relations: [
+        "uploader",
+        "practiceApplication",
+        "practiceApplication.internship",
+        "practiceApplication.internshipExternal",
+      ],
       order: { createdAt: "DESC" },
     });
   },
 
-  async getAllDocuments() {
-    return documentRepository.find({
-      relations: ["uploader"],
+  _calculateAverage(docs = []) {
+    const graded = docs.filter(
+      (d) => d.status === "approved" && d.grade !== null && d.grade !== undefined
+    );
+    if (graded.length === 0) {
+      return { average: null, totalWeight: 0, isComplete: false };
+    }
+
+    const totalWeight = graded.reduce((sum, d) => sum + Number(d.weight || 0), 0);
+    const useWeighted = totalWeight > 0;
+
+    let avg = 0;
+    if (useWeighted) {
+      const weightedSum = graded.reduce(
+        (sum, d) => sum + Number(d.grade) * (Number(d.weight || 0) / 100),
+        0
+      );
+      avg = weightedSum;
+    } else {
+      const simple = graded.reduce((sum, d) => sum + Number(d.grade), 0) / graded.length;
+      avg = simple;
+    }
+
+    return {
+      average: Number(avg.toFixed(2)),
+      totalWeight,
+      isComplete: useWeighted ? totalWeight === 100 : graded.length > 0,
+    };
+  },
+
+  _getPracticeLabel(doc) {
+    return (
+      doc?.practiceApplication?.internship?.title ||
+      doc?.practiceApplication?.internshipExternal?.companyName ||
+      (doc?.practiceApplicationId ? `Práctica #${doc.practiceApplicationId}` : "Práctica")
+    );
+  },
+
+  async getDocumentsGroupedByStudentAndPractice() {
+    const docs = await documentRepository.find({
+      relations: [
+        "uploader",
+        "practiceApplication",
+        "practiceApplication.internship",
+        "practiceApplication.internshipExternal",
+      ],
       order: { createdAt: "DESC" },
     });
+
+    const studentsMap = new Map();
+
+    docs.forEach((doc) => {
+      const studentId = doc.uploadedBy;
+      if (!studentsMap.has(studentId)) {
+        studentsMap.set(studentId, {
+          studentId,
+          studentName: doc.uploader?.nombreCompleto || `Usuario ${studentId}`,
+          practices: new Map(),
+        });
+      }
+
+      const student = studentsMap.get(studentId);
+      const practiceLabel = this._getPracticeLabel(doc);
+      const practiceKey = doc.practiceApplicationId ?? practiceLabel;
+
+      if (!student.practices.has(practiceKey)) {
+        student.practices.set(practiceKey, {
+          practiceApplicationId: doc.practiceApplicationId,
+          practiceLabel,
+          documents: [],
+        });
+      }
+
+      const practice = student.practices.get(practiceKey);
+      practice.documents.push({
+        id: doc.id,
+        filename: doc.filename,
+        type: doc.type,
+        status: doc.status,
+        grade: doc.grade,
+        weight: doc.weight,
+        comments: doc.comments,
+        createdAt: doc.createdAt,
+        uploadedBy: doc.uploadedBy,
+        practiceApplicationId: doc.practiceApplicationId,
+      });
+    });
+
+    const students = Array.from(studentsMap.values()).map((student) => {
+      const practices = Array.from(student.practices.values()).map((practice) => ({
+        ...practice,
+        average: this._calculateAverage(practice.documents),
+      }));
+
+      // Flatten docs to compute overall student average
+      const allDocs = practices.flatMap((p) => p.documents);
+      const overallAverage = this._calculateAverage(allDocs);
+
+      return {
+        studentId: student.studentId,
+        studentName: student.studentName,
+        practices,
+        overallAverage,
+        totalDocuments: allDocs.length,
+      };
+    });
+
+    return students;
   },
 
   async getDocumentPath(documentId) {
     const document = await documentRepository.findOne({ where: { id: documentId } });
     if (!document) throw new Error("Documento no encontrado");
     return { filepath: document.filepath, filename: document.filename };
-  },
-
-  async getDocumentsByExternalId(externalId) {
-    try {
-      return await documentRepository.find({
-        where: { internshipExternalId: externalId },
-        order: { createdAt: "DESC" },
-      });
-    } catch (error) {
-      throw error;
-    }
   },
 
   async updateDocumentStatus(documentId, updateData) {
@@ -98,104 +194,6 @@ export const DocumentService = {
       throw new Error("Documento no encontrado");
     }
     return { success: true };
-  },
-
-  async getGradeStatistics(practiceApplicationId) {
-    const documents = await documentRepository.find({
-      where: { 
-        practiceApplicationId,
-        status: "approved"
-      },
-    });
-
-    const gradedDocuments = documents.filter(doc => doc.grade !== null && doc.grade !== undefined);
-
-    if (gradedDocuments.length === 0) {
-      return {
-        documents: [],
-        weightedAverage: null,
-        simpleAverage: null,
-        totalWeight: 0,
-        hasIncompleteWeights: false
-      };
-    }
-
-    const totalWeight = gradedDocuments.reduce((sum, doc) => sum + Number(doc.weight || 0), 0);
-    const hasIncompleteWeights = totalWeight !== 100;
-
-    let weightedAverage = null;
-    if (totalWeight > 0) {
-      const weightedSum = gradedDocuments.reduce((sum, doc) => {
-        return sum + (Number(doc.grade) * (Number(doc.weight || 0) / 100));
-      }, 0);
-      weightedAverage = weightedSum;
-    }
-
-    const simpleAverage = gradedDocuments.reduce((sum, doc) => sum + Number(doc.grade), 0) / gradedDocuments.length;
-
-    return {
-      documents: gradedDocuments.map(doc => ({
-        id: doc.id,
-        filename: doc.filename,
-        type: doc.type,
-        grade: Number(doc.grade),
-        weight: Number(doc.weight || 0)
-      })),
-      weightedAverage: weightedAverage ? Number(weightedAverage.toFixed(2)) : null,
-      simpleAverage: Number(simpleAverage.toFixed(2)),
-      totalWeight,
-      hasIncompleteWeights
-    };
-  },
-
-  async getStudentAverages() {
-    const documents = await documentRepository.find({
-      where: { status: "approved" },
-      relations: ["uploader"],
-    });
-
-    const gradedDocuments = documents.filter(doc => doc.grade !== null && doc.grade !== undefined);
-
-    const studentMap = new Map();
-
-    gradedDocuments.forEach(doc => {
-      const studentId = doc.uploadedBy;
-      if (!studentMap.has(studentId)) {
-        studentMap.set(studentId, {
-          studentId,
-          studentName: doc.uploader?.nombreCompleto || `Usuario ${studentId}`,
-          documents: [],
-          totalWeight: 0,
-          weightedAverage: 0,
-        });
-      }
-
-      const student = studentMap.get(studentId);
-      const weight = Number(doc.weight || 0);
-      const grade = Number(doc.grade);
-
-      student.documents.push({
-        id: doc.id,
-        filename: doc.filename,
-        grade,
-        weight,
-        contribution: grade * (weight / 100)
-      });
-
-      student.totalWeight += weight;
-      student.weightedAverage += grade * (weight / 100);
-    });
-
-    const result = {};
-    studentMap.forEach((student, studentId) => {
-      result[studentId] = {
-        average: student.totalWeight > 0 ? Number(student.weightedAverage.toFixed(2)) : null,
-        totalWeight: student.totalWeight,
-        isComplete: student.totalWeight === 100
-      };
-    });
-
-    return result;
   },
 
   async getMyDocuments(userId) {

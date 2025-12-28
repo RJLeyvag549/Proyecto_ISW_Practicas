@@ -5,7 +5,6 @@ import { DocumentController } from "../controllers/document.controller.js";
 import { validateBody } from "../middlewares/joiValidation.middleware.js";
 import { 
   createDocumentSchema, 
-  gradeDocumentSchema,
   updateDocumentSchema 
 } from "../validations/document.validation.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
@@ -20,9 +19,9 @@ router.get(
 );
 
 router.get(
-  "/averages",
+  "/grouped",
   authenticateJwt,
-  DocumentController.getStudentAverages
+  DocumentController.getGroupedByStudentPractice
 );
 
 router.get(
@@ -51,29 +50,10 @@ router.post(
   DocumentController.uploadDocument
 );
 
-router.get(
-  "/practice/:practiceId",
-  authenticateJwt,
-  DocumentController.getDocumentsByPractice
-);
-
-router.get(
-  "/practice/:practiceId/statistics",
-  authenticateJwt,
-  DocumentController.getGradeStatistics
-);
-
 router.patch(
   "/:documentId/status",
   authenticateJwt,
   validateBody(updateDocumentSchema),
-  DocumentController.updateDocumentStatus
-);
-
-router.patch(
-  "/:documentId/grade",
-  authenticateJwt,
-  validateBody(gradeDocumentSchema),
   DocumentController.updateDocumentStatus
 );
 

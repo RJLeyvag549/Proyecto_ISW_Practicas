@@ -45,44 +45,6 @@ export const DocumentController = {
     }
   },
 
-  async getDocumentsByPractice(req, res) {
-    try {
-      const documents = await DocumentService.getDocumentsByPracticeId(
-        req.params.practiceId
-      );
-      if (Array.isArray(documents) && documents.length === 0) {
-        return handleSuccess(res, 204);
-      }
-      return handleSuccess(
-        res,
-        200,
-        "Documentos obtenidos exitosamente",
-        documents,
-      );
-    } catch (error) {
-      return handleErrorServer(res, 500, error.message);
-    }
-  },
-
-  async getDocumentsByExternal(req, res) {
-    try {
-      const documents = await DocumentService.getDocumentsByExternalId(
-        req.params.externalId
-      );
-      if (Array.isArray(documents) && documents.length === 0) {
-        return handleSuccess(res, 204);
-      }
-      return handleSuccess(
-        res,
-        200,
-        "Documentos obtenidos exitosamente",
-        documents,
-      );
-    } catch (error) {
-      return handleErrorServer(res, 500, error.message);
-    }
-  },
-
   async updateDocumentStatus(req, res) {
     try {
       const document = await DocumentService.updateDocumentStatus(
@@ -104,21 +66,10 @@ export const DocumentController = {
     }
   },
 
-  async getGradeStatistics(req, res) {
+  async getGroupedByStudentPractice(req, res) {
     try {
-      const statistics = await DocumentService.getGradeStatistics(
-        req.params.practiceId
-      );
-      return handleSuccess(res, 200, "Estadísticas obtenidas", statistics);
-    } catch (error) {
-      return handleErrorServer(res, 500, error.message);
-    }
-  },
-
-  async getStudentAverages(req, res) {
-    try {
-      const averages = await DocumentService.getStudentAverages();
-      return handleSuccess(res, 200, "Promedios obtenidos", averages);
+      const grouped = await DocumentService.getDocumentsGroupedByStudentAndPractice();
+      return handleSuccess(res, 200, "Documentos agrupados", grouped);
     } catch (error) {
       return handleErrorServer(res, 500, error.message);
     }

@@ -21,8 +21,3 @@ export const updateDocumentSchema = Joi.object({
   grade: Joi.number().min(1.0).max(7.0).optional().allow(null),
   weight: Joi.number().min(0).max(100).optional().allow(null),
 }).or("status", "comments", "grade", "weight");
-
-export const gradeDocumentSchema = Joi.object({
-  grade: Joi.number().min(1.0).max(7.0).required(),
-  comments: Joi.string().optional(),
-});

@@ -149,6 +149,45 @@
     background: #fafbfc;
 }
 
+.practice-section {
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.practice-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.practice-title {
+    font-weight: 700;
+    color: #0ea5e9;
+}
+
+.practice-count {
+    background: #e0f2fe;
+    color: #0369a1;
+    padding: 0.25rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.practice-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
 .document-item {
     display: flex;
     align-items: center;
