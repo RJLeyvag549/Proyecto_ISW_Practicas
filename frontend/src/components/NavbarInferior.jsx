@@ -24,13 +24,13 @@ const NavbarInferior = () => {
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
             <li><NavLink to="/admin/applications">Solicitudes de Práctica</NavLink></li>
-              <li><NavLink to="/admin/requests">Solicitudes de Registro</NavLink></li>
+            <li><NavLink to="/admin/requests">Solicitudes de Registro</NavLink></li>
             <li><NavLink to="/admin/documents">Documentos de Estudiantes</NavLink></li>
             <li><NavLink to="/users">Usuarios Registrados</NavLink></li>
             <li><NavLink to="/consultas">Consultas</NavLink></li>
           </>
         )}
-        
+
         {userRole === 'estudiante' && (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
@@ -51,12 +51,7 @@ const NavbarInferior = () => {
             <li><NavLink to="/consultas">Consultas</NavLink></li>
           </>
         )}
-        
-        <li>
-          <button onClick={logoutSubmit} className="logout-link">
-            Cerrar sesión
-          </button>
-        </li>
+
 
       </ul>
     </nav>

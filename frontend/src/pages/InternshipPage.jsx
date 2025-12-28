@@ -8,7 +8,7 @@ import StepDetails from "@components/createInternship/StepDetails.jsx";
 import InternshipViewModal from "@components/InternshipViewModal.jsx";
 import InternshipEditModal from "@components/InternshipEditModal.jsx";
 import { applyToInternship } from "@services/practiceApplication.service.js";
-import '@styles/internship.css';
+import '../styles/internship.css';
 
 export default function InternshipPage() {
   const [ofertas, setOfertas] = useState([]);
