@@ -80,7 +80,7 @@ export async function getPracticeApplicationsByStudent(studentId) {
   try {
     const applications = await practiceApplicationRepository.find({
       where: { studentId },
-      relations: ["internship", "internshipExternal"],
+      relations: ["internship", "internship.company", "internship.supervisor", "internshipExternal"],
       order: { createdAt: "DESC" },
     });
     return [applications, null];
@@ -93,7 +93,7 @@ export async function getPracticeApplicationById(id, requester) {
   try {
     const application = await practiceApplicationRepository.findOne({
       where: { id },
-      relations: ["student", "internship", "internshipExternal"]
+      relations: ["student", "internship", "internship.company", "internship.supervisor", "internshipExternal"]
     });
 
     if (!application) return [null, "Solicitud no encontrada"];
@@ -127,7 +127,7 @@ export async function getAllPracticeApplications(filters) {
 
     const applications = await practiceApplicationRepository.find({
       where,
-      relations: ["student", "internship", "internshipExternal"],
+      relations: ["student", "internship", "internship.company", "internship.supervisor", "internshipExternal"],
       order: { createdAt: "DESC" },
     });
 
@@ -147,13 +147,67 @@ export async function getAllPracticeApplications(filters) {
   }
 }
 
-export async function updatePracticeApplication(id, newStatus, coordinatorComments, coordinatorId) {
+export async function updatePracticeApplication(id, newStatus, coordinatorComments, coordinatorId, force = false) {
   try {
     const application = await practiceApplicationRepository.findOne({
       where: { id },
-      relations: ["student", "internship", "internshipExternal"]
+      relations: ["student", "internship", "internship.company", "internship.supervisor", "internshipExternal"]
     });
     if (!application) return [null, "Solicitud no encontrada"];
+
+    // Cupos para ofertas internas (existing):
+    // - Al pasar a accepted, incrementar occupiedSlots.
+    // - Si no hay cupos disponibles, rechazar la aprobación.
+    // - Evitar incrementar dos veces si ya estaba accepted.
+    if (
+      application.applicationType === "existing"
+      && application.internshipId
+      && newStatus === "accepted"
+      && application.status !== "accepted"
+    ) {
+      const internship = await internshipRepository.findOne({
+        where: { id: application.internshipId },
+      });
+
+      if (!internship) return [null, "Oferta de práctica no encontrada"];
+
+      const total = Number(internship.totalSlots ?? 0);
+      const occupied = Number(internship.occupiedSlots ?? 0);
+
+      if (occupied >= total) {
+        const title = internship.title ? `"${internship.title}"` : "esta oferta";
+        return [
+          null,
+          `No se puede aprobar la solicitud: los cupos para ${title} están completos (${occupied}/${total}).`
+        ];
+      }
+
+      internship.occupiedSlots = occupied + 1;
+      await internshipRepository.save(internship);
+    }
+
+    // Regla de negocio: un estudiante no puede tener más de una solicitud aprobada.
+    if (newStatus === "accepted" && !force) {
+      const alreadyAccepted = await practiceApplicationRepository
+        .createQueryBuilder("pa")
+        .where("pa.studentId = :studentId", { studentId: application.studentId })
+        .andWhere("pa.status = :status", { status: "accepted" })
+        .andWhere("pa.id <> :id", { id })
+        .getExists();
+
+      if (alreadyAccepted) {
+        return [
+          null,
+          {
+            warning: true,
+            code: "STUDENT_ALREADY_HAS_ACCEPTED_APPLICATION",
+            message:
+              "Este estudiante ya cuenta con una solicitud aprobada. "
+              + "¿Estás seguro que deseas aprobar esta solicitud también?",
+          }
+        ];
+      }
+    }
 
     // No permitir modificar solicitudes ya rechazadas
     if (application.status === "rejected") {
@@ -164,7 +218,8 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
       return [null, "No se puede volver de accepted a needsInfo"];
     }
 
-    if ((newStatus === "rejected" || newStatus === "needsInfo") && (!coordinatorComments || coordinatorComments.trim() === "")) {
+    const needsComments = newStatus === "rejected" || newStatus === "needsInfo";
+    if (needsComments && (!coordinatorComments || coordinatorComments.trim() === "")) {
       return [null, "Debes ingresar comentarios del encargado"];
     }
 
@@ -180,9 +235,10 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
     if (student && student.email) {
       let subject, textBody, htmlBody;
       const studentName = student.nombreCompleto || student.email;
-      const practiceName = application.internship?.title || 
-                          application.internshipExternal?.companyName || 
-                          "tu práctica";
+      const practiceName =
+        application.internship?.title
+        || application.internshipExternal?.companyName
+        || "tu práctica";
       
       if (newStatus === "accepted") {
         subject = "✅ Solicitud de Práctica Aceptada - Universidad del Bío-Bío";

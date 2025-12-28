@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import { deleteOwnApplication, updateOwnApplication } from '@services/practiceApplication.service.js';
+import ProfileViewModal from '@components/ProfileViewModal.jsx';
 import '../styles/applications.css';
 
 const getStatusInfo = (status) => {
@@ -26,6 +27,7 @@ const formatDate = (dateString) => {
 
 const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false, isAdmin = false }) => {
     const [showEditModal, setShowEditModal] = useState(false);
+    const [showProfileModal, setShowProfileModal] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [editError, setEditError] = useState('');
@@ -50,10 +52,9 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
     });
     const [editAttachments, setEditAttachments] = useState([]);
 
-    if (!application) return null;
-
     // Inicializar form data cuando se abre el modal de edición
-    const hydrateEditForm = () => {
+    const hydrateEditForm = useCallback(() => {
+        if (!application) return;
         const externalData = application.internshipExternal || {};
         setEditFormData({
             title: externalData.title || '',
@@ -80,13 +81,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
         } catch {
             setEditAttachments([]);
         }
-    };
-
-    const handleEditClick = () => {
-        hydrateEditForm();
-        setEditError('');
-        setShowEditModal(true);
-    };
+    }, [application]);
 
     const handleEditChange = (e) => {
         const { name, value } = e.target;
@@ -126,19 +121,11 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                     onDelete?.(); // Trigger refresh
                 });
             }
-        } catch (err) {
+        } catch {
             setEditError('Error al actualizar la solicitud');
         } finally {
             setIsUpdating(false);
         }
-    };
-
-    const handleAddFiles = (e) => {
-        // TODO: Implementar upload de archivos
-    };
-
-    const handleRemoveAttachment = (idx) => {
-        // TODO: Implementar eliminación de archivos
     };
 
     const statusInfo = getStatusInfo(application.status);
@@ -158,13 +145,13 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
             hydrateEditForm();
             setShowEditModal(true);
         }
-    }, [autoEdit, isEditable]);
+    }, [autoEdit, hydrateEditForm, isEditable]);
 
     useEffect(() => {
         if (showEditModal) {
             hydrateEditForm();
         }
-    }, [showEditModal]);
+    }, [hydrateEditForm, showEditModal]);
 
     const attachments = (() => {
         try {
@@ -209,7 +196,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                         onClose();
                     });
                 }
-            } catch (error) {
+            } catch {
                 Swal.fire({
                     icon: 'error',
                     title: 'Error',
@@ -222,10 +209,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
         }
     };
 
-    const handleEditSuccess = () => {
-        setShowEditModal(false);
-        onDelete?.(); // Trigger refresh de la lista
-    };
+    if (!application) return null;
 
     if (showEditModal && isExternal) {
         return (
@@ -522,6 +506,18 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                                 <span>{student.email || 'N/A'}</span>
                             </div>
                         </div>
+
+                        {isAdmin && (
+                            <div style={{ marginTop: 12, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                                <button
+                                    type="button"
+                                    className="app-btn-primary"
+                                    onClick={() => setShowProfileModal(true)}
+                                >
+                                    <i className="fa-solid fa-address-card"></i> Ver perfil completo
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {/* Información de la Práctica */}
@@ -699,6 +695,14 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                     <button className="app-btn-secondary" onClick={onClose}>Cerrar</button>
                 </div>
             </div>
+
+            {showProfileModal && (
+                <ProfileViewModal
+                    student={student}
+                    profile={student?.profile}
+                    onClose={() => setShowProfileModal(false)}
+                />
+            )}
         </div>
     );
 };
