@@ -1,6 +1,5 @@
 import axios from './root.service.js';
 
-// Obtener todas las solicitudes (admin)
 export async function getAllApplications(filters = {}) {
     try {
         const params = new URLSearchParams();
@@ -35,9 +34,9 @@ export async function getApplicationById(id) {
 }
 
 // Crear solicitud para oferta existente
-export async function applyToInternship(internshipId, attachments = []) {
+export async function applyToInternship(internshipId) {
     try {
-        const { data } = await axios.post(`/practiceApp/internship/${internshipId}`, { attachments });
+        const { data } = await axios.post(`/practiceApp/internship/${internshipId}`, {});
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al crear solicitud' };
@@ -45,12 +44,11 @@ export async function applyToInternship(internshipId, attachments = []) {
 }
 
 // Crear solicitud externa
-export async function applyExternal(companyData, attachments = []) {
+export async function applyExternal(companyData) {
     try {
         const { data } = await axios.post('/practiceApp/internshipExternal', { 
             applicationType: "external",
-            companyData, 
-            attachments 
+            companyData
         });
         return data;
     } catch (error) {
@@ -69,9 +67,9 @@ export async function applyExternal(companyData, attachments = []) {
 }
 
 // Editar solicitud externa (estudiante)
-export async function updateOwnApplication(id, companyData, attachments = []) {
+export async function updateOwnApplication(id, companyData) {
     try {
-        const { data } = await axios.put(`/practiceApp/${id}`, { companyData, attachments });
+        const { data } = await axios.put(`/practiceApp/${id}`, { companyData });
         return data;
     } catch (error) {
         const err = error.response?.data;
@@ -105,13 +103,20 @@ export async function updateApplicationStatus(id, status, coordinatorComments = 
     }
 }
 
-// Agregar documentos a solicitud
-export async function addAttachments(id, attachments) {
+// Subir archivos reales (máx 5) como adjuntos
+export async function uploadAttachmentsFiles(id, fileObjects = []) {
     try {
-        const { data } = await axios.patch(`/practiceApp/${id}/attachments`, { attachments });
+        const formData = new FormData();
+        fileObjects.slice(0, 5).forEach((file) => {
+            formData.append('documents', file);
+        });
+        const { data } = await axios.post(`/practiceApp/${id}/attachments/upload`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        });
         return data;
     } catch (error) {
-        return { error: error.response?.data?.message || 'Error al agregar documentos' };
+        const err = error.response?.data;
+        return { error: err?.message || err?.details || 'Error al subir adjuntos' };
     }
 }
 

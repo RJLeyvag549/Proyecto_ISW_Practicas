@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { applyExternal } from '@services/practiceApplication.service.js';
+import { applyExternal, uploadAttachmentsFiles } from '@services/practiceApplication.service.js';
 import '../styles/applications.css';
 
 const ExternalApplicationModal = ({ onClose, onSuccess }) => {
@@ -40,8 +40,17 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
 
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files);
-        const fileNames = files.map(f => f.name);
-        setUploadedFiles([...uploadedFiles, ...fileNames]);
+        if (uploadedFiles.length + files.length > 5) {
+            setError('Máximo 5 archivos permitidos.');
+            return;
+        }
+        for (const file of files) {
+            if (file.size > 5 * 1024 * 1024) {
+                setError('Los archivos no pueden superar 5MB.');
+                return;
+            }
+        }
+        setUploadedFiles([...uploadedFiles, ...files]);
     };
 
     const handleRemoveFile = (index) => {
@@ -54,8 +63,8 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
             setError('El nombre de la empresa es obligatorio.');
             return false;
         }
-        if (formData.companyName.length < 2) {
-            setError('El nombre de la empresa debe tener al menos 2 caracteres.');
+        if (formData.companyName.length < 5) {
+            setError('El nombre de la empresa debe tener al menos 5 caracteres.');
             return false;
         }
         
@@ -72,6 +81,32 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
         if (formData.companyEmail && formData.companyEmail.trim()) {
             if (!/^\S+@\S+\.\S+$/.test(formData.companyEmail)) {
                 setError('El email de la empresa debe tener un formato válido.');
+                return false;
+            }
+        }
+
+        // Validar industria (mín 3 caracteres si se ingresa)
+        if (formData.companyIndustry && formData.companyIndustry.trim()) {
+            if (formData.companyIndustry.trim().length < 3) {
+                setError('La industria debe tener al menos 3 caracteres.');
+                return false;
+            }
+        }
+
+        // Validar teléfono de empresa (formato válido si se ingresa)
+        if (formData.companyPhone && formData.companyPhone.trim()) {
+            if (!/^[+]?[\d\s\-()]{7,25}$/.test(formData.companyPhone.trim())) {
+                setError('El teléfono de la empresa debe tener un formato válido (ej: +56 9 1234 5678).');
+                return false;
+            }
+        }
+
+        // Validar sitio web (debe ser URL válida si se ingresa)
+        if (formData.companyWebsite && formData.companyWebsite.trim()) {
+            try {
+                new URL(formData.companyWebsite.trim());
+            } catch {
+                setError('El sitio web debe ser una URL válida (ej: https://www.empresa.cl).');
                 return false;
             }
         }
@@ -106,6 +141,22 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
         if (!/^\S+@\S+\.\S+$/.test(formData.supervisorEmail)) {
             setError('El email del supervisor debe tener un formato válido.');
             return false;
+        }
+
+        // Validar teléfono del supervisor (formato válido si se ingresa)
+        if (formData.supervisorPhone && formData.supervisorPhone.trim()) {
+            if (!/^[+]?[\d\s\-()]{7,25}$/.test(formData.supervisorPhone.trim())) {
+                setError('El teléfono del supervisor debe tener un formato válido (ej: +56 9 1234 5678).');
+                return false;
+            }
+        }
+
+        // Validar departamento (mín 3 caracteres si se ingresa)
+        if (formData.department && formData.department.trim()) {
+            if (formData.department.trim().length < 3) {
+                setError('El departamento debe tener al menos 3 caracteres.');
+                return false;
+            }
         }
         
         return true;
@@ -145,9 +196,20 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
             return false;
         }
 
-        if (!formData.schedule?.trim()) {
-            setError('El horario es obligatorio.');
-            return false;
+        // Horario es opcional, pero si se ingresa debe tener mín 5 caracteres
+        if (formData.schedule && formData.schedule.trim()) {
+            if (formData.schedule.trim().length < 5) {
+                setError('El horario debe tener al menos 5 caracteres.');
+                return false;
+            }
+        }
+
+        // Área de especialidad es opcional, pero si se ingresa debe tener mín 3 caracteres
+        if (formData.specialtyArea && formData.specialtyArea.trim()) {
+            if (formData.specialtyArea.trim().length < 3) {
+                setError('El área de especialidad debe tener al menos 3 caracteres.');
+                return false;
+            }
         }
         
         return true;
@@ -180,14 +242,31 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
         setLoading(true);
 
         try {
-            const response = await applyExternal(formData, uploadedFiles);
+            // Primero crea la solicitud (solo datos JSON)
+            const response = await applyExternal(formData);
+
             if (response.error) {
-                // Mostrar el error detallado
                 setError(typeof response.error === 'string' ? response.error : JSON.stringify(response.error));
             } else if (response.status === 'Client error') {
-                // Error del backend con detalles
                 setError(response.details || response.message || 'Error de validación');
             } else {
+                // Luego sube archivos reales si existen
+                if (uploadedFiles.length > 0) {
+                    const appId = response?.data?.id || response?.id;
+                    if (!appId) {
+                        setError('No se pudo obtener el ID de la solicitud para subir archivos.');
+                        setLoading(false);
+                        return;
+                    }
+
+                    const uploadRes = await uploadAttachmentsFiles(appId, uploadedFiles);
+                    if (uploadRes?.error) {
+                        setError(uploadRes.error || 'Error al subir archivos');
+                        setLoading(false);
+                        return;
+                    }
+                }
+
                 onSuccess();
                 onClose();
             }
@@ -397,17 +476,22 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
 
             <div className="app-form-group">
                 <label>Duración Estimada <span className="required">*</span></label>
-                <input
-                    type="text"
+                <select
                     name="estimatedDuration"
                     value={formData.estimatedDuration}
                     onChange={handleChange}
-                    placeholder="Ej: 3 meses - 360 horas"
-                />
+                >
+                    <option value="">Selecciona una duración...</option>
+                    <option value="1-2 meses">1-2 meses</option>
+                    <option value="2-3 meses">2-3 meses</option>
+                    <option value="3-4 meses">3-4 meses</option>
+                    <option value="4-6 meses">4-6 meses</option>
+                    <option value="6+ meses">6+ meses</option>
+                </select>
             </div>
 
             <div className="app-form-group">
-                <label>Horarios <span className="required">*</span></label>
+                <label>Horarios (opcional)</label>
                 <textarea
                     name="schedule"
                     value={formData.schedule}
@@ -429,18 +513,18 @@ const ExternalApplicationModal = ({ onClose, onSuccess }) => {
             </div>
 
             <div className="app-form-group">
-                <label>Documentos (máx 5)</label>
+                <label>Documentos (máx 5, 5MB c/u)</label>
                 <input
                     type="file"
                     multiple
                     onChange={handleFileChange}
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
                 />
                 {uploadedFiles.length > 0 && (
                     <div className="file-list">
                         {uploadedFiles.map((file, idx) => (
                             <div key={idx} className="file-item">
-                                <span><i className="fa-solid fa-file"></i> {file}</span>
+                                <span><i className="fa-solid fa-file"></i> {file.name} ({(file.size / 1024 / 1024).toFixed(2)}MB)</span>
                                 <button
                                     type="button"
                                     className="app-btn-danger"

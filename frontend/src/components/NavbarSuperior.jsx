@@ -47,7 +47,9 @@ const NavbarSuperior = () => {
 
         {dropdownOpen && (
           <ul className="dropdown-menu">
-            <li onClick={handleViewProfile}>Ver Perfil</li>
+            {user?.rol === 'estudiante' && (
+              <li onClick={handleViewProfile}>Ver Perfil</li>
+            )}
             <li onClick={handleLogout}>Cerrar sesión</li>
           </ul>
         )}

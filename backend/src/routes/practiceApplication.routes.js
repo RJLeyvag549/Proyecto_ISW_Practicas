@@ -1,7 +1,9 @@
 "use strict";
 import { Router } from "express";
+import { authenticateJwt } from "../middlewares/authentication.middleware.js";
+import { isAdmin, isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";
+import { uploadDocumentsArray } from "../middlewares/uploadDocuments.middleware.js";
 import {
-  addAttachments,
   closeApplication,
   createApplication,
   getAllApplications,
@@ -10,26 +12,23 @@ import {
   updateApplication,
   updateOwnApplication,
   deleteOwnApplication,
+  uploadAttachmentsFiles,
 } from "../controllers/practiceApplication.controller.js";
-import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import { isAdmin, isAdminOrCoordinator } from "../middlewares/authorization.middleware.js";
 
 const router = Router();
 
-// Rutas específicas para cada tipo de solicitud usando el mismo controlador
-router.post("/internship/:internshipId", authenticateJwt, createApplication); // Para ofertas existentes
-router.post("/internshipExternal", authenticateJwt, createApplication);       // Para externas
+router.post("/internship/:internshipId", authenticateJwt, createApplication);
+router.post("/internshipExternal", authenticateJwt, createApplication);
 
-// Rutas generales
 router.get("/my", authenticateJwt, getMyApplications);
 router.get("/:id", authenticateJwt, getApplicationById);
 router.put("/:id", authenticateJwt, updateOwnApplication);
 router.delete("/:id", authenticateJwt, deleteOwnApplication);
 router.get("/", authenticateJwt, isAdmin, getAllApplications);
 router.patch("/:id", authenticateJwt, isAdmin, updateApplication);
-router.patch("/:id/attachments", authenticateJwt, addAttachments);
 
-// Cerrar práctica (admin o coordinador)
+router.post("/:id/attachments/upload",authenticateJwt,uploadDocumentsArray("documents", 5),uploadAttachmentsFiles);
+
 router.post("/:id/close", authenticateJwt, isAdminOrCoordinator, closeApplication);
 
 export default router;

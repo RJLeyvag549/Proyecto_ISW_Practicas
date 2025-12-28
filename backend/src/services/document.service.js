@@ -9,13 +9,24 @@ const internshipExternalRepository = AppDataSource.getRepository("InternshipExte
 
 export const DocumentService = {
   async createDocument(documentData, file) {
-    const practiceApplication = await practiceApplicationRepository.findOne({
-      where: { id: documentData.practiceApplicationId },
-      relations: ["student"],
-    });
+    // Permitir documentos ligados a práctica interna o externa
+    if (documentData.practiceApplicationId) {
+      const practiceApplication = await practiceApplicationRepository.findOne({
+        where: { id: documentData.practiceApplicationId },
+        relations: ["student"],
+      });
+      if (!practiceApplication) {
+        throw new Error("Práctica no encontrada");
+      }
+    }
 
-    if (!practiceApplication) {
-      throw new Error("Práctica no encontrada");
+    if (documentData.internshipExternalId) {
+      const external = await internshipExternalRepository.findOne({
+        where: { id: documentData.internshipExternalId },
+      });
+      if (!external) {
+        throw new Error("Práctica externa no encontrada");
+      }
     }
 
     const document = documentRepository.create({

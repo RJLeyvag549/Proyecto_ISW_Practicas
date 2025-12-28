@@ -65,22 +65,12 @@ const ApplicationCard = ({ data, onView, onEdit, onDelete, onUpdateStatus, isAdm
                         <i className="fa-solid fa-calendar"></i>
                         <span>Enviada: {formatDate(data.createdAt)}</span>
                     </div>
-                    {(() => {
-                        try {
-                            const attachments = JSON.parse(data.attachments || '[]');
-                            if (Array.isArray(attachments) && attachments.length > 0) {
-                                return (
-                                    <div className="detail-item">
-                                        <i className="fa-solid fa-paperclip"></i>
-                                        <span>{attachments.length} documento{attachments.length > 1 ? 's' : ''} adjunto{attachments.length > 1 ? 's' : ''}</span>
-                                    </div>
-                                );
-                            }
-                            return null;
-                        } catch {
-                            return null;
-                        }
-                    })()}
+                    {data.documents && data.documents.length > 0 && (
+                        <div className="detail-item">
+                            <i className="fa-solid fa-paperclip"></i>
+                            <span>{data.documents.length} documento{data.documents.length > 1 ? 's' : ''} adjunto{data.documents.length > 1 ? 's' : ''}</span>
+                        </div>
+                    )}
                 </div>
             </div>
 
