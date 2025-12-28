@@ -24,12 +24,12 @@ export const internshipExternalValidation = Joi.object({
     }),
 
   companyName: Joi.string()
-    .min(2)
+    .min(5)
     .max(255)
     .required()
     .messages({
       "any.required": "El nombre de la empresa es obligatorio.",
-      "string.min": "El nombre de la empresa debe tener al menos 2 caracteres.",
+      "string.min": "El nombre de la empresa debe tener al menos 5 caracteres.",
       "string.max": "El nombre de la empresa no puede superar los 255 caracteres."
     }),
 

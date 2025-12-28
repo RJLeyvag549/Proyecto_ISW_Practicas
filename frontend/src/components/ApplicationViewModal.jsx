@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import { deleteOwnApplication, updateOwnApplication } from '@services/practiceApplication.service.js';
-import ProfileViewModal from '@components/ProfileViewModal.jsx';
+import axios from '@services/root.service.js';
+import { deleteOwnApplication, updateOwnApplication, uploadAttachmentsFiles } from '@services/practiceApplication.service.js';
 import '../styles/applications.css';
 
 const getStatusInfo = (status) => {
@@ -50,7 +50,9 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
         supervisorPhone: '',
         department: ''
     });
-    const [editAttachments, setEditAttachments] = useState([]);
+    const [editAttachments, setEditAttachments] = useState([]); // Documentos existentes
+    const [newFiles, setNewFiles] = useState([]); // Nuevos archivos reales a subir
+    const [documentsToDelete, setDocumentsToDelete] = useState([]); // IDs de documentos a eliminar
 
     // Inicializar form data cuando se abre el modal de edición
     const hydrateEditForm = useCallback(() => {
@@ -75,10 +77,13 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
             supervisorPhone: externalData.supervisorPhone || '',
             department: externalData.department || ''
         });
-        try {
-            const current = JSON.parse(application.attachments || '[]');
-            setEditAttachments(Array.isArray(current) ? current : []);
-        } catch {
+        setNewFiles([]);
+        setDocumentsToDelete([]);
+        
+        // Cargar documentos existentes desde documents
+        if (application.documents && Array.isArray(application.documents)) {
+            setEditAttachments(application.documents);
+        } else {
             setEditAttachments([]);
         }
     }, [application]);
@@ -89,9 +94,115 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
         setEditError('');
     };
 
+    const validateEditForm = () => {
+        // Empresa
+        if (!editFormData.companyName?.trim()) {
+            setEditError('El nombre de la empresa es obligatorio.');
+            return false;
+        }
+        if (editFormData.companyName.length < 5) {
+            setEditError('El nombre de la empresa debe tener al menos 5 caracteres.');
+            return false;
+        }
+        if (editFormData.companyAddress?.trim().length < 10) {
+            setEditError('La dirección debe tener al menos 10 caracteres.');
+            return false;
+        }
+        if (editFormData.companyEmail && editFormData.companyEmail.trim()) {
+            if (!/^\S+@\S+\.\S+$/.test(editFormData.companyEmail)) {
+                setEditError('El email de la empresa debe tener un formato válido.');
+                return false;
+            }
+        }
+        if (editFormData.companyIndustry && editFormData.companyIndustry.trim()) {
+            if (editFormData.companyIndustry.trim().length < 3) {
+                setEditError('La industria debe tener al menos 3 caracteres.');
+                return false;
+            }
+        }
+        if (editFormData.companyPhone && editFormData.companyPhone.trim()) {
+            if (!/^[+]?[\d\s\-()]{7,25}$/.test(editFormData.companyPhone.trim())) {
+                setEditError('El teléfono de la empresa debe tener un formato válido (ej: +56 9 1234 5678).');
+                return false;
+            }
+        }
+        if (editFormData.companyWebsite && editFormData.companyWebsite.trim()) {
+            try {
+                new URL(editFormData.companyWebsite.trim());
+            } catch {
+                setEditError('El sitio web debe ser una URL válida (ej: https://www.empresa.cl).');
+                return false;
+            }
+        }
+
+        // Supervisor
+        if (!editFormData.supervisorName?.trim()) {
+            setEditError('El nombre del supervisor es obligatorio.');
+            return false;
+        }
+        if (editFormData.supervisorName.length < 3) {
+            setEditError('El nombre del supervisor debe tener al menos 3 caracteres.');
+            return false;
+        }
+        if (!editFormData.supervisorPosition?.trim() || editFormData.supervisorPosition.length < 3) {
+            setEditError('El cargo del supervisor es obligatorio y debe tener al menos 3 caracteres.');
+            return false;
+        }
+        if (!editFormData.supervisorEmail?.trim() || !/^\S+@\S+\.\S+$/.test(editFormData.supervisorEmail)) {
+            setEditError('El email del supervisor debe tener un formato válido.');
+            return false;
+        }
+        if (editFormData.supervisorPhone && editFormData.supervisorPhone.trim()) {
+            if (!/^[+]?[\d\s\-()]{7,25}$/.test(editFormData.supervisorPhone.trim())) {
+                setEditError('El teléfono del supervisor debe tener un formato válido (ej: +56 9 1234 5678).');
+                return false;
+            }
+        }
+        if (editFormData.department && editFormData.department.trim()) {
+            if (editFormData.department.trim().length < 3) {
+                setEditError('El departamento debe tener al menos 3 caracteres.');
+                return false;
+            }
+        }
+
+        // Práctica
+        if (!editFormData.title?.trim() || editFormData.title.length < 5) {
+            setEditError('El título de la práctica es obligatorio y debe tener al menos 5 caracteres.');
+            return false;
+        }
+        if (!editFormData.description?.trim() || editFormData.description.length < 20) {
+            setEditError('La descripción es obligatoria y debe tener al menos 20 caracteres.');
+            return false;
+        }
+        if (!editFormData.activities?.trim() || editFormData.activities.length < 20) {
+            setEditError('Las actividades son obligatorias y deben tener al menos 20 caracteres.');
+            return false;
+        }
+        if (!editFormData.estimatedDuration?.trim()) {
+            setEditError('La duración estimada es obligatoria.');
+            return false;
+        }
+        if (editFormData.schedule && editFormData.schedule.trim()) {
+            if (editFormData.schedule.trim().length < 5) {
+                setEditError('El horario debe tener al menos 5 caracteres.');
+                return false;
+            }
+        }
+        if (editFormData.specialtyArea && editFormData.specialtyArea.trim()) {
+            if (editFormData.specialtyArea.trim().length < 3) {
+                setEditError('El área de especialidad debe tener al menos 3 caracteres.');
+                return false;
+            }
+        }
+        return true;
+    };
+
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         setEditError('');
+
+        if (!validateEditForm()) return;
+
         // Sanitizar datos opcionales: si están vacíos, no enviarlos para pasar validación Joi
         const optionalKeys = [
             'companyIndustry', 'companyWebsite', 'companyPhone', 'companyEmail',
@@ -106,11 +217,36 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
         setIsUpdating(true);
 
         try {
-            const response = await updateOwnApplication(application.id, cleanCompanyData, editAttachments);
+            // 1. Eliminar documentos marcados para eliminar
+            if (documentsToDelete.length > 0) {
+                for (const docId of documentsToDelete) {
+                    try {
+                        await axios.delete(`/documents/${docId}`);
+                    } catch (error) {
+                        console.error('Error al eliminar documento:', error);
+                        setEditError('Error al eliminar algunos documentos');
+                        setIsUpdating(false);
+                        return;
+                    }
+                }
+            }
+
+            // 2. Actualizar datos de la solicitud
+            const response = await updateOwnApplication(application.id, cleanCompanyData);
             
             if (response.error) {
                 setEditError(response.error);
             } else {
+                // 3. Subir archivos nuevos si se agregaron
+                if (newFiles.length > 0) {
+                    const uploadRes = await uploadAttachmentsFiles(application.id, newFiles);
+                    if (uploadRes?.error) {
+                        setEditError(uploadRes.error || 'Error al subir archivos');
+                        setIsUpdating(false);
+                        return;
+                    }
+                }
+
                 Swal.fire({
                     icon: 'success',
                     title: '¡Actualizada!',
@@ -126,6 +262,32 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
         } finally {
             setIsUpdating(false);
         }
+    };
+
+    const handleAddFiles = (e) => {
+        const files = Array.from(e.target.files);
+        if (newFiles.length + files.length > 5) {
+            setEditError('Máximo 5 archivos permitidos.');
+            return;
+        }
+        for (const file of files) {
+            if (file.size > 5 * 1024 * 1024) {
+                setEditError('Los archivos no pueden superar 5MB.');
+                return;
+            }
+        }
+        setNewFiles([...newFiles, ...files]);
+    };
+
+    const handleRemoveAttachment = (idx) => {
+        setNewFiles(newFiles.filter((_, i) => i !== idx));
+    };
+
+    const handleRemoveExistingDocument = (docId) => {
+        // Marcar documento para eliminar
+        setDocumentsToDelete([...documentsToDelete, docId]);
+        // Remover de la lista visible
+        setEditAttachments(editAttachments.filter(doc => doc.id !== docId));
     };
 
     const statusInfo = getStatusInfo(application.status);
@@ -154,11 +316,11 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
     }, [hydrateEditForm, showEditModal]);
 
     const attachments = (() => {
-        try {
-            return JSON.parse(application.attachments || '[]');
-        } catch {
-            return [];
+        // Usar documents si existen, sino array vacío
+        if (application.documents && Array.isArray(application.documents)) {
+            return application.documents;
         }
+        return [];
     })();
 
     const handleDeleteClick = async () => {
@@ -407,17 +569,22 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                             <div className="form-row">
                                 <div className="app-form-group">
                                     <label>Duración Estimada <span className="required">*</span></label>
-                                    <input
-                                        type="text"
+                                    <select
                                         name="estimatedDuration"
                                         value={editFormData.estimatedDuration}
                                         onChange={handleEditChange}
-                                        placeholder="Ej: 3 meses - 360 horas"
-                                    />
+                                    >
+                                        <option value="">Selecciona una duración...</option>
+                                        <option value="1-2 meses">1-2 meses</option>
+                                        <option value="2-3 meses">2-3 meses</option>
+                                        <option value="3-4 meses">3-4 meses</option>
+                                        <option value="4-6 meses">4-6 meses</option>
+                                        <option value="6+ meses">6+ meses</option>
+                                    </select>
                                 </div>
 
                                 <div className="app-form-group">
-                                    <label>Área de Especialidad</label>
+                                    <label>Área de Especialidad (opcional)</label>
                                     <input
                                         type="text"
                                         name="specialtyArea"
@@ -429,7 +596,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                             </div>
 
                             <div className="app-form-group">
-                                <label>Horarios <span className="required">*</span></label>
+                                <label>Horarios (opcional)</label>
                                 <textarea
                                     name="schedule"
                                     value={editFormData.schedule}
@@ -437,6 +604,60 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                                     placeholder="Ej: Lunes a Viernes 9:00-18:00"
                                     rows={2}
                                 />
+                            </div>
+
+                            <div className="app-form-group">
+                                <label>Documentos (máx 5, 5MB c/u)</label>
+                                
+                                {/* Mostrar documentos existentes */}
+                                {editAttachments.length > 0 && (
+                                    <div className="existing-documents">
+                                        <strong>Documentos actuales:</strong>
+                                        <div className="file-list">
+                                            {editAttachments.map((doc, idx) => (
+                                                <div key={doc.id || idx} className="file-item">
+                                                    <span>
+                                                        <i className="fa-solid fa-file"></i>
+                                                        {doc.filename || doc}
+                                                    </span>
+                                                    {doc.id && (
+                                                        <button
+                                                            type="button"
+                                                            className="app-btn-danger"
+                                                            onClick={() => handleRemoveExistingDocument(doc.id)}
+                                                        >
+                                                            <i className="fa-solid fa-trash"></i> Eliminar
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <input
+                                    type="file"
+                                    multiple
+                                    onChange={handleAddFiles}
+                                    accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png"
+                                />
+                                {newFiles.length > 0 && (
+                                    <div className="file-list">
+                                        <strong>Nuevos archivos a subir:</strong>
+                                        {newFiles.map((file, idx) => (
+                                            <div key={idx} className="file-item">
+                                                <span><i className="fa-solid fa-file"></i> {file.name} ({(file.size / 1024 / 1024).toFixed(2)}MB)</span>
+                                                <button
+                                                    type="button"
+                                                    className="app-btn-danger"
+                                                    onClick={() => handleRemoveAttachment(idx)}
+                                                >
+                                                    <i className="fa-solid fa-trash"></i> Quitar
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -621,9 +842,9 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                             <h3><i className="fa-solid fa-paperclip"></i> Documentos Adjuntos</h3>
                             <ul className="attachments-list">
                                 {attachments.map((doc, index) => (
-                                    <li key={index}>
+                                    <li key={doc.id || index}>
                                         <i className="fa-solid fa-file"></i>
-                                        {doc}
+                                        {doc.filename || doc}
                                     </li>
                                 ))}
                             </ul>

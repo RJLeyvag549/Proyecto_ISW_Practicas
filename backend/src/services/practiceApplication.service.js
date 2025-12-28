@@ -24,7 +24,6 @@ export async function createPracticeApplication(studentId, data) {
       applicationType: data.applicationType,
       status: "pending",
       coordinatorComments: null,
-      attachments: data.attachments || null,
     };
 
     if (data.applicationType === "existing") {
@@ -80,7 +79,7 @@ export async function getPracticeApplicationsByStudent(studentId) {
   try {
     const applications = await practiceApplicationRepository.find({
       where: { studentId },
-      relations: ["internship", "internship.company", "internship.supervisor", "internshipExternal"],
+      relations: ["internship", "internshipExternal", "documents"],
       order: { createdAt: "DESC" },
     });
     return [applications, null];
@@ -93,7 +92,7 @@ export async function getPracticeApplicationById(id, requester) {
   try {
     const application = await practiceApplicationRepository.findOne({
       where: { id },
-      relations: ["student", "internship", "internship.company", "internship.supervisor", "internshipExternal"]
+      relations: ["student", "internship", "internshipExternal", "documents"]
     });
 
     if (!application) return [null, "Solicitud no encontrada"];
@@ -127,7 +126,7 @@ export async function getAllPracticeApplications(filters) {
 
     const applications = await practiceApplicationRepository.find({
       where,
-      relations: ["student", "internship", "internship.company", "internship.supervisor", "internshipExternal"],
+      relations: ["student", "internship", "internshipExternal", "documents"],
       order: { createdAt: "DESC" },
     });
 
@@ -229,7 +228,6 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
 
     await practiceApplicationRepository.save(application);
 
-    // Obtener el email del estudiante para enviar notificación
     const student = application.student || await userRepository.findOneBy({ id: application.studentId });
     
     if (student && student.email) {
@@ -320,23 +318,6 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
   }
 }
 
-export async function addPracticeApplicationAttachments(id, attachments, studentId) {
-  try {
-    const application = await practiceApplicationRepository.findOneBy({ id });
-    if (!application) return [null, "Solicitud no encontrada"];
-    if (application.studentId !== studentId) return [null, "No tienes permiso"];
-    if (application.status !== "pending" && application.status !== "needsInfo") {
-      return [null, "Solo puedes agregar documentos en estado pending o needsInfo"];
-    }
-
-    application.attachments = attachments;
-    await practiceApplicationRepository.save(application);
-    return [application, null];
-  } catch (error) {
-    return [null, error.message];
-  }
-}
-
 export async function updateOwnPracticeApplication(id, studentId, data) {
   try {
     const application = await practiceApplicationRepository.findOne({ where: { id }, relations: ["internshipExternal"] });
@@ -358,10 +339,6 @@ export async function updateOwnPracticeApplication(id, studentId, data) {
       );
       if (externalError) return [null, externalError];
       application.internshipExternal = updatedExternal;
-    }
-
-    if (data.attachments) {
-      application.attachments = data.attachments;
     }
 
     application.updatedAt = new Date();
@@ -393,13 +370,7 @@ export async function deleteOwnPracticeApplication(id, studentId) {
   }
 }
 
-/**
- * Cierra una práctica si todos los documentos tienen nota.
- * Calcula el promedio y asigna resultado final (approved/failed).
- * Reglas por defecto:
- *  - Todos los documentos asociados deben tener grade no null
- *  - Promedio >= 4.0 => approved, si no failed
- */
+
 export async function closePracticeApplication(id, options = {}) {
   const MIN_AVERAGE = typeof options.minAverage === "number" ? options.minAverage : 4.0;
   try {

@@ -37,10 +37,6 @@ const PracticeApplicationSchema = new EntitySchema({
       type: "text",
       nullable: true,
     },
-    attachments: {
-      type: "text",
-      nullable: true,
-    },
     createdAt: {
       type: "timestamp with time zone",
       default: () => "CURRENT_TIMESTAMP",
@@ -52,7 +48,6 @@ const PracticeApplicationSchema = new EntitySchema({
       onUpdate: "CURRENT_TIMESTAMP",
       nullable: false,
     },
-    //cerrar practica
     isClosed: {
       type: "boolean",
       default: false,
@@ -66,7 +61,7 @@ const PracticeApplicationSchema = new EntitySchema({
     finalResult: {
       type: "varchar",
       length: 20,
-      nullable: true, //aproved - failed
+      nullable: true,
     },
     closedAt: {
       type: "timestamp with time zone",
@@ -101,22 +96,6 @@ const PracticeApplicationSchema = new EntitySchema({
       type: "one-to-many",
       target: "Document",
       inverseSide: "practiceApplication",
-    },
-    internship: {
-      type: "many-to-one",
-      target: "Internship",
-      joinColumn: {
-        name: "internshipId",
-      },
-      nullable: true,
-    },
-    internshipExternal: {
-      type: "many-to-one",
-      target: "InternshipExternal",
-      joinColumn: {
-        name: "internshipExternalId",
-      },
-      nullable: true,
     },
   },
   indices: [
