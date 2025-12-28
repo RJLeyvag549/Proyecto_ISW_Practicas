@@ -7,7 +7,6 @@ const practiceApplicationRepository = AppDataSource.getRepository("PracticeAppli
 
 
 export const DocumentService = {
-  // Helpers
   _calculateAverage(docs = []) {
     const graded = docs.filter(
       (d) => d.status === "approved" && d.grade !== null && d.grade !== undefined
@@ -46,7 +45,6 @@ export const DocumentService = {
     );
   },
 
-  // Queries
   async getAllDocuments() {
     return documentRepository.find({
       relations: [
@@ -188,7 +186,6 @@ export const DocumentService = {
     };
   },
 
-  // Commands
   async createDocument(documentData, file) {
     const practiceApplication = await practiceApplicationRepository.findOne({
       where: { id: documentData.practiceApplicationId },
