@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '../services/root.service';
+import { closeApplication } from '../services/practiceApplication.service';
 import Swal from 'sweetalert2';
 import '../styles/studentDocuments.css';
 
@@ -107,6 +108,50 @@ const StudentDocumentsPage = () => {
     }
   };
 
+  const handleClosePractice = async (practiceApplicationId, average) => {
+    const result = await Swal.fire({
+      title: 'Cerrar Práctica',
+      html: `
+        <p>¿Está seguro de cerrar esta práctica?</p>
+        <p style="margin-top: 10px;"><strong>Promedio final: ${average}</strong></p>
+        <p style="color: #666; font-size: 14px; margin-top: 5px;">Esta acción no se puede deshacer.</p>
+      `,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#6cc4c2',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Sí, cerrar práctica',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const response = await closeApplication(practiceApplicationId);
+      
+      if (response.error) {
+        Swal.fire('Error', response.error, 'error');
+        return;
+      }
+
+      Swal.fire({
+        title: '¡Práctica cerrada!',
+        html: `
+          <p>La práctica ha sido cerrada exitosamente.</p>
+          <p style="margin-top: 10px;"><strong>Promedio final: ${response.data?.finalAverage || average}</strong></p>
+          <p style="margin-top: 5px;"><strong>Resultado: ${response.data?.finalResult === 'approved' ? 'Aprobada' : 'Reprobada'}</strong></p>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#6cc4c2'
+      });
+      
+      fetchDocuments();
+    } catch (error) {
+      console.error('Error al cerrar práctica:', error);
+      Swal.fire('Error', 'No se pudo cerrar la práctica', 'error');
+    }
+  };
+
   const getStatusBadgeClass = (status) => {
     const statusMap = {
       pending: 'status-pending',
@@ -182,7 +227,6 @@ const StudentDocumentsPage = () => {
       ) : (
         <div className="students-list">
           {groupedStudents.map((student) => {
-            const avgData = student.overallAverage;
             return (
             <div key={student.studentId} className="student-card">
               <div
@@ -211,6 +255,17 @@ const StudentDocumentsPage = () => {
                           <span className={`average-badge ${practice?.average?.isComplete ? 'complete' : 'incomplete'}`}>
                             Promedio práctica: {practice?.average?.average ?? '-'} ({practice?.average?.totalWeight ?? 0}%)
                           </span>
+                          {practice?.average?.isComplete && 
+                           practice?.average?.totalWeight === 100 && 
+                           practice.practiceApplicationId && (
+                            <button
+                              onClick={() => handleClosePractice(practice.practiceApplicationId, practice.average.average)}
+                              className="btn-close-practice"
+                              title="Cerrar práctica (peso total 100%)"
+                            >
+                              <i className="fa-solid fa-check-circle"></i> Cerrar Práctica
+                            </button>
+                          )}
                         </div>
                       </div>
                       {practice.documents.map((doc) => (

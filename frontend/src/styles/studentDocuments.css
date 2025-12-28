@@ -188,6 +188,37 @@
     flex-wrap: wrap;
 }
 
+.btn-close-practice {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+}
+
+.btn-close-practice:hover {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-close-practice:active {
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
+}
+
+.btn-close-practice i {
+    font-size: 1rem;
+}
+
 .document-item {
     display: flex;
     align-items: center;
