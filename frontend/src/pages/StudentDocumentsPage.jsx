@@ -39,6 +39,34 @@ const StudentDocumentsPage = () => {
     return acc;
   }, {});
 
+  const calculateStudentAverage = (docs = []) => {
+    const graded = docs.filter((d) => d.grade !== null && d.grade !== undefined);
+    if (graded.length === 0) {
+      return { average: null, totalWeight: 0, isComplete: false };
+    }
+
+    const totalWeight = graded.reduce((sum, d) => sum + Number(d.weight || 0), 0);
+    const useWeighted = totalWeight > 0;
+
+    let avg = 0;
+    if (useWeighted) {
+      const weightedSum = graded.reduce(
+        (sum, d) => sum + Number(d.grade) * (Number(d.weight || 0) / 100),
+        0
+      );
+      avg = weightedSum;
+    } else {
+      const simple = graded.reduce((sum, d) => sum + Number(d.grade), 0) / graded.length;
+      avg = simple;
+    }
+
+    return {
+      average: Number(avg.toFixed(2)),
+      totalWeight,
+      isComplete: useWeighted ? totalWeight === 100 : graded.length > 0,
+    };
+  };
+
   const statistics = {
     total: documents.length,
     approved: documents.filter(d => d.status === 'approved').length,
@@ -189,8 +217,7 @@ const StudentDocumentsPage = () => {
       ) : (
         <div className="students-list">
           {Object.entries(groupedByStudent).map(([student, docs]) => {
-            const studentId = docs[0]?.uploadedBy;
-            const avgData = studentAverages[studentId];
+            const avgData = calculateStudentAverage(docs);
             return (
             <div key={student} className="student-card">
               <div
@@ -201,11 +228,10 @@ const StudentDocumentsPage = () => {
               >
                 <div className="student-info">
                   <span className="student-name">{student}</span>
-                  {avgData && avgData.average !== null && (
-                    <span className={`average-badge ${avgData.isComplete ? 'complete' : 'incomplete'}`}>
-                      Promedio: {avgData.average} ({avgData.totalWeight}%)
-                    </span>
-                  )}
+                  <span className={`average-badge ${avgData?.isComplete ? 'complete' : 'incomplete'}`}>
+                    Promedio: {avgData?.average !== null && avgData?.average !== undefined ? avgData.average : '-'}
+                    {` (${avgData?.totalWeight ?? 0}%)`}
+                  </span>
                 </div>
                 <span className="doc-count">{docs.length} documentos</span>
                 <span className="toggle-icon">
