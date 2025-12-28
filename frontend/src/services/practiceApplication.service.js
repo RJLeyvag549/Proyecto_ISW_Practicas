@@ -46,10 +46,11 @@ export async function applyToInternship(internshipId) {
 // Crear solicitud externa
 export async function applyExternal(companyData) {
     try {
-        const payload = { 
-            applicationType: "external",
+        const payload = {
+            applicationType: 'external',
             companyData
-        });
+        };
+        const { data } = await axios.post('/practiceApp/external', payload);
         return data;
     } catch (error) {
         console.error('Error completo:', error);
