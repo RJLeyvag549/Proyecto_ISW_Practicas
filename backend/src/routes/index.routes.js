@@ -20,7 +20,7 @@ router
   .use("/companies", companyRoutes)
   .use("/companies", supervisorRoutes)
   .use("/internships", internshipRoutes)
-  .use("/practiceApp", practiceApplication)
+  .use("/practiceApplications", practiceApplication)
   .use("/documents", documentRoutes)
   .use("/profile", profileRoutes)
   .use("/messages", messageRoutes);

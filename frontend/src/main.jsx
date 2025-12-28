@@ -9,7 +9,6 @@ import PracticeApplicationsPage from '@pages/PracticeApplicationsPage';
 import MyApplicationsPage from '@pages/MyApplicationsPage';
 import AvailableInternshipsPage from '@pages/AvailableInternshipsPage';
 import StudentDocumentsPage from '@pages/StudentDocumentsPage';
-import UploadDocuments from '@pages/UploadDocuments';
 import MyDocuments from '@pages/MyDocuments';
 import Register from '@pages/Register';
 import Terminos from '@pages/Terminos';
@@ -79,14 +78,6 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
        },
-       {
-        path: '/upload-documents',
-        element: (
-          <ProtectedRoute allowedRoles={['estudiante', 'usuario']}>
-            <UploadDocuments />
-          </ProtectedRoute>
-        ),
-      },
       {
         path: '/available-internships',
         element: (

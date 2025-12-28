@@ -132,6 +132,24 @@ const StudentDocumentsPage = () => {
     return colors[status] || '#f59e0b';
   };
 
+  const getDocumentTypeName = (type) => {
+    const map = {
+      PROGRESS_REPORT: 'Informe de Avance',
+      FINAL_REPORT: 'Informe Final',
+      PERFORMANCE_EVALUATION: 'Desempeño',
+    };
+    return map[type] || type || 'Sin tipo';
+  };
+
+  const getDocumentTypeColor = (type) => {
+    const map = {
+      PROGRESS_REPORT: '#3b82f6',
+      FINAL_REPORT: '#8b5cf6',
+      PERFORMANCE_EVALUATION: '#ec4899',
+    };
+    return map[type] || '#6b7280';
+  };
+
   if (loading) {
     return (
       <div className="loading">
@@ -211,6 +229,13 @@ const StudentDocumentsPage = () => {
                         )}
                       </div>
                       <span
+                        className="type-badge"
+                        style={{ background: getDocumentTypeColor(doc.type) }}
+                        title={doc.type}
+                      >
+                        {getDocumentTypeName(doc.type)}
+                      </span>
+                      <span
                         className={`status-badge ${getStatusBadgeClass(
                           doc.status
                         )}`}
@@ -227,26 +252,26 @@ const StudentDocumentsPage = () => {
                       <div className="doc-actions">
                         <button
                           onClick={() => handleReview(doc)}
-                          className="btn-icon"
+                          className="btn-icon btn-review"
                           title="Revisar"
                         >
-                          ✏️
+                          <i className="fa-solid fa-pen-to-square"></i>
                         </button>
                         <button
                           onClick={() =>
                             handleDownload(doc.id, doc.filename)
                           }
-                          className="btn-icon"
+                          className="btn-icon btn-download"
                           title="Descargar"
                         >
-                          ⬇️
+                          <i className="fa-solid fa-download"></i>
                         </button>
                         <button
                           onClick={() => handleDelete(doc.id)}
                           className="btn-icon btn-danger"
                           title="Eliminar"
                         >
-                          🗑️
+                          <i className="fa-solid fa-trash"></i>
                         </button>
                       </div>
                     </div>
@@ -266,6 +291,7 @@ const StudentDocumentsPage = () => {
             <div className="modal-content">
               <div className="doc-details">
                 <p><strong>Archivo:</strong> {selectedDoc.filename}</p>
+                <p><strong>Tipo:</strong> <span style={{ color: getDocumentTypeColor(selectedDoc.type), fontWeight: 'bold' }}>{getDocumentTypeName(selectedDoc.type)}</span></p>
                 <p><strong>Estudiante:</strong> {selectedDoc.uploader?.nombreCompleto || selectedDoc.uploadedBy}</p>
                 <p><strong>Fecha:</strong> {selectedDoc.createdAt ? new Date(selectedDoc.createdAt).toLocaleDateString() : '-'}</p>
               </div>
