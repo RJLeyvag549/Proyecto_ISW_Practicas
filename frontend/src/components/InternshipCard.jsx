@@ -1,4 +1,4 @@
-import '@styles/internship.css';
+import '../styles/internship.css';
 import { format } from "@formkit/tempo";
 
 const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole }) => {
@@ -63,16 +63,16 @@ const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole }) =
                 </div>
 
                 <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-                    <button className="btn-view" title="Ver Detalle" onClick={() => onView(data)}>
+                    <button className="intern-btn-view" title="Ver Detalle" onClick={() => onView(data)}>
                         <i className="fa-solid fa-eye"></i>
                     </button>
 
                     {userRole === 'administrador' ? (
                         <>
-                            <button onClick={() => onEdit(data)} className="btn-edit" title="Editar">
+                            <button onClick={() => onEdit(data)} className="intern-btn-edit" title="Editar">
                                 <i className="fa-solid fa-pen-to-square"></i>
                             </button>
-                            <button onClick={() => onDelete(data.id)} className="btn-delete" title="Eliminar">
+                            <button onClick={() => onDelete(data.id)} className="intern-btn-delete" title="Eliminar">
                                 <i className="fa-solid fa-trash"></i>
                             </button>
                         </>

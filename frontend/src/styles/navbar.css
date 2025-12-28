@@ -2,7 +2,7 @@
     margin-top: 9vh;
     width: 100%;
     background-color: #9fdece;
-    padding: 2.8rem 0;
+    padding: 2.5rem 0;
     display: flex;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
@@ -11,19 +11,21 @@
 
 .inferior-list {
     display: flex;
-    gap: 2rem;
+    gap: 1.2rem;
     list-style: none;
     margin: 0;
-    padding: 0;
+    padding: 3;
     align-items: center;
 }
 
 .inferior-list li {
     position: relative;
-    padding: 0 1rem;
-    font-size: 1.3rem;
+    padding: 0 0.6rem;
+    font-size: 1.15rem;
     font-weight: 600;
     transition: transform 0.25s ease;
+    box-sizing: border-box;
+    max-width: 220px;
 }
 
 .inferior-list li:hover {
@@ -34,8 +36,8 @@
     content: "";
     position: absolute;
     top: -10px;
-    left: -8px;
-    right: -8px;
+    left: 0px;
+    right: 0px;
     bottom: -10px;
     background: rgba(255, 255, 255, 0.25);
     border-radius: 10px;
@@ -46,7 +48,7 @@
 .inferior-list li:not(:last-child)::after {
     content: "";
     position: absolute;
-    right: -1rem;
+    right: -0.6rem;
     top: 50%;
     transform: translateY(-50%);
     width: 2px;
@@ -64,6 +66,14 @@
     transition: color 0.25s ease, transform 0.25s ease;
 }
 
+.inferior-list li a {
+    display: block;
+    width: 100%;
+    max-width: 220px;
+    white-space: normal;
+    word-break: break-word;
+    text-align: center;
+}
 /* === ANIMACIÓN DEL TEXTO AL PASAR === */
 .inferior-list li a:hover,
 .logout-link:hover {

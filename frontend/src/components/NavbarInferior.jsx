@@ -30,7 +30,7 @@ const NavbarInferior = () => {
             <li><NavLink to="/consultas">Consultas</NavLink></li>
           </>
         )}
-        
+
         {userRole === 'estudiante' && (
           <>
             <li><NavLink to="/admin/internships">Ofertas de Práctica</NavLink></li>
@@ -49,7 +49,7 @@ const NavbarInferior = () => {
             <li><NavLink to="/consultas">Consultas</NavLink></li>
           </>
         )}
-        
+
       </ul>
     </nav>
   );
