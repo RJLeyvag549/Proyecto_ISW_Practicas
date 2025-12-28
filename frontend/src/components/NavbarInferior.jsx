@@ -49,12 +49,7 @@ const NavbarInferior = () => {
             <li><NavLink to="/consultas">Consultas</NavLink></li>
           </>
         )}
-<<<<<<< HEAD
 
-
-=======
-        
->>>>>>> 0630c1782180812f6d129e22004e8111814e1a11
       </ul>
     </nav>
   );
