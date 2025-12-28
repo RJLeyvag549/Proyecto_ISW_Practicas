@@ -168,14 +168,19 @@ export default function ProfileEditModal({ onClose, onSuccess }) {
 
             <h3 className="step-title">Documentos</h3>
             <div className="app-form-group">
-              <label>Archivos (Currículum, Carta de Presentación, etc.)</label>
+              <label>Archivos de Documentación</label>
               <input
                 type="file"
                 multiple
                 onChange={handleFileChange}
-                accept=".pdf,.doc,.docx"
+                accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
               />
-              <small className="text-muted">Formatos: PDF, DOC, DOCX (opcional)</small>
+              <small className="text-muted">
+                <strong>Documentos recomendados:</strong> Currículum Vitae (CV), Certificado de Alumno Regular, 
+                Carta de Presentación, Concentración de Notas, Certificados de cursos o capacitaciones relevantes.
+                <br />
+                <strong>Formatos aceptados:</strong> PDF, DOC, DOCX, JPG, PNG (máximo 5 archivos, 5MB cada uno)
+              </small>
               {uploadedFiles.length > 0 && (
                 <div className="file-list">
                   {uploadedFiles.map((file, idx) => (

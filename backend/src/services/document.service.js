@@ -4,6 +4,7 @@ import { AppDataSource } from "../config/configDb.js";
 
 const documentRepository = AppDataSource.getRepository("Document");
 const practiceApplicationRepository = AppDataSource.getRepository("PracticeApplication");
+const internshipExternalRepository = AppDataSource.getRepository("InternshipExternal");
 
 //servicio de documentos
 export const DocumentService = {
@@ -189,8 +190,11 @@ export const DocumentService = {
 //subir documento
   async createDocument(documentData, file) {
     // Permitir documentos ligados a práctica interna o externa
+    let practiceApplication = null;
+    const isAttachment = documentData.type === "ATTACHMENT";
+
     if (documentData.practiceApplicationId) {
-      const practiceApplication = await practiceApplicationRepository.findOne({
+      practiceApplication = await practiceApplicationRepository.findOne({
         where: { id: documentData.practiceApplicationId },
         relations: ["student"],
       });
@@ -208,17 +212,30 @@ export const DocumentService = {
       }
     }
 
-    const uploaderId = Number(documentData.uploadedBy);
-    if (practiceApplication.studentId !== uploaderId) {
-      throw new Error("No puedes subir documentos a una práctica de otro estudiante");
-    }
+    // Validaciones diferentes según tipo:
+    // - ATTACHMENT: adjuntos de solicitud externa (se suben mientras está pending/needsInfo)
+    // - Otros: documentos finales (se suben cuando está accepted)
+    if (practiceApplication) {
+      const uploaderId = Number(documentData.uploadedBy);
+      if (practiceApplication.studentId !== uploaderId) {
+        throw new Error("No puedes subir documentos a una práctica de otro estudiante");
+      }
 
-    if (practiceApplication.status !== "accepted") {
-      throw new Error("Solo puedes subir documentos cuando la práctica está aceptada");
-    }
+      if (isAttachment) {
+        // Para adjuntos: solo validar que esté en estado editable (pending o needsInfo)
+        if (!["pending", "needsInfo"].includes(practiceApplication.status)) {
+          throw new Error("Solo puedes agregar adjuntos mientras la solicitud está pendiente o requiere info");
+        }
+      } else {
+        // Para documentos finales: validar que esté aceptado y no cerrado
+        if (practiceApplication.status !== "accepted") {
+          throw new Error("Solo puedes subir documentos cuando la práctica está aceptada");
+        }
 
-    if (practiceApplication.isClosed) {
-      throw new Error("No se pueden subir documentos a una práctica cerrada");
+        if (practiceApplication.isClosed) {
+          throw new Error("No se pueden subir documentos a una práctica cerrada");
+        }
+      }
     }
 
     const document = documentRepository.create({

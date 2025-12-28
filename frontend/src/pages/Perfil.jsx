@@ -134,6 +134,34 @@ const Perfil = () => {
         </section>
 
         <section className="profile-section">
+          <h2 className="profile-title" style={{ fontSize: '1.1rem' }}>Documentos Adjuntos</h2>
+          {loading && <p>Cargando documentos...</p>}
+          {!loading && !error && (
+            <div>
+              {profile?.curriculum ? (
+                <div>
+                  <span className="profile-label">Documentos subidos:</span>
+                  <div className="profile-value">
+                    {profile.curriculum.split(';').map((docPath, idx) => {
+                      const fullFileName = docPath.split('/').pop();
+                      const fileName = fullFileName.split('-').slice(2).join('-');
+                      return (
+                        <div key={idx} style={{ marginBottom: '8px' }}>
+                          <i className="fa-solid fa-file" style={{ marginRight: '8px', color: '#0066cc' }}></i>
+                          {fileName}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <p className="profile-value">No hay documentos subidos</p>
+              )}
+            </div>
+          )}
+        </section>
+
+        <section className="profile-section">
           <h2 className="profile-title" style={{ fontSize: '1.1rem' }}>Seguridad</h2>
           <button className="app-btn-primary" onClick={() => setShowPwdModal(true)}>
             Cambiar contraseña

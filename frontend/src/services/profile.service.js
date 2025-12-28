@@ -5,6 +5,15 @@ export async function getMyProfile() {
   return data.data;
 }
 
+export async function getUserProfile(userId) {
+  try {
+    const { data } = await axios.get(`/profile/${userId}`);
+    return data.data;
+  } catch (error) {
+    return { error: error.response?.data?.message || 'Error al obtener el perfil' };
+  }
+}
+
 export async function changeMyPassword(password, newPassword) {
   const { data } = await axios.patch('/profile/password', { password, newPassword });
   return data;
@@ -22,8 +31,8 @@ export async function updateMyProfile(profileData) {
 export async function uploadMyProfileDocument(fileObjects) {
   try {
     const formData = new FormData();
-    fileObjects.forEach((file, index) => {
-      formData.append('attachments', file);
+    fileObjects.forEach((file) => {
+      formData.append('documents', file);
     });
     const { data } = await axios.post('/profile/documents/upload', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }

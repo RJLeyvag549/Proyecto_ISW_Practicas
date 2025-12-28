@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
 import axios from '@services/root.service.js';
 import { deleteOwnApplication, updateOwnApplication, uploadAttachmentsFiles } from '@services/practiceApplication.service.js';
+import { getUserProfile } from '@services/profile.service.js';
 import '../styles/applications.css';
 
 const getStatusInfo = (status) => {
@@ -28,6 +29,8 @@ const formatDate = (dateString) => {
 const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false, isAdmin = false }) => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showProfileModal, setShowProfileModal] = useState(false);
+    const [studentProfile, setStudentProfile] = useState(null);
+    const [loadingProfile, setLoadingProfile] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
     const [editError, setEditError] = useState('');
@@ -735,9 +738,35 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                                 <button
                                     type="button"
                                     className="app-btn-primary"
-                                    onClick={() => setShowProfileModal(true)}
+                                    onClick={async () => {
+                                        setLoadingProfile(true);
+                                        try {
+                                            const profile = await getUserProfile(student.id);
+                                            if (profile.error) {
+                                                Swal.fire({
+                                                    icon: 'error',
+                                                    title: 'Error',
+                                                    text: profile.error,
+                                                    confirmButtonColor: '#6cc4c2'
+                                                });
+                                            } else {
+                                                setStudentProfile(profile);
+                                                setShowProfileModal(true);
+                                            }
+                                        } catch (error) {
+                                            Swal.fire({
+                                                icon: 'error',
+                                                title: 'Error',
+                                                text: 'No se pudo cargar el perfil',
+                                                confirmButtonColor: '#6cc4c2'
+                                            });
+                                        } finally {
+                                            setLoadingProfile(false);
+                                        }
+                                    }}
+                                    disabled={loadingProfile}
                                 >
-                                    <i className="fa-solid fa-address-card"></i> Ver perfil completo
+                                    <i className="fa-solid fa-address-card"></i> {loadingProfile ? 'Cargando...' : 'Ver perfil completo'}
                                 </button>
                             </div>
                         )}
@@ -922,8 +951,11 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
             {showProfileModal && (
                 <ProfileViewModal
                     student={student}
-                    profile={student?.profile}
-                    onClose={() => setShowProfileModal(false)}
+                    profile={studentProfile}
+                    onClose={() => {
+                        setShowProfileModal(false);
+                        setStudentProfile(null);
+                    }}
                 />
             )}
         </div>

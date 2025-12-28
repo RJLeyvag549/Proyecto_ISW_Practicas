@@ -18,7 +18,9 @@ import {
 
 export async function getProfile(req, res) {
   try {
-    const userId = req.user.id;
+    // Si viene userId en params, usarlo (para admin/supervisor viendo perfil de estudiante)
+    // Si no, usar el id del usuario autenticado
+    const userId = req.params.userId ? parseInt(req.params.userId) : req.user.id;
     const [profile, serviceError] = await getOrCreateProfile(userId);
 
     if (serviceError) {
@@ -104,6 +106,31 @@ export async function updateDocuments(req, res) {
     await checkAndUpdateProfileCompletion(userId);
 
     handleSuccess(res, 200, "Documentos actualizados exitosamente", profile);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function uploadProfileDocuments(req, res) {
+  try {
+    const userId = req.user.id;
+    const files = Array.isArray(req.files) ? req.files : [];
+
+    if (!files.length) {
+      return handleErrorClient(res, 400, "Debe adjuntar al menos un archivo");
+    }
+
+    const fileRoutes = files.map(file => `uploads/documents/${file.filename}`);
+
+    const [profile, serviceError] = await updateProfileDocuments(userId, { curriculum: fileRoutes.join(';') });
+
+    if (serviceError) {
+      return handleErrorClient(res, 400, "Error al subir documentos", serviceError);
+    }
+
+    await checkAndUpdateProfileCompletion(userId);
+
+    handleSuccess(res, 200, "Documentos subidos exitosamente", profile);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }

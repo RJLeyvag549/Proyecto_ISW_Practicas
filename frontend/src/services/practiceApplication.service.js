@@ -36,7 +36,7 @@ export async function getApplicationById(id) {
 // Crear solicitud para oferta existente
 export async function applyToInternship(internshipId) {
     try {
-        const { data } = await axios.post(`/practiceApp/internship/${internshipId}`, {});
+        const { data } = await axios.post(`/practiceApplications/internship/${internshipId}`, {});
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al crear solicitud' };
@@ -46,9 +46,9 @@ export async function applyToInternship(internshipId) {
 // Crear solicitud externa
 export async function applyExternal(companyData) {
     try {
-        const payload = { 
+        const { data } = await axios.post(`/practiceApplications/internshipExternal`, {
             applicationType: "external",
-            companyData
+            companyData,
         });
         return data;
     } catch (error) {
@@ -73,7 +73,7 @@ export async function applyExternal(companyData) {
 // Editar solicitud externa (estudiante)
 export async function updateOwnApplication(id, companyData) {
     try {
-        const { data } = await axios.put(`/practiceApp/${id}`, { companyData });
+        const { data } = await axios.put(`/practiceApplications/${id}`, { companyData });
         return data;
     } catch (error) {
         const err = error.response?.data;
@@ -118,7 +118,7 @@ export async function uploadAttachmentsFiles(id, fileObjects = []) {
         fileObjects.slice(0, 5).forEach((file) => {
             formData.append('documents', file);
         });
-        const { data } = await axios.post(`/practiceApp/${id}/attachments/upload`, formData, {
+        const { data } = await axios.post(`/practiceApplications/${id}/attachments/upload`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return data;
