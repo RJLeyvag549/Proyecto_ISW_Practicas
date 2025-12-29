@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import api from "@services/root.service.js";
 import Swal from "sweetalert2";
 import '@styles/viewModal.css';
+import '../styles/applications.css';
 
 const InternshipEditModal = ({ show, onClose, data, onUpdate }) => {
     const [loading, setLoading] = useState(false);
@@ -135,11 +136,17 @@ const InternshipEditModal = ({ show, onClose, data, onUpdate }) => {
                     </div>
 
                     <div className="modal-footer">
-                        <button type="button" className="btn-modal-action" style={{ background: '#9ca3af', marginRight: '1rem' }} onClick={onClose}>
+                        <button type="button" className="app-btn-secondary" onClick={onClose}>
                             Cancelar
                         </button>
-                        <button type="submit" className="btn-modal-action" disabled={loading}>
-                            {loading ? "Guardando..." : "Guardar Cambios"}
+                        <button type="submit" className="app-btn-primary" disabled={loading}>
+                            {loading ? (
+                                <>
+                                    <i className="fa-solid fa-spinner fa-spin"></i> Guardando...
+                                </>
+                            ) : (
+                                "Guardar Cambios"
+                            )}
                         </button>
                     </div>
                 </form>

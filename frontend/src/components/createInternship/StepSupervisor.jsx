@@ -77,9 +77,28 @@ const StepSupervisor = ({ onNext, onBack, companyId, initialData }) => {
         } catch (error) {
             console.error("Error saving supervisor:", error);
             const responseData = error.response?.data;
-            const message = responseData?.details
-                ? `${responseData.message}: ${JSON.stringify(responseData.details)}`
-                : (responseData?.message || "No se pudo guardar el supervisor");
+
+            let message = "No se pudo guardar el supervisor";
+
+            if (responseData?.details) {
+                // Si es un error de validación de Joi (array)
+                if (Array.isArray(responseData.details)) {
+                    message = responseData.details.map(d => d.message).join(', ');
+                    // Traducir mensajes comunes de Joi si es necesario
+                    if (message.includes("valid email")) message = "El formato del correo electrónico no es válido.";
+                    if (message.includes("pattern")) message = "El formato del teléfono no es válido (ej: +56 9 ...).";
+                } else if (typeof responseData.details === 'string') {
+                    message = responseData.details;
+                } else {
+                    message = JSON.stringify(responseData.details);
+                }
+            } else if (responseData?.message) {
+                message = responseData.message;
+            }
+
+            // Fallback final por si todo falla
+            if (!message || typeof message !== 'string') message = "Ocurrió un error inesperado al guardar.";
+
             Swal.fire("Error", message, "error");
         } finally {
             setLoading(false);
@@ -218,13 +237,21 @@ const StepSupervisor = ({ onNext, onBack, companyId, initialData }) => {
                         />
                         <input
                             type="email" placeholder="Email" required
+                            pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+                            title="Ej: nombre@empresa.com"
                             value={supervisorForm.email}
                             onChange={e => setSupervisorForm({ ...supervisorForm, email: e.target.value })}
+                            onInvalid={e => e.target.setCustomValidity('Por favor, introduce una dirección de correo válida (ej: nombre@empresa.com)')}
+                            onInput={e => e.target.setCustomValidity('')}
                         />
                         <input
-                            type="text" placeholder="Teléfono"
+                            type="tel" placeholder="Teléfono"
+                            pattern="^[+]?[0-9\\s\\-\\(\\)]{7,15}$"
+                            title="Formato inválido (ej: +56 9 1234 5678)"
                             value={supervisorForm.phone}
                             onChange={e => setSupervisorForm({ ...supervisorForm, phone: e.target.value })}
+                            onInvalid={e => e.target.setCustomValidity('Formato inválido. Usa solo números, espacios y +.-()')}
+                            onInput={e => e.target.setCustomValidity('')}
                         />
                         <input
                             type="text" placeholder="Área de Especialidad"
