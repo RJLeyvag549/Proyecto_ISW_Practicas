@@ -75,17 +75,19 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
+    padding: 1.2rem 2.5rem;
     background: #2d8b87 !important;
     color: #ffffff !important;
     border: none;
     border-radius: 8px;
     font-weight: 600;
-    font-size: 1rem;
+    font-size: 1.05rem;
     cursor: pointer;
     transition: all 0.3s;
     white-space: nowrap;
     box-shadow: 0 3px 10px rgba(45, 139, 135, 0.4);
+    min-height: 52px;
+    min-width: 200px;
 }
 
 .filter-actions .btn-create-external:hover,
