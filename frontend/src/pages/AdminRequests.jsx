@@ -75,50 +75,46 @@ const AdminRequests = () => {
 
   return (
     <div className='main-container'>
-      <div className='top-table' style={{width: '100%', maxWidth: '1200px'}}>
-        <h1 className='title-table'>Solicitudes de registro pendientes</h1>
-      </div>
-      {students.length === 0 ? (
-        <p>No hay solicitudes pendientes</p>
-      ) : (
-        <div className='table-container'>
-          <table className='table-default'>
-            <thead>
-              <tr>
-                <th>Nombre</th>
-                <th>Correo</th>
-                <th>RUT</th>
-                <th>Creado</th>
-                <th style={{width: '160px'}}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {students.map(s => (
-                <tr key={s.id}>
-                      <td className='user-name' style={{cursor: 'pointer'}}>{s.nombreCompleto}</td>
-                  <td>{s.email}</td>
-                  <td>{s.rut}</td>
-                    <td>{s.createdAt ? new Date(s.createdAt).toLocaleDateString() : '—'}</td>
-                    <td>
-                      <button className='btn-view' onClick={() => handleView(s.id)}>Ver</button>
-                    </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className='table-footer'>
-            <div className='pagination'>
-              <button className='page-btn'>Primero</button>
-              <button className='page-btn'>Anterior</button>
-              <button className='page-number active'>1</button>
-              <button className='page-number'>2</button>
-              <button className='page-btn'>Siguiente</button>
-              <button className='page-btn'>Último</button>
-            </div>
-          </div>
+      <div className='table-container'>
+        <div className='top-table'>
+          <h1 className='title-table'>Solicitudes de Registro Pendientes</h1>
         </div>
-      )}
+        {students.length === 0 ? (
+          <div className='empty-state'>
+            <i className="fa-solid fa-inbox" style={{fontSize: '3rem', color: '#9ca3af', marginBottom: '1rem'}}></i>
+            <p>No hay solicitudes pendientes</p>
+          </div>
+        ) : (
+          <>
+            <table className='users-table'>
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Correo</th>
+                  <th>RUT</th>
+                  <th>Creado</th>
+                  <th className='actions-col'>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map(s => (
+                  <tr key={s.id}>
+                    <td className='user-name'>{s.nombreCompleto}</td>
+                    <td>{s.email}</td>
+                    <td>{s.rut}</td>
+                    <td>{s.createdAt ? new Date(s.createdAt).toLocaleDateString('es-CL') : '—'}</td>
+                    <td className='actions-cell'>
+                      <button className='btn-view' onClick={() => handleView(s.id)}>
+                        <i className="fa-solid fa-eye"></i> Ver
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </div>
     </div>
   );
 };

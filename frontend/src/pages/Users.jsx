@@ -1,18 +1,12 @@
-import Table from '@components/Table';
 import useUsers from '@hooks/users/useGetUsers.jsx';
 import Search from '../components/Search';
 import Popup from '../components/Popup';
-import DeleteIcon from '../assets/deleteIcon.svg';
-import UpdateIcon from '../assets/updateIcon.svg';
-import UpdateIconDisable from '../assets/updateIconDisabled.svg';
-import DeleteIconDisable from '../assets/deleteIconDisabled.svg';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import '@styles/users.css';
 import useEditUser from '@hooks/users/useEditUser';
-import useDeleteUser from '@hooks/users/useDeleteUser';
 
 const Users = () => {
-  const { users, fetchUsers, setUsers } = useUsers();
+  const { users, setUsers } = useUsers();
   const [filterRut, setFilterRut] = useState('');
 
   const {
@@ -24,55 +18,69 @@ const Users = () => {
     setDataUser
   } = useEditUser(setUsers);
 
-  const { handleDelete } = useDeleteUser(fetchUsers, setDataUser);
-
   const handleRutFilterChange = (e) => {
     setFilterRut(e.target.value);
   };
 
-  const handleSelectionChange = useCallback((selectedUsers) => {
-    setDataUser(selectedUsers);
-  }, [setDataUser]);
+  const filteredUsers = useMemo(() => {
+    const term = filterRut.trim().toLowerCase();
+    if (!term) return users || [];
+    return (users || []).filter((u) => (u.rut || '').toLowerCase().includes(term));
+  }, [filterRut, users]);
 
-  const columns = [
-    { title: "Nombre", field: "nombreCompleto", width: 350, responsive: 0 },
-    { title: "Correo electrónico", field: "email", width: 300, responsive: 3 },
-    { title: "Rut", field: "rut", width: 150, responsive: 2 },
-    { title: "Rol", field: "rol", width: 200, responsive: 2 },
-    { title: "Creado", field: "createdAt", width: 200, responsive: 2 }
-  ];
+  const handleSelectUser = useCallback((user) => {
+    setDataUser(user ? [user] : []);
+  }, [setDataUser]);
 
   return (
     <div className='main-container'>
       <div className='table-container'>
         <div className='top-table'>
-          <h1 className='title-table'>Usuarios</h1>
+          <h1 className='title-table'>Usuarios Registrados</h1>
           <div className='filter-actions'>
             <Search value={filterRut} onChange={handleRutFilterChange} placeholder={'Filtrar por rut'} />
-            <button onClick={handleClickUpdate} disabled={dataUser.length === 0}>
-              {dataUser.length === 0 ? (
-                <img src={UpdateIconDisable} alt="edit-disabled" />
-              ) : (
-                <img src={UpdateIcon} alt="edit" />
-              )}
-            </button>
-            <button className='delete-user-button' disabled={dataUser.length === 0} onClick={() => handleDelete(dataUser)}>
-              {dataUser.length === 0 ? (
-                <img src={DeleteIconDisable} alt="delete-disabled" />
-              ) : (
-                <img src={DeleteIcon} alt="delete" />
-              )}
-            </button>
           </div>
         </div>
-        <Table
-          data={users}
-          columns={columns}
-          filter={filterRut}
-          dataToFilter={'rut'}
-          initialSortName={'nombreCompleto'}
-          onSelectionChange={handleSelectionChange}
-        />
+
+        {filteredUsers.length === 0 ? (
+          <div className='empty-state'>
+            <i className="fa-solid fa-inbox" style={{fontSize: '3rem', color: '#9ca3af', marginBottom: '1rem'}}></i>
+            <p>No hay usuarios registrados</p>
+          </div>
+        ) : (
+          <table className='users-table'>
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Correo</th>
+                <th>RUT</th>
+                <th>Rol</th>
+                <th>Creado</th>
+                <th className='actions-col'>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredUsers.map((u) => {
+                const created = u.createdAt ? new Date(u.createdAt).toLocaleDateString('es-CL') : '—';
+                const isSelected = dataUser[0]?.id === u.id;
+                return (
+                  <tr key={u.id} className={isSelected ? 'row-selected' : ''} onClick={() => handleSelectUser(u)}>
+                    <td className='user-name'>{u.nombreCompleto}</td>
+                    <td>{u.email}</td>
+                    <td>{u.rut}</td>
+                    <td>{u.rol}</td>
+                    <td>{created}</td>
+                    <td className='actions-cell'>
+                      <button className='btn-view' onClick={(e) => { e.stopPropagation(); handleSelectUser(u); handleClickUpdate(); }}>
+                        <i className="fa-solid fa-eye"></i> Ver
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
       <Popup show={isPopupOpen} setShow={setIsPopupOpen} data={dataUser} action={handleUpdate} />
     </div>

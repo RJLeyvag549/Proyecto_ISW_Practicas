@@ -1,36 +1,66 @@
-.table-container .tabulator .tabulator-col {
-    background: #003366;
-    color: #fff;
-    font-weight: 700;
-    padding: 10px 12px;
-    border-bottom: 2px solid rgba(16,24,40,0.06);
+.table-container .tabulator {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
-.table-container .tabulator .tabulator-row { background: transparent; }
-.table-container .tabulator .tabulator-row.tabulator-row-even { background: #f6f7f9; }
-.table-container .tabulator .tabulator-row:hover { background: rgba(13, 110, 253, 0.04); }
+.table-container .tabulator .tabulator-header {
+    background: linear-gradient(135deg, #6cc4c2 0%, #53b5b3 100%);
+    border: none;
+}
+
+.table-container .tabulator .tabulator-col {
+    background: transparent;
+    color: #fff;
+    font-weight: 700;
+    padding: 12px 14px;
+    border-bottom: none;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    font-size: 0.9rem;
+}
+
+.table-container .tabulator .tabulator-col:last-child {
+    text-align: center;
+}
+
+.table-container .tabulator .tabulator-row { 
+    background: white; 
+    border-bottom: 1px solid #e5e7eb;
+    transition: all 0.2s ease;
+}
+
+.table-container .tabulator .tabulator-row.tabulator-row-even { background: #f9fafb; }
+.table-container .tabulator .tabulator-row:hover { 
+    background: #f1f5f9; 
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
 .table-container .tabulator .tabulator-cell {
-    padding: 10px 12px;
-    color: #203040;
-    border-bottom: 1px solid rgba(16,24,40,0.04);
+    padding: 12px 14px;
+    color: #374151;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 0.95rem;
 }
 
 .tabulator .tabulator-footer {
     background: #f3f4f6;
-    border-top: 1px solid rgba(16,24,40,0.04);
-    padding: 12px 8px;
+    border-top: 1px solid rgba(16,24,40,0.08);
+    padding: 12px 10px;
 }
 .tabulator .tabulator-footer .tabulator-page {
     background-color: #fff;
     color: #203040;
-    border: 1px solid rgba(16,24,40,0.08);
+    border: 1px solid rgba(16,24,40,0.12);
     padding: 6px 10px;
     border-radius: 6px;
     cursor: pointer;
+    transition: all 0.2s;
 }
-.tabulator .tabulator-footer .tabulator-page:hover { background-color: #f0f0f0; }
+.tabulator .tabulator-footer .tabulator-page:hover { background-color: #f9fafb; border-color: #6cc4c2; }
 .tabulator .tabulator-footer .tabulator-page.active {
-    background: #fff;
-    border-color: #E4332C;
-    color: #E4332C;
+    background: #6cc4c2;
+    border-color: #6cc4c2;
+    color: #fff;
 }
