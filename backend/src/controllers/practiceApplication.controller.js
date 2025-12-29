@@ -191,17 +191,27 @@ export async function deleteOwnApplication(req, res) {
 export async function closeApplication(req, res) {
   try {
     const { id } = req.params;
-    const { error } = closeApplicationValidation.validate(req.body || {});
+    const body = req.body || {};
+    
+    console.log("Close application request:", { id, body });
+    
+    const { error } = closeApplicationValidation.validate(body);
     if (error) {
+      console.log("Validation error:", error);
       return handleErrorClient(res, 400, "Error de validación", error.message);
     }
-    const { minAverage } = req.body || {};
+    
+    const { minAverage } = body;
     const [application, serviceError] = await closePracticeApplication(parseInt(id), { minAverage });
+    
     if (serviceError) {
+      console.log("Service error:", serviceError);
       return handleErrorClient(res, 400, "No se pudo cerrar la práctica", serviceError);
     }
+    
     handleSuccess(res, 200, "Práctica cerrada exitosamente", application);
   } catch (error) {
+    console.error("Close application error:", error);
     handleErrorServer(res, 500, error.message);
   }
 }

@@ -25,6 +25,10 @@ export default function ProfileEditModal({ onClose, onSuccess }) {
 
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fileObjects, setFileObjects] = useState([]);
+  const [existingDocs, setExistingDocs] = useState({
+    curriculum: null,
+    coverLetter: null
+  });
 
   useEffect(() => {
     (async () => {
@@ -43,6 +47,10 @@ export default function ProfileEditModal({ onClose, onSuccess }) {
       setDocs({
         curriculum: p?.curriculum || '',
         coverLetter: p?.coverLetter || ''
+      });
+      setExistingDocs({
+        curriculum: p?.curriculum || null,
+        coverLetter: p?.coverLetter || null
       });
     })();
   }, []);
@@ -67,6 +75,10 @@ export default function ProfileEditModal({ onClose, onSuccess }) {
   const handleRemoveFile = (index) => {
     setUploadedFiles(uploadedFiles.filter((_, i) => i !== index));
     setFileObjects(fileObjects.filter((_, i) => i !== index));
+  };
+
+  const handleRemoveExistingDoc = (docType) => {
+    setExistingDocs(prev => ({ ...prev, [docType]: null }));
   };
 
   const handleSubmit = async (e) => {
@@ -100,6 +112,11 @@ export default function ProfileEditModal({ onClose, onSuccess }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getDocumentName = (url) => {
+    if (!url) return '';
+    return url.split('/').pop();
   };
 
   return (
@@ -167,8 +184,50 @@ export default function ProfileEditModal({ onClose, onSuccess }) {
             </div>
 
             <h3 className="step-title">Documentos</h3>
+
+            {/* Documentos existentes */}
+            {(existingDocs.curriculum || existingDocs.coverLetter) && (
+              <div className="app-form-group">
+                <label>Documentos Subidos</label>
+                <div className="file-list">
+                  {existingDocs.curriculum && (
+                    <div className="file-item">
+                      <span>
+                        <i className="fa-solid fa-file-pdf"></i> 
+                        {getDocumentName(existingDocs.curriculum) || 'Currículum'}
+                      </span>
+                      <button
+                        type="button"
+                        className="app-btn-danger"
+                        onClick={() => handleRemoveExistingDoc('curriculum')}
+                        title="Eliminar currículum"
+                      >
+                        <i className="fa-solid fa-trash"></i> Quitar
+                      </button>
+                    </div>
+                  )}
+                  {existingDocs.coverLetter && (
+                    <div className="file-item">
+                      <span>
+                        <i className="fa-solid fa-file-pdf"></i>
+                        {getDocumentName(existingDocs.coverLetter) || 'Carta de Presentación'}
+                      </span>
+                      <button
+                        type="button"
+                        className="app-btn-danger"
+                        onClick={() => handleRemoveExistingDoc('coverLetter')}
+                        title="Eliminar carta de presentación"
+                      >
+                        <i className="fa-solid fa-trash"></i> Quitar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="app-form-group">
-              <label>Archivos de Documentación</label>
+              <label>Agregar/Actualizar Documentos</label>
               <input
                 type="file"
                 multiple

@@ -78,7 +78,5 @@ export const practiceApplicationUpdateValidation = Joi.object({
 });
 
 export const closeApplicationValidation = Joi.object({
-  minAverage: Joi.number().min(1.0).max(7.0).optional(),
-}).unknown(false).messages({
-  "object.unknown": "No se permiten propiedades adicionales."
-});
+  minAverage: Joi.number().min(1.0).max(7.0).optional().allow(null),
+}).optional().allow(null).unknown(true);
