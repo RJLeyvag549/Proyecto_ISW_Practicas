@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
-import logoUBB from '@assets/logoUbb.png';
+import logoUBB from '@assets/logoUBB.png';
 import iconoPerfil from '@assets/iconoPerfil.webp';
 import '@styles/NavbarSuperior.css';
 
