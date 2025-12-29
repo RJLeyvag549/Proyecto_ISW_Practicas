@@ -37,7 +37,7 @@ export async function createPracticeApplication(studentId, data) {
       const existingApplication = await practiceApplicationRepository.findOne({
         where: { studentId, internshipId: data.internshipId },
       });
-      if (existingApplication) {
+      if (existingApplication && existingApplication.status !== 'rejected') {
         return [null, "Ya has enviado una solicitud para esta práctica"];
       }
 
@@ -229,7 +229,7 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
     await practiceApplicationRepository.save(application);
 
     const student = application.student || await userRepository.findOneBy({ id: application.studentId });
-    
+
     if (student && student.email) {
       let subject, textBody, htmlBody;
       const studentName = student.nombreCompleto || student.email;
@@ -237,7 +237,7 @@ export async function updatePracticeApplication(id, newStatus, coordinatorCommen
         application.internship?.title
         || application.internshipExternal?.companyName
         || "tu práctica";
-      
+
       if (newStatus === "accepted") {
         subject = "✅ Solicitud de Práctica Aceptada - Universidad del Bío-Bío";
         textBody = `Hola ${studentName},\n\nTu solicitud de práctica para "${practiceName}" ha sido ACEPTADA.\n\n${coordinatorComments ? `Comentarios del encargado: ${coordinatorComments}` : ""}\n\nSaludos,\nSistema de Prácticas UBB`;

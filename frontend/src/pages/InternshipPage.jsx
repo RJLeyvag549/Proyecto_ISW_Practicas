@@ -7,7 +7,7 @@ import StepSupervisor from "@components/createInternship/StepSupervisor.jsx";
 import StepDetails from "@components/createInternship/StepDetails.jsx";
 import InternshipViewModal from "@components/InternshipViewModal.jsx";
 import InternshipEditModal from "@components/InternshipEditModal.jsx";
-import { applyToInternship } from "@services/practiceApplication.service.js";
+import { applyToInternship, getMyApplications } from "@services/practiceApplication.service.js";
 import '../styles/internship.css';
 
 export default function InternshipPage() {
@@ -15,6 +15,8 @@ export default function InternshipPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [filter, setFilter] = useState("");
+  const [myApplications, setMyApplications] = useState([]);
+  const [hasApprovedApplication, setHasApprovedApplication] = useState(false);
 
   const user = useMemo(() => JSON.parse(sessionStorage.getItem('usuario')) || {}, []);
   const userRole = user?.rol;
@@ -51,9 +53,25 @@ export default function InternshipPage() {
     }
   }, []);
 
+  const fetchMyApplications = useCallback(async () => {
+    if (userRole === 'estudiante') {
+      const apps = await getMyApplications();
+      if (Array.isArray(apps)) {
+        setMyApplications(apps);
+        // Check if any application is approved (status 'approved' or 'aceptada' or 'accepted')
+        const approved = apps.some(app => {
+          const status = app.status ? app.status.toLowerCase() : '';
+          return status === 'approved' || status === 'aceptada' || status === 'accepted';
+        });
+        setHasApprovedApplication(approved);
+      }
+    }
+  }, [userRole]);
+
   useEffect(() => {
     fetchOfertas();
-  }, [fetchOfertas]);
+    fetchMyApplications();
+  }, [fetchOfertas, fetchMyApplications]);
 
   useEffect(() => {
     if (viewMode === 'wizard' && userRole !== 'administrador') {
@@ -62,21 +80,33 @@ export default function InternshipPage() {
   }, [viewMode, userRole]);
 
   useEffect(() => {
+    // Verificación inicial inmediata
+    if (ofertasRef.current.length > 0) {
+      verificarAlertasAdministrador(ofertasRef.current);
+    }
+
     const intervalId = setInterval(() => {
       const ahora = new Date();
       const minutos = ahora.getMinutes();
 
-      if (minutos === 0 || minutos === 20 || minutos === 40) {
-        verificarOfertasVencidas(ofertasRef.current);
+      // Revisar cada 10 minutos (0, 10, 20, 30, 40, 50)
+      if (minutos % 10 === 0) {
+        verificarAlertasAdministrador(ofertasRef.current);
       }
     }, 60000);
 
     return () => clearInterval(intervalId);
   }, []);
 
-  const verificarOfertasVencidas = (listaOfertas) => {
-    if (!listaOfertas || listaOfertas.length === 0) return;
+  // También ejecutar cuando cargan las ofertas por primera vez (si es admin)
+  useEffect(() => {
+    if (!loading && ofertas.length > 0 && userRole === 'administrador') {
+      verificarAlertasAdministrador(ofertas);
+    }
+  }, [loading, ofertas, userRole]);
 
+  const verificarAlertasAdministrador = (listaOfertas) => {
+    if (!listaOfertas || listaOfertas.length === 0) return;
     if (userRole !== 'administrador') return;
 
     const hoy = new Date();
@@ -89,20 +119,43 @@ export default function InternshipPage() {
       return deadlineDate < hoy;
     });
 
+    const llenas = listaOfertas.filter(o => (o.occupiedSlots || 0) >= (o.totalSlots || 0));
+
+    // Si no hay nada que reportar, salir
+    if (vencidas.length === 0 && llenas.length === 0) return;
+
+    let htmlContent = '';
+
     if (vencidas.length > 0) {
-      const listaFallas = vencidas.map(o => `• ${o.title}`).join('<br>');
-      Swal.fire({
-        title: 'Atención Administrador',
-        html: `<p>Hay prácticas vencidas que requieren tu atención:</p>
-               <div style="text-align: left; background: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #f0ad4e;">
-                 ${listaFallas}
-               </div>
-               <p>Se recomienda modificar la fecha de cierre o eliminar la publicación.</p>`,
-        icon: 'warning',
-        confirmButtonColor: '#6cc4c2',
-        confirmButtonText: 'Entendido'
-      });
+      const listaVencidas = vencidas.map(o => `• ${o.title}`).join('<br>');
+      htmlContent += `
+        <p style="margin-top: 10px;"><strong>📅 Prácticas Vencidas:</strong></p>
+        <div style="text-align: left; background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #f0ad4e;">
+          ${listaVencidas}
+          <div style="margin-top:5px; font-size: 0.9em; color: #666;">Se recomienda modificar la fecha o eliminar.</div>
+        </div>`;
     }
+
+    if (llenas.length > 0) {
+      const listaLlenas = llenas.map(o => `• ${o.title}`).join('<br>');
+      htmlContent += `
+        <p style="margin-top: 10px;"><strong>👥 Prácticas con Cupos Llenos:</strong></p>
+        <div style="text-align: left; background: #fef3c7; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; border-left: 4px solid #f59e0b;">
+          ${listaLlenas}
+          <div style="margin-top:5px; font-size: 0.9em; color: #666;">Ya no son visibles para estudiantes.</div>
+        </div>`;
+    }
+
+    // Verificar si ya hay una alerta abierta para no spammear (opcional, pero buena práctica)
+    if (Swal.isVisible()) return;
+
+    Swal.fire({
+      title: 'Atención Administrador',
+      html: htmlContent,
+      icon: 'info',
+      confirmButtonColor: '#6cc4c2',
+      confirmButtonText: 'Entendido'
+    });
   };
 
 
@@ -173,6 +226,7 @@ export default function InternshipPage() {
             confirmButtonColor: '#6cc4c2'
           });
           fetchOfertas();
+          fetchMyApplications();
         }
       } catch {
         Swal.fire('Error', 'Hubo un problema al procesar tu solicitud.', 'error');
@@ -221,6 +275,9 @@ export default function InternshipPage() {
       const deadline = new Date(o.applicationDeadline);
       const deadlineDate = new Date(deadline.getTime() + deadline.getTimezoneOffset() * 60000);
       deadlineDate.setHours(0, 0, 0, 0);
+
+      const isFull = (o.occupiedSlots || 0) >= (o.totalSlots || 0);
+      if (isFull) return false;
 
       return matchesFilter && deadlineDate >= hoy;
     });
@@ -272,6 +329,8 @@ export default function InternshipPage() {
                 onDelete={() => handleDelete(oferta.id)}
                 onApply={handleApply}
                 userRole={userRole}
+                myApplications={myApplications}
+                hasApprovedApplication={hasApprovedApplication}
               />
             ))
           ) : (

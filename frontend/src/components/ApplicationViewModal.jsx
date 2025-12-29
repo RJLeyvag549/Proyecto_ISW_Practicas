@@ -85,7 +85,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
         });
         setNewFiles([]);
         setDocumentsToDelete([]);
-        
+
         // Cargar documentos existentes desde documents
         if (application.documents && Array.isArray(application.documents)) {
             setEditAttachments(application.documents);
@@ -239,7 +239,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
 
             // 2. Actualizar datos de la solicitud
             const response = await updateOwnApplication(application.id, cleanCompanyData);
-            
+
             if (response.error) {
                 setEditError(response.error);
             } else {
@@ -298,11 +298,11 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
 
     const statusInfo = getStatusInfo(application.status);
     const isExternal = application.applicationType === 'external';
-    
+
     // Si es estudiante (no admin), usar datos del sessionStorage
     const loggedUser = !isAdmin ? JSON.parse(sessionStorage.getItem('usuario') || '{}') : {};
     const student = isAdmin ? (application.student || {}) : loggedUser;
-    
+
     const internship = application.internship || {};
     const externalData = application.internshipExternal || {};
     // Solo el estudiante puede editar/eliminar (no el admin)
@@ -345,7 +345,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
             setIsDeleting(true);
             try {
                 const response = await deleteOwnApplication(application.id);
-                
+
                 if (response.error) {
                     Swal.fire({
                         icon: 'error',
@@ -401,7 +401,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
 
                             {/* Datos de la Empresa */}
                             <h3 className="step-title">Datos de la Empresa</h3>
-                            
+
                             <div className="form-row">
                                 <div className="app-form-group">
                                     <label>Nombre de la Empresa <span className="required">*</span></label>
@@ -475,7 +475,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
 
                             {/* Datos del Supervisor */}
                             <h3 className="step-title">Datos del Supervisor</h3>
-                            
+
                             <div className="form-row">
                                 <div className="app-form-group">
                                     <label>Nombre Completo <span className="required">*</span></label>
@@ -538,7 +538,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
 
                             {/* Datos de la Práctica */}
                             <h3 className="step-title">Datos de la Práctica</h3>
-                            
+
                             <div className="app-form-group">
                                 <label>Título de la Práctica <span className="required">*</span></label>
                                 <input
@@ -614,7 +614,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
 
                             <div className="app-form-group">
                                 <label>Documentos (máx 5, 5MB c/u)</label>
-                                
+
                                 {/* Mostrar documentos existentes */}
                                 {editAttachments.length > 0 && (
                                     <div className="existing-documents">
@@ -776,7 +776,7 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                     {/* Información de la Práctica */}
                     <div className="info-section">
                         <h3>
-                            <i className="fa-solid fa-briefcase"></i> 
+                            <i className="fa-solid fa-briefcase"></i>
                             {isExternal ? ' Práctica Externa' : ' Oferta de Práctica'}
                         </h3>
                         {isExternal ? (
@@ -920,14 +920,14 @@ const ApplicationViewModal = ({ application, onClose, onDelete, autoEdit = false
                 <div className="app-modal-footer">
                     {isEditable && (
                         <>
-                            <button 
+                            <button
                                 className="app-btn-warning"
                                 onClick={() => setShowEditModal(true)}
                                 title="Solo puedes editar solicitudes pendientes"
                             >
                                 <i className="fa-solid fa-edit"></i> Editar
                             </button>
-                            <button 
+                            <button
                                 className="app-btn-danger"
                                 onClick={handleDeleteClick}
                                 disabled={isDeleting}

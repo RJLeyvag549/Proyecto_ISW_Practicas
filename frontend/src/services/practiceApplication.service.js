@@ -5,7 +5,7 @@ export async function getAllApplications(filters = {}) {
         const params = new URLSearchParams();
         if (filters.status) params.append('status', filters.status);
         if (filters.studentId) params.append('studentId', filters.studentId);
-        
+
         const { data } = await axios.get(`/practiceApplications?${params.toString()}`);
         return data.data;
     } catch (error) {
@@ -46,16 +46,24 @@ export async function applyToInternship(internshipId) {
 // Crear solicitud externa
 export async function applyExternal(companyData) {
     try {
+<<<<<<< HEAD
         const { data } = await axios.post(`/practiceApplications/internshipExternal`, {
             applicationType: "external",
             companyData,
         });
+=======
+        const payload = {
+            applicationType: 'external',
+            companyData
+        };
+        const { data } = await axios.post('/practiceApplications/internshipExternal', payload);
+>>>>>>> prueba
         return data;
     } catch (error) {
         console.error('Error completo:', error);
         console.error('Error response:', error.response);
         console.error('Error data:', error.response?.data);
-        
+
         const errorData = error.response?.data;
         // Manejar diferentes formatos de error del backend
         let errorMessage = 'Error al crear solicitud';
