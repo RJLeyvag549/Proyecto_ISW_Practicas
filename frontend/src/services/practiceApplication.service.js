@@ -5,7 +5,7 @@ export async function getAllApplications(filters = {}) {
         const params = new URLSearchParams();
         if (filters.status) params.append('status', filters.status);
         if (filters.studentId) params.append('studentId', filters.studentId);
-        
+
         const { data } = await axios.get(`/practiceApplications?${params.toString()}`);
         return data.data;
     } catch (error) {
@@ -36,7 +36,7 @@ export async function getApplicationById(id) {
 // Crear solicitud para oferta existente
 export async function applyToInternship(internshipId) {
     try {
-        const { data } = await axios.post(`/practiceApp/internship/${internshipId}`, {});
+        const { data } = await axios.post(`/practiceApplications/internship/${internshipId}`, {});
         return data;
     } catch (error) {
         return { error: error.response?.data?.message || 'Error al crear solicitud' };
@@ -50,13 +50,13 @@ export async function applyExternal(companyData) {
             applicationType: 'external',
             companyData
         };
-        const { data } = await axios.post('/practiceApp/external', payload);
+        const { data } = await axios.post('/practiceApplications/internshipExternal', payload);
         return data;
     } catch (error) {
         console.error('Error completo:', error);
         console.error('Error response:', error.response);
         console.error('Error data:', error.response?.data);
-        
+
         const errorData = error.response?.data;
         // Manejar diferentes formatos de error del backend
         let errorMessage = 'Error al crear solicitud';
@@ -74,7 +74,7 @@ export async function applyExternal(companyData) {
 // Editar solicitud externa (estudiante)
 export async function updateOwnApplication(id, companyData) {
     try {
-        const { data } = await axios.put(`/practiceApp/${id}`, { companyData });
+        const { data } = await axios.put(`/practiceApplications/${id}`, { companyData });
         return data;
     } catch (error) {
         const err = error.response?.data;
@@ -119,7 +119,7 @@ export async function uploadAttachmentsFiles(id, fileObjects = []) {
         fileObjects.slice(0, 5).forEach((file) => {
             formData.append('documents', file);
         });
-        const { data } = await axios.post(`/practiceApp/${id}/attachments/upload`, formData, {
+        const { data } = await axios.post(`/practiceApplications/${id}/attachments/upload`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' }
         });
         return data;

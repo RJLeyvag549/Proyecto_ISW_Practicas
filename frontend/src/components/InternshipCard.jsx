@@ -1,13 +1,41 @@
 import '../styles/internship.css';
 import { format } from "@formkit/tempo";
 
-const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole }) => {
+const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole, myApplications = [], hasApprovedApplication = false }) => {
     const { id, title, description, company, supervisor, occupiedSlots, totalSlots, specialtyArea, applicationDeadline } = data;
     const deadlineDate = applicationDeadline ? new Date(applicationDeadline) : null;
     const isValidDeadline = deadlineDate instanceof Date && !Number.isNaN(deadlineDate?.getTime());
     const startOfToday = new Date().setHours(0, 0, 0, 0);
     const isExpired = isValidDeadline ? deadlineDate < startOfToday : false;
     const isFull = occupiedSlots >= totalSlots;
+
+    // Check application status for this specific internship
+    const myApplication = myApplications.find(app => (app.internshipId === id || app.internship?.id === id));
+    const applicationStatus = myApplication?.status || 'none';
+    const isPending = applicationStatus.toLowerCase() === 'pending' || applicationStatus.toLowerCase() === 'pendiente';
+    const isApproved = applicationStatus.toLowerCase() === 'approved' || applicationStatus.toLowerCase() === 'aceptada' || applicationStatus.toLowerCase() === 'accepted';
+    const isRejected = applicationStatus.toLowerCase() === 'rejected' || applicationStatus.toLowerCase() === 'rechazada';
+
+    // Determine if button should be disabled
+    // Disabled if:
+    // 1. User has an approved application anywhere (Global disable)
+    // 2. User has a pending application for THIS internship
+    // 3. Internship is expired or full (already handled, but good to note)
+    const isActionDisabled = hasApprovedApplication || isPending;
+
+    // Determine button text
+    let buttonText = "Postular";
+    let buttonIcon = "fa-paper-plane";
+
+    if (isPending) {
+        buttonText = "Pendiente";
+        buttonIcon = "fa-clock";
+    } else if (isApproved) { // Should not happen on this card if approved elsewhere, but for completeness
+        buttonText = "Aceptado";
+        buttonIcon = "fa-check";
+    } else if (hasApprovedApplication) {
+        buttonText = "No Disponible"; // Or just keep "Postular" but disabled
+    }
 
     let deadlineLabel = 'Sin fecha';
     if (isValidDeadline) {
@@ -29,6 +57,12 @@ const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole }) =
                             backgroundColor: '#fee2e2', color: '#b91c1c', padding: '0.2rem 0.6rem',
                             borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid #fecaca'
                         }}>VENCIDA</span>
+                    )}
+                    {isFull && (
+                        <span className="full-badge" style={{
+                            backgroundColor: '#fef3c7', color: '#b45309', padding: '0.2rem 0.6rem',
+                            borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 'bold', border: '1px solid #fcd34d'
+                        }}>LLENA</span>
                     )}
                 </div>
             </div>
@@ -78,9 +112,18 @@ const InternshipCard = ({ data, onEdit, onDelete, onView, onApply, userRole }) =
                         </>
                     ) : (
                         !isExpired && !isFull && (
-                            <button className="btn-apply" onClick={() => onApply(data)}>
-                                <i className="fa-solid fa-paper-plane"></i>
-                                Postular
+                            <button
+                                className={`btn-apply ${isActionDisabled ? 'disabled' : ''}`}
+                                onClick={() => onApply(data)}
+                                disabled={isActionDisabled}
+                                style={{
+                                    opacity: isActionDisabled ? 0.6 : 1,
+                                    cursor: isActionDisabled ? 'not-allowed' : 'pointer',
+                                    backgroundColor: isPending ? '#f59e0b' : (hasApprovedApplication ? '#9ca3af' : '')
+                                }}
+                            >
+                                <i className={`fa-solid ${buttonIcon}`}></i>
+                                {buttonText}
                             </button>
                         )
                     )}
