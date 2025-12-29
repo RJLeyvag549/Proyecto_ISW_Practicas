@@ -1,9 +1,11 @@
+/* contenedor principal */
 .my-documents-container {
     max-width: 1200px;
     margin: 2rem auto;
     padding: 1rem;
 }
 
+/* encabezado */
 .header {
     margin-bottom: 2rem;
 }
@@ -15,6 +17,7 @@
     margin: 0;
 }
 
+/* estadisticas de documentos */
 .documents-stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -57,6 +60,7 @@
     color: #ef4444;
 }
 
+/* estado vacio */
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
@@ -66,18 +70,21 @@
     font-size: 1.1rem;
 }
 
+/* grilla de documentos */
 .documents-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: 1.5rem;
 }
 
+/* grupos de practicas */
 .practice-groups {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
+/* bloque de practica */
 .practice-block {
     background: #f8fafc;
     border: 1px solid #e5e7eb;
@@ -86,6 +93,7 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
+/* encabezado de practica */
 .practice-header {
     display: flex;
     align-items: center;
@@ -137,6 +145,7 @@
     color: #92400e;
 }
 
+/* tarjeta de documento */
 .document-card {
     background: white;
     border: 1px solid #e5e7eb;
@@ -151,6 +160,7 @@
     transform: translateY(-2px);
 }
 
+/* encabezado de documento */
 .document-header {
     display: flex;
     justify-content: space-between;
@@ -170,6 +180,7 @@
     flex: 1;
 }
 
+/* badge de estado */
 .status-badge {
     display: inline-block;
     padding: 0.3rem 0.8rem;
@@ -180,10 +191,12 @@
     white-space: nowrap;
 }
 
+/* informacion del documento */
 .document-info {
     padding: 1rem;
 }
 
+/* fila de informacion */
 .info-row {
     display: flex;
     justify-content: space-between;
@@ -226,6 +239,7 @@
     color: #3b82f6;
 }
 
+/* seccion de retroalimentacion */
 .feedback-section {
     margin-top: 1rem;
     padding: 1rem;
@@ -249,6 +263,7 @@
     line-height: 1.5;
 }
 
+/* acciones del documento */
 .document-actions {
     padding: 1rem;
     background: #f9fafb;
@@ -257,6 +272,7 @@
     gap: 0.5rem;
 }
 
+/* boton descargar */
 .btn-download {
     flex: 1;
     padding: 0.7rem;
@@ -274,6 +290,7 @@
     background: #5ab3b1;
 }
 
+/* boton eliminar */
 .btn-delete {
     flex: 1;
     padding: 0.7rem;
@@ -291,6 +308,7 @@
     background: #dc2626;
 }
 
+/* pantalla de carga */
 .loading {
     display: flex;
     flex-direction: column;
@@ -315,7 +333,7 @@
     }
 }
 
-/* Upload Card Styles */
+/* tarjeta de subir documento */
 .upload-card {
     background: white;
     border: 1px solid #e5e7eb;
@@ -332,12 +350,14 @@
     color: #1f2937;
 }
 
+/* formulario de subida */
 .upload-form {
     display: flex;
     flex-direction: column;
     gap: 1rem;
 }
 
+/* fila del formulario */
 .form-row {
     display: flex;
     flex-direction: column;
@@ -376,12 +396,14 @@
     color: #9ca3af;
 }
 
+/* acciones del formulario */
 .form-actions {
     display: flex;
     gap: 1rem;
     margin-top: 0.5rem;
 }
 
+/* boton subir */
 .btn-upload {
     flex: 1;
     padding: 0.75rem;
@@ -406,6 +428,7 @@
     cursor: not-allowed;
 }
 
+/* estilos responsivos */
 @media (max-width: 768px) {
     .documents-grid {
         grid-template-columns: 1fr;

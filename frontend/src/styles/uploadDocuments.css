@@ -1,4 +1,4 @@
-/* Página de subida de documentos */
+/* contenedor principal de subida de documentos */
 .upload-docs-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #3ecf8e 0%, #1cb5e0 100%);
@@ -8,6 +8,7 @@
   gap: 24px;
 }
 
+/* seccion hero de encabezado */
 .upload-hero {
   text-align: center;
   color: #fff;
@@ -26,6 +27,7 @@
   opacity: 0.95;
 }
 
+/* tarjeta del formulario */
 .upload-card {
   max-width: 960px;
   margin: 0 auto;
@@ -35,18 +37,21 @@
   padding: 28px;
 }
 
+/* formulario de subida */
 .upload-form {
   display: flex;
   flex-direction: column;
   gap: 18px;
 }
 
+/* fila del formulario */
 .form-row {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
 }
 
+/* campo individual del formulario */
 .form-field label {
   display: block;
   font-weight: 700;
@@ -85,12 +90,14 @@
   font-size: 0.9rem;
 }
 
+/* nombre del archivo seleccionado */
 .file-name {
   margin-top: 8px;
   color: #0f172a;
   font-weight: 600;
 }
 
+/* boton de enviar formulario */
 .submit-btn {
   background: #3ecf8e;
   color: #0f172a;
@@ -113,6 +120,7 @@
   cursor: not-allowed;
 }
 
+/* estilos responsivos */
 @media (max-width: 640px) {
   .upload-hero h1 {
     font-size: 1.8rem;

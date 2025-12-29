@@ -270,7 +270,7 @@ export const DocumentService = {
   async deleteDocument(documentId, userId) {
     const document = await documentRepository.findOne({ 
       where: { id: documentId },
-      relations: ['uploader']
+      relations: ["uploader"]
     });
 
     if (!document) {
