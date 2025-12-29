@@ -23,19 +23,6 @@ export default function Popup({ show, setShow, data, action }) {
                         title="Editar usuario"
                         fields={[
                             {
-                                label: "Nombre completo",
-                                name: "nombreCompleto",
-                                defaultValue: userData.nombreCompleto || "",
-                                placeholder: 'Walter Andres Meza Espinoza',
-                                fieldType: 'input',
-                                type: "text",
-                                required: true,
-                                minLength: 15,
-                                maxLength: 50,
-                                pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
-                                patternMessage: "Debe contener solo letras y espacios",
-                            },
-                            {
                                 label: "Correo electrónico",
                                 name: "email",
                                 defaultValue: userData.email || "",
@@ -45,19 +32,6 @@ export default function Popup({ show, setShow, data, action }) {
                                 required: true,
                                 minLength: 6,
                                 maxLength: 100,
-                            },
-                            {
-                                label: "Rut",
-                                name: "rut",
-                                defaultValue: userData.rut || "",
-                                placeholder: '21.743.213-8',
-                                fieldType: 'input',
-                                type: "text",
-                                minLength: 9,
-                                maxLength: 12,
-                                pattern: patternRut,
-                                patternMessage: "Debe ser xx.xxx.xxx-x o xxxxxxxx-x",
-                                required: true,
                             },
                             {
                                 label: "Rol",

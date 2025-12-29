@@ -61,12 +61,13 @@ export async function updateUserService(query, body) {
 
     if (!userFound) return [null, "Usuario no encontrado"];
 
-    const existingUser = await userRepository.findOne({
-      where: [{ rut: body.rut }, { email: body.email }],
-    });
-
-    if (existingUser && existingUser.id !== userFound.id) {
-      return [null, "Ya existe un usuario con el mismo rut o email"];
+    // Solo verificar colisión por email cuando se desea cambiar el correo
+    let existingUser = null;
+    if (body.email) {
+      existingUser = await userRepository.findOne({ where: { email: body.email } });
+      if (existingUser && existingUser.id !== userFound.id) {
+        return [null, "Ya existe un usuario con el mismo email"];
+      }
     }
 
     if (body.password) {
@@ -79,8 +80,6 @@ export async function updateUserService(query, body) {
     }
 
     const dataUserUpdate = {
-      nombreCompleto: body.nombreCompleto,
-      rut: body.rut,
       email: body.email,
       rol: body.rol,
       updatedAt: new Date(),
