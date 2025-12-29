@@ -42,3 +42,14 @@ export async function uploadMyProfileDocument(fileObjects) {
     throw new Error(error.response?.data?.message || 'Error al subir documentos');
   }
 }
+
+export async function deleteProfileDocuments(docTypes) {
+  try {
+    const { data } = await axios.delete('/profile/documents', {
+      data: { docTypes }
+    });
+    return data.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'Error al eliminar documentos');
+  }
+}

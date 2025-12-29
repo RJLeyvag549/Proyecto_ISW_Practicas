@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getMyProfile, updateMyProfile, uploadMyProfileDocument } from '@services/profile.service.js';
+import { getMyProfile, updateMyProfile, uploadMyProfileDocument, deleteProfileDocuments } from '@services/profile.service.js';
 import '@styles/profile.css';
 
 export default function ProfileEditModal({ onClose, onSuccess }) {
@@ -103,6 +103,19 @@ export default function ProfileEditModal({ onClose, onSuccess }) {
       // Upload archivos reales con FormData
       if (fileObjects.length > 0) {
         await uploadMyProfileDocument(fileObjects);
+      }
+
+      // Eliminar documentos que fueron marcados para eliminar
+      const docsToDelete = [];
+      if (profile?.curriculum && !existingDocs.curriculum) {
+        docsToDelete.push('curriculum');
+      }
+      if (profile?.coverLetter && !existingDocs.coverLetter) {
+        docsToDelete.push('coverLetter');
+      }
+      
+      if (docsToDelete.length > 0) {
+        await deleteProfileDocuments(docsToDelete);
       }
 
       onSuccess?.();

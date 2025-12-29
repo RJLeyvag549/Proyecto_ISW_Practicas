@@ -2,19 +2,19 @@
 import {
   closePracticeApplication,
   createPracticeApplication,
+  deleteOwnPracticeApplication,
   getAllPracticeApplications,
   getPracticeApplicationById,
   getPracticeApplicationsByStudent,
-  updatePracticeApplication,
   updateOwnPracticeApplication,
-  deleteOwnPracticeApplication,
+  updatePracticeApplication,
 } from "../services/practiceApplication.service.js";
 import { DocumentService } from "../services/document.service.js";
 import {
   closeApplicationValidation,
+  practiceApplicationUpdateValidation,
   practiceApplicationValidation,
   statusUpdateValidation,
-  practiceApplicationUpdateValidation,
 } from "../validations/practiceApplication.validation.js";
 import {
   handleErrorClient,

@@ -1,11 +1,11 @@
 "use strict";
 import {
+  checkAndUpdateProfileCompletion,
   getOrCreateProfile,
   updateProfile,
   updateProfileDocuments,
-  checkAndUpdateProfileCompletion
 } from "../services/profile.service.js";
-import { profileValidation, documentsValidation } from "../validations/profile.validation.js";
+import { documentsValidation, profileValidation } from "../validations/profile.validation.js";
 import { passwordChangeValidation } from "../validations/user.validation.js";
 import { AppDataSource } from "../config/configDb.js";
 import User from "../entity/user.entity.js";
@@ -140,6 +140,42 @@ export async function uploadProfileDocuments(req, res) {
     await checkAndUpdateProfileCompletion(userId);
 
     handleSuccess(res, 200, "Documentos subidos exitosamente", profile);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function deleteProfileDocuments(req, res) {
+  try {
+    const userId = req.user.id;
+    const { docTypes } = req.body;
+
+    if (!docTypes || !Array.isArray(docTypes) || docTypes.length === 0) {
+      return handleErrorClient(res, 400, "Debe especificar qué documentos eliminar");
+    }
+
+    // Validar que solo sean tipos válidos
+    const validTypes = ['curriculum', 'coverLetter'];
+    const invalidTypes = docTypes.filter(type => !validTypes.includes(type));
+    if (invalidTypes.length > 0) {
+      return handleErrorClient(res, 400, "Tipos de documento inválidos");
+    }
+
+    // Crear objeto de actualización con null para los campos a eliminar
+    const updateData = {};
+    docTypes.forEach(type => {
+      updateData[type] = null;
+    });
+
+    const [profile, serviceError] = await updateProfileDocuments(userId, updateData);
+
+    if (serviceError) {
+      return handleErrorClient(res, 400, "Error al eliminar documentos", serviceError);
+    }
+
+    await checkAndUpdateProfileCompletion(userId);
+
+    handleSuccess(res, 200, "Documentos eliminados exitosamente", profile);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
