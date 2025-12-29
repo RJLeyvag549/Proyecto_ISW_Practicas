@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from '@services/auth.service.js';
 import logoUBB from '@assets/logoUBB.png';
 import iconoPerfil from '@assets/iconoPerfil.webp';
-import '@styles/NavbarSuperior.css';
+import '@styles/navbarSuperior.css';
 
 const NavbarSuperior = () => {
   const navigate = useNavigate();
