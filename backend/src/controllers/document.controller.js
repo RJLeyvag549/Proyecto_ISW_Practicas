@@ -65,7 +65,7 @@ export const DocumentController = {
       return handleErrorServer(res, 500, error.message);
     }
   },
-//obtener documentos agrupados por estudiante y práctica
+//obtener documentos agrupados por estudiante y practica
   async getGroupedByStudentPractice(req, res) {
     try {
       const grouped = await DocumentService.getDocumentsGroupedByStudentAndPractice();
