@@ -1,107 +1,164 @@
 import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import { register } from '@services/auth.service.js';
 import Form from "@components/Form";
 import useRegister from '@hooks/auth/useRegister.jsx';
 import { showErrorAlert, showSuccessAlert } from '@helpers/sweetAlert.js';
 import '@styles/form.css';
+import '@styles/auth.css';
+import logoUBB from '@assets/b-ubb.png';
 
 const Register = () => {
-	const navigate = useNavigate();
-	const {
+    const navigate = useNavigate();
+    const {
         errorEmail,
         errorRut,
         errorData,
         handleInputChange
     } = useRegister();
 
-const registerSubmit = async (data) => {
-    try {
-        const response = await register(data);
-        if (response.status === 'Success') {
-            showSuccessAlert('¡Registrado!','Usuario registrado exitosamente.');
-            setTimeout(() => {
-                navigate('/auth');
-            }, 3000)
-        } else if (response.status === 'Client error') {
-            errorData(response.details);
+    const registerSubmit = async (data) => {
+        try {
+            const response = await register(data);
+            if (response.status === 'Success') {
+                showSuccessAlert('¡Registrado!','Usuario registrado exitosamente.');
+                const page = document.querySelector('.auth-page');
+                if (page) page.classList.remove('auth-swap');
+                setTimeout(() => navigate('/auth'), 1000);
+            } else if (response.status === 'Client error') {
+                errorData(response.details);
+            }
+        } catch (error) {
+            console.error("Error al registrar un usuario: ", error);
+            showErrorAlert('Cancelado', 'Ocurrió un error al registrarse.');
         }
-    } catch (error) {
-        console.error("Error al registrar un usuario: ", error);
-        showErrorAlert('Cancelado', 'Ocurrió un error al registrarse.');
     }
-}
 
-const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
+    const patternRut = new RegExp(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
+    useEffect(() => {
+        // Ensure the register page mounts showing the swapped layout
+        const page = document.querySelector('.auth-page');
+        if (page) page.classList.add('auth-swap');
+        return () => {
+            if (page) page.classList.remove('auth-swap');
+        }
+    }, []);
 
-	return (
-		<main className="container">
-			<Form
-				title="Crea tu cuenta"
-				fields={[
-					{
-						label: "Nombre completo",
-						name: "nombreCompleto",
-						placeholder: "Diego Alexis Salazar Jara",
-                        fieldType: 'input',
-						type: "text",
-						required: true,
-						minLength: 15,
-						maxLength: 50,
-                        pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
-						patternMessage: "Debe contener solo letras y espacios",
-					},
-                    {
-                        label: "Correo electrónico",
-                        name: "email",
-                        placeholder: "example@gmail.cl",
-                        fieldType: 'input',
-                        type: "email",
-                        required: true,
-                        minLength: 15,
-                        maxLength: 35,
-                        errorMessageData: errorEmail,
-                        validate: {
-                            emailDomain: (value) => value.endsWith('@gmail.cl') || 'El correo debe terminar en @gmail.cl'
-                        },
-                        onChange: (e) => handleInputChange('email', e.target.value)
-                    },
-                    {
-						label: "Rut",
-                        name: "rut",
-                        placeholder: "23.770.330-1",
-                        fieldType: 'input',
-                        type: "text",
-						minLength: 9,
-						maxLength: 12,
-						pattern: patternRut,
-						patternMessage: "Debe ser xx.xxx.xxx-x o xxxxxxxx-x",
-						required: true,
-                        errorMessageData: errorRut,
-                        onChange: (e) => handleInputChange('rut', e.target.value)
-                    },
-                    {
-                        label: "Contraseña",
-                        name: "password",
-                        placeholder: "**********",
-                        fieldType: 'input',
-                        type: "password",
-                        required: true,
-                        minLength: 8,
-                        maxLength: 26,
-                        pattern: /^[a-zA-Z0-9]+$/,
-                        patternMessage: "Debe contener solo letras y números",
-                    },
-				]}
-				buttonText="Registrarse"
-				onSubmit={registerSubmit}
-				footerContent={
-					<p>
-						¿Ya tienes cuenta?, <a href="/auth">¡Inicia sesión aquí!</a>
-					</p>
-				}
-			/>
-		</main>
-	);
+    return (
+        <main className="auth-page">
+            <section className="auth-left">
+                <div className="left-content">
+                    <img src={logoUBB} alt="Universidad B-UBB" className="auth-logo" />
+                    <h2>Hola, ¡Bienvenido!</h2>
+                    <p className="left-sub">¿Ya tienes una cuenta?</p>
+                    <a href="/auth" onClick={(e) => {
+                        e.preventDefault();
+                        const page = document.querySelector('.auth-page');
+                        if (page) {
+                            page.classList.remove('auth-swap');
+                            setTimeout(() => navigate('/auth'), 450);
+                        } else navigate('/auth');
+                    }} className="btn-outline">Iniciar sesión</a>
+                </div>
+            </section>
+            <section className="auth-right">
+                <div className="form-wrapper">
+                    <Form
+                        title="Crea tu cuenta"
+                        fields={[
+                            {
+                                label: "Nombre completo",
+                                name: "nombreCompleto",
+                                placeholder: "Walter Andres Meza Espinoza",
+                                fieldType: 'input',
+                                type: "text",
+                                required: true,
+                                minLength: 15,
+                                maxLength: 50,
+                                pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/,
+                                patternMessage: "Debe contener solo letras y espacios",
+                            },
+                            {
+                                label: "Correo electrónico",
+                                name: "email",
+                                placeholder: "example@correo.com",
+                                fieldType: 'input',
+                                type: "email",
+                                required: true,
+                                minLength: 6,
+                                maxLength: 100,
+                                errorMessageData: errorEmail,
+                                onChange: (e) => handleInputChange('email', e.target.value)
+                            },
+                            {
+                                label: "Rut",
+                                name: "rut",
+                                placeholder: "21.743.213-8",
+                                fieldType: 'input',
+                                type: "text",
+                                minLength: 9,
+                                maxLength: 12,
+                                pattern: patternRut,
+                                patternMessage: "Debe ser xx.xxx.xxx-x o xxxxxxxx-x",
+                                required: true,
+                                errorMessageData: errorRut,
+                                onChange: (e) => handleInputChange('rut', e.target.value)
+                            },
+                            {
+                                label: "Contraseña",
+                                name: "password",
+                                placeholder: "**********",
+                                fieldType: 'input',
+                                type: "password",
+                                required: true,
+                                minLength: 8,
+                                maxLength: 26,
+                                pattern: /^[a-zA-Z0-9]+$/,
+                                patternMessage: "Debe contener solo letras y números",
+                            },
+                            {
+                                label: "Carrera",
+                                name: "carrera",
+                                placeholder: "Ingeniería en Informática",
+                                fieldType: 'input',
+                                type: "text",
+                                required: true,
+                                minLength: 3,
+                                maxLength: 100,
+                                pattern: /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s0-9]+$/,
+                                patternMessage: "Debe ser el nombre de la carrera",
+                            },
+                            {
+                                fieldType: 'checkbox',
+                                name: "termsAccepted",
+                                checkboxLabel: (
+                                    <span>
+                                        Acepto los <a href="/terminos" target="_blank" rel="noopener noreferrer" style={{color: '#007bff', textDecoration: 'underline'}}>términos y condiciones</a>
+                                    </span>
+                                ),
+                                required: true,
+                                requiredMessage: "Debes aceptar los términos y condiciones para continuar",
+                            },
+                        ]}
+                        buttonText="Registrarse"
+                        onSubmit={registerSubmit}
+                        footerContent={
+                            <p>
+                                ¿Ya tienes cuenta? <a href="/auth" onClick={(e) => {
+                                    e.preventDefault();
+                                    const page = document.querySelector('.auth-page');
+                                    if (page) {
+                                        page.classList.remove('auth-swap');
+                                        setTimeout(() => navigate('/auth'), 450);
+                                    } else navigate('/auth');
+                                }}>¡Inicia sesión aquí!</a>
+                            </p>
+                        }
+                    />
+                </div>
+            </section>
+        </main>
+    );
 };
 
 export default Register;

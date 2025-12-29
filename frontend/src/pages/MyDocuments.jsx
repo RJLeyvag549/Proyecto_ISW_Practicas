@@ -1,0 +1,429 @@
+import { useState, useEffect, useCallback } from "react";
+import api from "../services/root.service";
+import Swal from "sweetalert2";
+import "../styles/myDocuments.css";
+
+// pagina de documentos del estudiante (subir y ver sus propios documentos)
+const MyDocuments = () => {
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [applications, setApplications] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [file, setFile] = useState(null);
+  const [docType, setDocType] = useState("PROGRESS_REPORT");
+  const [period, setPeriod] = useState("");
+  const [practiceId, setPracticeId] = useState("");
+
+  // obtener etiqueta de la practica (titulo o nombre de empresa)
+  const getPracticeLabel = (doc) => {
+    return (
+      doc?.practiceApplication?.internship?.title ||
+      doc?.practiceApplication?.internshipExternal?.companyName ||
+      (doc?.practiceApplicationId ? `Práctica #${doc.practiceApplicationId}` : "Practica")
+    );
+  };
+
+  // obtener documentos del estudiante
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    try {
+      const docsResponse = await api.get("/documents/my-documents");
+      setDocuments(docsResponse.data?.data || []);
+    } catch {
+      Swal.fire("Error", "No se pudieron cargar los documentos", "error");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    // cargar practicas del estudiante para seleccion
+    (async () => {
+      try {
+        const res = await api.get("/practiceApplications/my");
+        const list = Array.isArray(res.data?.data) ? res.data.data : [];
+        console.log("Practicas del estudiante:", list);
+        // solo practicas aceptadas y no cerradas
+        const enabled = list.filter((a) => a.status === "accepted" && !a.isClosed);
+        console.log("Practicas filtradas (aceptadas y no cerradas):", enabled);
+        setApplications(enabled);
+        if (enabled.length > 0) {
+          setPracticeId(String(enabled[0].id));
+        }
+      } catch (error) {
+        console.error("Error cargando practicas:", error);
+        Swal.fire("Error", "No se pudieron cargar tus practicas", "error");
+        setApplications([]);
+      }
+    })();
+  }, []);
+
+  const handleDownload = async (id, fileName) => {
+    try {
+      const response = await api.get(`/documents/${id}/download`, {
+        responseType: "blob"
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+    } catch {
+      Swal.fire("Error", "No se pudo descargar el archivo", "error");
+    }
+  };
+
+  // eliminar documento (solo si esta en pendiente o rechazado)
+  const handleDelete = async (id, status) => {
+    if (status !== "pending" && status !== "rejected") {
+      Swal.fire("No permitido", "Solo puedes eliminar documentos en estado pendiente o rechazado", "warning");
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Eliminar documento",
+      text: "¿Estas seguro de eliminar este documento?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#6cc4c2",
+      cancelButtonColor: "#ef4444",
+      confirmButtonText: "Si, eliminar",
+      cancelButtonText: "Cancelar"
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/documents/${id}`);
+        Swal.fire("Eliminado", "Documento eliminado exitosamente", "success");
+        fetchData();
+      } catch (err) {
+        const msg = err?.response?.data?.message || "No se pudo eliminar el documento";
+        Swal.fire("Error", msg, "error");
+      }
+    }
+  };
+
+  // subir nuevo documento
+  const handleUpload = async (e) => {
+    e.preventDefault();
+    if (!file) {
+      Swal.fire("Archivo requerido", "Selecciona un documento", "warning");
+      return;
+    }
+    if (!practiceId) {
+      Swal.fire("Practica requerida", "Selecciona la practica destino", "warning");
+      return;
+    }
+    if (docType === "PROGRESS_REPORT" && !period.trim()) {
+      Swal.fire("Periodo requerido", "Ingresa el periodo del informe de avance", "warning");
+      return;
+    }
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("document", file);
+      formData.append("type", docType);
+      formData.append("practiceApplicationId", Number(practiceId));
+      if (docType === "PROGRESS_REPORT") formData.append("period", period.trim());
+
+      await api.post("/documents/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      Swal.fire("Listo", "Documento subido exitosamente", "success");
+      setFile(null);
+      setPeriod("");
+      // refrescar datos
+      fetchData();
+    } catch (err) {
+      const msg = err?.response?.data?.message || "No se pudo subir el documento";
+      Swal.fire("Error", msg, "error");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // obtener clase css segun el estado del documento
+  const getStatusBadgeClass = (status) => {
+    const statusMap = {
+      pending: "status-pending",
+      approved: "status-approved",
+      rejected: "status-rejected"
+    };
+    return statusMap[status] || "status-pending";
+  };
+
+  // obtener color segun el estado del documento
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: "#f59e0b",
+      approved: "#10b981",
+      rejected: "#ef4444"
+    };
+    return colors[status] || "#f59e0b";
+  };
+
+  // obtener texto en espanol del estado
+  const getStatusText = (status) => {
+    const texts = {
+      pending: "Pendiente",
+      approved: "Aprobado",
+      rejected: "Rechazado"
+    };
+    return texts[status] || status;
+  };
+
+  // calcular promedio ponderado de documentos
+  const calculateAverage = (docs = []) => {
+    const graded = docs.filter(
+      (d) => d.status === "approved" && d.grade !== null && d.grade !== undefined
+    );
+    if (graded.length === 0) {
+      return { average: null, totalWeight: 0, isComplete: false };
+    }
+
+    const totalWeight = graded.reduce((sum, d) => sum + Number(d.weight || 0), 0);
+    const useWeighted = totalWeight > 0;
+
+    let avg = 0;
+    if (useWeighted) {
+      const weightedSum = graded.reduce(
+        (sum, d) => sum + Number(d.grade) * (Number(d.weight || 0) / 100),
+        0
+      );
+      avg = weightedSum;
+    } else {
+      const simple = graded.reduce((sum, d) => sum + Number(d.grade), 0) / graded.length;
+      avg = simple;
+    }
+
+    return {
+      average: Number(avg.toFixed(2)),
+      totalWeight,
+      isComplete: useWeighted ? totalWeight === 100 : graded.length > 0,
+    };
+  };
+
+  // agrupar documentos por practica
+  const groupedByPractice = documents.reduce((acc, doc) => {
+    const label = getPracticeLabel(doc);
+    if (!acc[label]) acc[label] = [];
+    acc[label].push(doc);
+    return acc;
+  }, {});
+
+  if (loading) {
+    return (
+      <div className="loading">
+        <div className="spinner"></div>
+        <p>Cargando documentos...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="my-documents-container">
+      <div className="header">
+        <h2>Mis Documentos</h2>
+      </div>
+
+      <div className="upload-card">
+        <h3>Subir Documento</h3>
+        <form className="upload-form" onSubmit={handleUpload}>
+          <div className="form-row">
+            <label>Practica</label>
+            <select
+              value={practiceId}
+              onChange={(e) => setPracticeId(e.target.value)}
+              disabled={applications.length === 0 || uploading}
+            >
+              {applications.length === 0 ? (
+                <option value="">No tienes practicas aceptadas</option>
+              ) : (
+                <>
+                  <option value="">Selecciona una practica</option>
+                  {applications.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      #{a.id} - {a.internship?.title || a.internshipExternal?.companyName || "Practica"}
+                    </option>
+                  ))}
+                </>
+              )}
+            </select>
+          </div>
+
+          <div className="form-row">
+            <label>Tipo de documento</label>
+            <select value={docType} onChange={(e) => setDocType(e.target.value)} disabled={uploading}>
+              <option value="PROGRESS_REPORT">Informe de avance</option>
+              <option value="FINAL_REPORT">Informe final</option>
+              <option value="PERFORMANCE_EVALUATION">Desempeño</option>
+            </select>
+          </div>
+
+          {docType === "PROGRESS_REPORT" && (
+            <div className="form-row">
+              <label>Periodo</label>
+              <input
+                type="text"
+                placeholder="Ej: Semana 1-2, Mes 1, etc."
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                disabled={uploading}
+              />
+            </div>
+          )}
+
+          <div className="form-row">
+            <label>Archivo</label>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              onChange={(e) => setFile(e.target.files?.[0] || null)}
+              disabled={uploading}
+            />
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="submit"
+              className="btn-upload"
+              disabled={uploading || applications.length === 0 || !practiceId}
+            >
+              {uploading ? "Subiendo..." : "Subir"}
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div className="documents-stats">
+        <div className="stat-item">
+          <span className="stat-label">Total</span>
+          <span className="stat-value">{documents.length}</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Aprobados</span>
+          <span className="stat-value approved">{documents.filter(d => d.status === "approved").length}</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Pendientes</span>
+          <span className="stat-value pending">{documents.filter(d => d.status === "pending").length}</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Rechazados</span>
+          <span className="stat-value rejected">{documents.filter(d => d.status === "rejected").length}</span>
+        </div>
+      </div>
+
+      {documents.length === 0 ? (
+        <div className="empty-state">
+          <p>No has subido documentos todavia</p>
+        </div>
+      ) : (
+        <div className="practice-groups">
+          {Object.entries(groupedByPractice).map(([practice, docs]) => (
+            <div key={practice} className="practice-block">
+              <div className="practice-header">
+                <h3 className="practice-title">{practice}</h3>
+                <div className="practice-meta">
+                  <span className="practice-count">{docs.length} documentos</span>
+                  {(() => {
+                    const avg = calculateAverage(docs);
+                    return (
+                      <span className={`practice-average ${avg?.isComplete ? "complete" : "incomplete"}`}>
+                        Promedio: {avg?.average ?? "-"} ({avg?.totalWeight ?? 0}%)
+                      </span>
+                    );
+                  })()}
+                </div>
+              </div>
+              <div className="documents-grid">
+                {docs.map((doc) => (
+                  <div key={doc.id} className="document-card">
+                    <div className="document-header">
+                      <h4 className="document-title">{doc.filename}</h4>
+                      <span
+                        className={`status-badge ${getStatusBadgeClass(doc.status)}`}
+                        style={{ background: getStatusColor(doc.status) }}
+                      >
+                        {getStatusText(doc.status)}
+                      </span>
+                    </div>
+
+                    <div className="document-info">
+                      <div className="info-row">
+                        <span className="info-label">Fecha:</span>
+                        <span className="info-value">
+                          {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "-"}
+                        </span>
+                      </div>
+
+                      <div className="info-row">
+                        <span className="info-label">Tipo:</span>
+                        <span className="info-value">{doc.type || "-"}</span>
+                      </div>
+
+                      {doc.period && (
+                        <div className="info-row">
+                          <span className="info-label">Periodo:</span>
+                          <span className="info-value">{doc.period}</span>
+                        </div>
+                      )}
+
+                      {doc.status === "approved" && (
+                        <>
+                          <div className="info-row grade-row">
+                            <span className="info-label">Calificacion:</span>
+                            <span className="grade-value">{doc.grade || "-"}</span>
+                          </div>
+
+                          <div className="info-row">
+                            <span className="info-label">Ponderacion:</span>
+                            <span className="weight-value">{doc.weight || 0}%</span>
+                          </div>
+                        </>
+                      )}
+
+                      {doc.comments && (
+                        <div className="feedback-section">
+                          <span className="feedback-label">Retroalimentacion:</span>
+                          <p className="feedback-text">{doc.comments}</p>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="document-actions">
+                      <button
+                        onClick={() => handleDownload(doc.id, doc.filename)}
+                        className="btn-download"
+                      >
+                        Descargar
+                      </button>
+                      {(doc.status === "pending" || doc.status === "rejected") && (
+                        <button
+                          onClick={() => handleDelete(doc.id, doc.status)}
+                          className="btn-delete"
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MyDocuments;

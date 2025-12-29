@@ -1,0 +1,93 @@
+/* Navbar Superior */
+.navbar-superior {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 9vh;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 2rem;
+    background-color: #09c394;
+    color: white;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Logo */
+.navbar-superior .navbar-logo img {
+    height: 70px;
+    width: auto;
+}
+
+/* Perfil de usuario */
+.navbar-superior .navbar-user {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.navbar-superior .user-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-weight: 500;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 1.3rem 4.6rem;
+}
+
+.navbar-superior .user-btn:hover {
+    text-decoration: underline;
+}
+
+/* Dropdown del perfil */
+.navbar-superior .dropdown-menu {
+    position: absolute;
+    top: 80%;
+    right: 5rem;
+    background-color: white;
+    font-size: 0.9rem;
+    color: black;
+    list-style: none;
+    margin: 0;
+    padding: 0.1rem 0rem;
+    border-radius: 4px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    min-width: 150px;
+    z-index: 1000;
+}
+
+.navbar-superior .dropdown-menu li {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.navbar-superior .dropdown-menu li:hover {
+    background-color: #eef7ff;
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+    .navbar-superior {
+        padding: 0 1rem;
+    }
+
+    .navbar-superior .user-btn {
+        font-size: 0.85rem;
+    }
+
+    .navbar-superior .dropdown-menu {
+        min-width: 120px;
+    }
+}
+
+.user-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+    vertical-align: middle;
+}

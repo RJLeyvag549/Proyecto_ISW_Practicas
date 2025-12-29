@@ -1,7 +1,7 @@
 "use strict";
 import { EntitySchema } from "typeorm";
 
-
+//esquema de documento
 const DocumentSchema = new EntitySchema({
   name: "Document",
   tableName: "documents",
@@ -13,7 +13,11 @@ const DocumentSchema = new EntitySchema({
     },
     practiceApplicationId: {
       type: "int",
-      nullable: false,
+      nullable: true,
+    },
+    internshipExternalId: {
+      type: "int",
+      nullable: true,
     },
     type: {
       type: "varchar",
@@ -52,9 +56,16 @@ const DocumentSchema = new EntitySchema({
     },
     grade: {
       type: "decimal",
-      precision: 3,
-      scale: 1,
+      precision: 5,
+      scale: 2,
       nullable: true,
+    },
+    weight: {
+      type: "decimal",
+      precision: 5,
+      scale: 2,
+      default: 0,
+      nullable: false,
     },
     createdAt: {
       type: "timestamp with time zone",
@@ -69,20 +80,30 @@ const DocumentSchema = new EntitySchema({
     },
   },
   relations: {
+    //relacion id
     practiceApplication: {
       type: "many-to-one",
       target: "PracticeApplication",
       joinColumn: { name: "practiceApplicationId" },
-      nullable: false,
+      nullable: true,
       onDelete: "CASCADE",
     },
+    //relacion id de practica externa
+    internshipExternal: {
+      type: "many-to-one",
+      target: "InternshipExternal",
+      joinColumn: { name: "internshipExternalId" },
+      nullable: true,
+      onDelete: "CASCADE",
+    },
+    //relacion con usuario que sube el documento
     uploader: {
       type: "many-to-one",
       target: "User",
       joinColumn: { name: "uploadedBy" },
       nullable: false,
     },
-  },// 
+  },
   indices: [
     {
       name: "IDX_DOCUMENT_PRIMARY",
@@ -92,6 +113,10 @@ const DocumentSchema = new EntitySchema({
     {
       name: "IDX_DOCUMENT_APPLICATION",
       columns: ["practiceApplicationId"],
+    },
+    {
+      name: "IDX_DOCUMENT_INTERNSHIP_EXTERNAL",
+      columns: ["internshipExternalId"],
     },
   ],
 });

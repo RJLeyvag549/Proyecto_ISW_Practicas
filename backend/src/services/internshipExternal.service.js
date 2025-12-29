@@ -23,12 +23,55 @@ export async function createInternshipExternal(studentId, data) {
       department: data.department || null,
       activities: data.activities,
       estimatedDuration: data.estimatedDuration,
-      schedule: data.schedule,
-      requirements: data.requirements || null,
+        schedule: (typeof data.schedule === "string" ? data.schedule : ""),
       specialtyArea: data.specialtyArea || null,
     });
 
     return [newInternshipExternal, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function updateInternshipExternal(internshipExternalId, studentId, data) {
+  try {
+    const existing = await internshipExternalRepository.findOne({ where: { id: internshipExternalId, studentId } });
+    if (!existing) return [null, "Práctica externa no encontrada o sin permiso"];
+
+    const updated = await internshipExternalRepository.save({
+      ...existing,
+      title: data.title ?? existing.title,
+      description: data.description ?? existing.description,
+      companyName: data.companyName ?? existing.companyName,
+      companyAddress: data.companyAddress ?? existing.companyAddress,
+      companyIndustry: data.companyIndustry ?? existing.companyIndustry,
+      companyWebsite: data.companyWebsite ?? existing.companyWebsite,
+      companyPhone: data.companyPhone ?? existing.companyPhone,
+      companyEmail: data.companyEmail ?? existing.companyEmail,
+      supervisorName: data.supervisorName ?? existing.supervisorName,
+      supervisorPosition: data.supervisorPosition ?? existing.supervisorPosition,
+      supervisorEmail: data.supervisorEmail ?? existing.supervisorEmail,
+      supervisorPhone: data.supervisorPhone ?? existing.supervisorPhone,
+      department: data.department ?? existing.department,
+      activities: data.activities ?? existing.activities,
+      estimatedDuration: data.estimatedDuration ?? existing.estimatedDuration,
+      schedule: data.schedule ?? existing.schedule,
+      specialtyArea: data.specialtyArea ?? existing.specialtyArea,
+    });
+
+    return [updated, null];
+  } catch (error) {
+    return [null, error.message];
+  }
+}
+
+export async function deleteInternshipExternal(internshipExternalId, studentId) {
+  try {
+    const existing = await internshipExternalRepository.findOne({ where: { id: internshipExternalId, studentId } });
+    if (!existing) return [null, "Práctica externa no encontrada o sin permiso"];
+
+    await internshipExternalRepository.remove(existing);
+    return [{ message: "Práctica externa eliminada" }, null];
   } catch (error) {
     return [null, error.message];
   }

@@ -1,17 +1,20 @@
 "use strict";
 import {
-  addPracticeApplicationAttachments,
   closePracticeApplication,
   createPracticeApplication,
   getAllPracticeApplications,
   getPracticeApplicationById,
   getPracticeApplicationsByStudent,
   updatePracticeApplication,
+  updateOwnPracticeApplication,
+  deleteOwnPracticeApplication,
 } from "../services/practiceApplication.service.js";
-import { attachmentsValidation,
+import { DocumentService } from "../services/document.service.js";
+import {
   closeApplicationValidation,
   practiceApplicationValidation,
   statusUpdateValidation,
+  practiceApplicationUpdateValidation,
 } from "../validations/practiceApplication.validation.js";
 import {
   handleErrorClient,
@@ -21,18 +24,14 @@ import {
 
 export async function createApplication(req, res) {
   try {
-    if (req.user.rol !== "usuario") {
-      return handleErrorClient(res, 403, "Solo los usuarios pueden crear solicitudes de práctica");
-    }
-
-    const internshipId = parseInt(req.params.internshipId, 10);
-    if (!Number.isInteger(internshipId) || internshipId <= 0) {
-      return handleErrorClient(res, 400, "internshipId inválido en la URL");
+    const allowedRoles = ["usuario", "estudiante"];
+    if (!allowedRoles.includes(req.user.rol)) {
+      return handleErrorClient(res, 403, "Solo los estudiantes pueden crear solicitudes de práctica");
     }
 
     const { body } = req;
     const { internshipId } = req.params; // Capturar ID de la URL si existe
-    
+
     let applicationData;
 
     // Si hay internshipId en los parámetros, es una solicitud a oferta existente
@@ -40,14 +39,12 @@ export async function createApplication(req, res) {
       applicationData = {
         applicationType: "existing",
         internshipId: parseInt(internshipId),
-        attachments: body.attachments
       };
     } else {
       // Si no hay internshipId, debe ser una solicitud externa
       applicationData = {
         applicationType: "external",
         companyData: body.companyData,
-        attachments: body.attachments
       };
     }
 
@@ -62,10 +59,10 @@ export async function createApplication(req, res) {
     if (serviceError)
       return handleErrorClient(res, 400, "Error al crear la solicitud", serviceError);
 
-    const message = internshipId 
+    const message = internshipId
       ? "Solicitud a práctica existente creada exitosamente"
       : "Solicitud de práctica externa creada exitosamente";
-    
+
     handleSuccess(res, 201, message, application);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
@@ -106,7 +103,10 @@ export async function getAllApplications(req, res) {
     const filters = {
       status: req.query.status,
       studentId: req.query.studentId,
-      internshipId: req.query.internshipId,
+      applicationType: req.query.applicationType,
+      internshipId: req.query.internshipId || req.query.offerId,
+      internshipExternalId: req.query.internshipExternalId,
+
     };
     const [applications, serviceError] = await getAllPracticeApplications(filters);
 
@@ -126,13 +126,42 @@ export async function updateApplication(req, res) {
     if (error)
       return handleErrorClient(res, 400, "Error de validacion", error.message);
 
-    const { status, coordinatorComments } = req.body;
+    const { status, coordinatorComments, force } = req.body;
     const coordinatorId = req.user.id;
     const [application, serviceError] = await updatePracticeApplication(
       parseInt(id),
       status,
       coordinatorComments,
-      coordinatorId
+      coordinatorId,
+      Boolean(force)
+    );
+
+    // Advertencia confirmable: no es error, se devuelve al cliente para que confirme.
+    if (serviceError && typeof serviceError === "object" && serviceError.warning) {
+      return res.status(200).json(serviceError);
+    }
+
+    if (serviceError)
+      return handleErrorClient(res, 400, "Error al actualizar la solicitud", serviceError);
+
+    handleSuccess(res, 200, "Solicitud actualizada exitosamente", application);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function updateOwnApplication(req, res) {
+  try {
+    const { id } = req.params;
+    const { error } = practiceApplicationUpdateValidation.validate(req.body);
+    if (error)
+      return handleErrorClient(res, 400, "Error de validacion", error.message);
+
+    const studentId = req.user.id;
+    const [application, serviceError] = await updateOwnPracticeApplication(
+      parseInt(id),
+      studentId,
+      req.body
     );
 
     if (serviceError)
@@ -144,34 +173,21 @@ export async function updateApplication(req, res) {
   }
 }
 
-export async function addAttachments(req, res) {
+export async function deleteOwnApplication(req, res) {
   try {
     const { id } = req.params;
-    const { error } = attachmentsValidation.validate(req.body);
-    if (error)
-      return handleErrorClient(res, 400, "Error de validacion", error.message);
-
     const studentId = req.user.id;
-    const { attachments } = req.body;
-    const [application, serviceError] = await addPracticeApplicationAttachments(
-      parseInt(id),
-      attachments,
-      studentId
-    );
+    const [result, serviceError] = await deleteOwnPracticeApplication(parseInt(id), studentId);
 
     if (serviceError)
-      return handleErrorClient(res, 400, "Error al agregar documentos", serviceError);
+      return handleErrorClient(res, 400, "Error al eliminar la solicitud", serviceError);
 
-    handleSuccess(res, 200, "Documentos agregados exitosamente", application);
+    handleSuccess(res, 200, "Solicitud eliminada exitosamente", result);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
 }
 
-/**
- * Controlador para cerrar una práctica (admin o coordinador).
- * Calcula promedio de notas y marca resultado final.
- */
 export async function closeApplication(req, res) {
   try {
     const { id } = req.params;
@@ -187,5 +203,46 @@ export async function closeApplication(req, res) {
     handleSuccess(res, 200, "Práctica cerrada exitosamente", application);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function uploadAttachmentsFiles(req, res) {
+  try {
+    const { id } = req.params;
+    const files = Array.isArray(req.files) ? req.files : [];
+
+    if (!files.length) {
+      return handleErrorClient(res, 400, "Debe adjuntar al menos un archivo");
+    }
+
+    const [application, serviceError] = await getPracticeApplicationById(parseInt(id), req.user);
+
+    if (serviceError || !application) {
+      return handleErrorClient(res, 403, "Acceso denegado o solicitud no encontrada", serviceError || "Solicitud no encontrada");
+    }
+
+    if (!["pending", "needsInfo"].includes(application.status)) {
+      return handleErrorClient(res, 400, "Solo puedes agregar documentos en estado pending o needsInfo");
+    }
+
+    const createdDocs = [];
+    for (const file of files) {
+      const baseData = {
+        type: "ATTACHMENT",
+        uploadedBy: req.user.id,
+        practiceApplicationId: application.id,
+      };
+
+      if (application.applicationType === "external" && application.internshipExternalId) {
+        baseData.internshipExternalId = application.internshipExternalId;
+      }
+
+      const doc = await DocumentService.createDocument(baseData, file);
+      createdDocs.push(doc);
+    }
+  
+    return handleSuccess(res, 201, "Adjuntos subidos exitosamente", createdDocs);
+  } catch (error) {
+    return handleErrorServer(res, 500, error.message);
   }
 }

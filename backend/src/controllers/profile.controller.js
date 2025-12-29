@@ -6,6 +6,10 @@ import {
   checkAndUpdateProfileCompletion
 } from "../services/profile.service.js";
 import { profileValidation, documentsValidation } from "../validations/profile.validation.js";
+import { passwordChangeValidation } from "../validations/user.validation.js";
+import { AppDataSource } from "../config/configDb.js";
+import User from "../entity/user.entity.js";
+import { comparePassword, encryptPassword } from "../helpers/bcrypt.helper.js";
 import {
   handleErrorClient,
   handleErrorServer,
@@ -14,7 +18,9 @@ import {
 
 export async function getProfile(req, res) {
   try {
-    const userId = req.user.id;
+    // Si viene userId en params, usarlo (para admin/supervisor viendo perfil de estudiante)
+    // Si no, usar el id del usuario autenticado
+    const userId = req.params.userId ? parseInt(req.params.userId) : req.user.id;
     const [profile, serviceError] = await getOrCreateProfile(userId);
 
     if (serviceError) {
@@ -22,6 +28,36 @@ export async function getProfile(req, res) {
     }
 
     handleSuccess(res, 200, "Perfil obtenido exitosamente", profile);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function updatePassword(req, res) {
+  try {
+    const userId = req.user.id;
+    const { body } = req;
+
+    const { error } = passwordChangeValidation.validate(body);
+    if (error) {
+      return handleErrorClient(res, 400, "Error de validacion", error.message);
+    }
+
+    const userRepo = AppDataSource.getRepository(User);
+    const user = await userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      return handleErrorClient(res, 404, "Usuario no encontrado");
+    }
+
+    const ok = await comparePassword(body.password, user.password);
+    if (!ok) {
+      return handleErrorClient(res, 400, "La contraseña actual no es correcta");
+    }
+
+    const newHashed = await encryptPassword(body.newPassword);
+    await userRepo.update({ id: userId }, { password: newHashed, updatedAt: new Date() });
+
+    handleSuccess(res, 200, "Contraseña actualizada exitosamente");
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }
@@ -70,6 +106,31 @@ export async function updateDocuments(req, res) {
     await checkAndUpdateProfileCompletion(userId);
 
     handleSuccess(res, 200, "Documentos actualizados exitosamente", profile);
+  } catch (error) {
+    handleErrorServer(res, 500, error.message);
+  }
+}
+
+export async function uploadProfileDocuments(req, res) {
+  try {
+    const userId = req.user.id;
+    const files = Array.isArray(req.files) ? req.files : [];
+
+    if (!files.length) {
+      return handleErrorClient(res, 400, "Debe adjuntar al menos un archivo");
+    }
+
+    const fileRoutes = files.map(file => `uploads/documents/${file.filename}`);
+
+    const [profile, serviceError] = await updateProfileDocuments(userId, { curriculum: fileRoutes.join(';') });
+
+    if (serviceError) {
+      return handleErrorClient(res, 400, "Error al subir documentos", serviceError);
+    }
+
+    await checkAndUpdateProfileCompletion(userId);
+
+    handleSuccess(res, 200, "Documentos subidos exitosamente", profile);
   } catch (error) {
     handleErrorServer(res, 500, error.message);
   }

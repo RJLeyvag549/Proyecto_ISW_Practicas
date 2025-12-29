@@ -4,8 +4,7 @@ export const createSupervisorSchema = Joi.object({
   fullName: Joi.string().max(100).required(),
   email: Joi.string().email().max(70).required(),
   phone: Joi.string().max(40).allow(null, ""),
-  specialtyArea: Joi.string().max(80).allow(null, ""),
-  companyId: Joi.number().integer().required()
+  specialtyArea: Joi.string().max(80).allow(null, "")
 })
 .unknown(false)
 .messages({
@@ -17,7 +16,6 @@ export const updateSupervisorSchema = Joi.object({
   email: Joi.string().email().max(70),
   phone: Joi.string().max(40).allow(null, ""),
   specialtyArea: Joi.string().max(80).allow(null, ""),
-  companyId: Joi.number().integer()
 })
 .unknown(false)
 .messages({

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getPendingStudents, processStudentRequest } from '@services/student.service.js';
+import { getPendingStudents, processStudentRequest, getPendingStudent } from '@services/student.service.js';
 
 const useGetPendingStudents = () => {
     const [students, setStudents] = useState([]);
@@ -36,7 +36,12 @@ const useGetPendingStudents = () => {
         return res;
     };
 
-    return { students, loading, error, fetchStudents, approveStudent, rejectStudent };
+    const getStudentDetail = async (id) => {
+        const data = await getPendingStudent(id);
+        return data;
+    };
+
+    return { students, loading, error, fetchStudents, approveStudent, rejectStudent, getStudentDetail };
 };
 
 export default useGetPendingStudents;

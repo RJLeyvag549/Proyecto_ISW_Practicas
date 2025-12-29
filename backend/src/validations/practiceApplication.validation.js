@@ -37,15 +37,6 @@ export const practiceApplicationValidation = Joi.object({
       "any.required": "Los datos de la empresa son obligatorios para aplicaciones externas.",
       "any.unknown": "Los datos de empresa no están permitidos para aplicaciones a ofertas existentes."
     }),
-
-  attachments: Joi.array()
-    .items(Joi.string().max(255))
-    .max(5)
-    .optional()
-    .messages({
-      "array.max": "No puedes adjuntar más de 5 documentos.",
-      "string.max": "El nombre del documento no puede superar los 255 caracteres."
-    }),
 }).unknown(false).messages({
   "object.unknown": "No se permiten propiedades adicionales."
 });
@@ -58,6 +49,10 @@ export const statusUpdateValidation = Joi.object({
       "any.required": "El campo status es obligatorio.",
       "any.only": "El estado debe ser uno de: accepted, rejected, needsInfo."
     }),
+
+  // Permite confirmar explícitamente una segunda aprobación para el mismo estudiante.
+  // Solo se usa cuando el backend devuelve una advertencia y el encargado confirma.
+  force: Joi.boolean().optional(),
 
   coordinatorComments: Joi.string()
     .max(1000)
@@ -76,21 +71,12 @@ export const statusUpdateValidation = Joi.object({
   "object.unknown": "No se permiten propiedades adicionales."
 });
 
-export const attachmentsValidation = Joi.object({
-  attachments: Joi.array()
-    .items(Joi.string().max(255))
-    .max(5)
-    .required()
-    .messages({
-      "array.max": "No puedes adjuntar mas de 5 documentos.",
-      "string.max": "El nombre del documento no puede superar los 255 caracteres.",
-      "any.required": "Debes adjuntar al menos un documento."
-    })
+export const practiceApplicationUpdateValidation = Joi.object({
+  companyData: internshipExternalValidation.optional(),
 }).unknown(false).messages({
   "object.unknown": "No se permiten propiedades adicionales."
 });
 
-// Validación para cierre de práctica (permite minAverage opcional)
 export const closeApplicationValidation = Joi.object({
   minAverage: Joi.number().min(1.0).max(7.0).optional(),
 }).unknown(false).messages({

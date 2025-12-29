@@ -5,58 +5,42 @@ import { DocumentController } from "../controllers/document.controller.js";
 import { validateBody } from "../middlewares/joiValidation.middleware.js";
 import { 
   createDocumentSchema, 
-  gradeDocumentSchema,
   updateDocumentSchema 
 } from "../validations/document.validation.js";
 import { authenticateJwt } from "../middlewares/authentication.middleware.js";
-import multer from "multer";
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/documents/");
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, uniqueSuffix + "-" + file.originalname);
-  },
-});
-
-const upload = multer({ storage: storage });
+import { uploadDocument } from "../middlewares/upload.middleware.js";
 
 const router = Router();
-
-router.post(
-  "/upload",
-  authenticateJwt,
-  upload.single("document"),
-  validateBody(createDocumentSchema),
-  DocumentController.uploadDocument
-);
-
+//tener todos los documentos
 router.get(
-  "/practice/:practiceId",
-  authenticateJwt,
-  DocumentController.getDocumentsByPractice
+  "/",authenticateJwt,DocumentController.getAllDocuments
 );
-
-router.patch(
-  "/:documentId/status",
-  authenticateJwt,
-  validateBody(updateDocumentSchema),
-  DocumentController.updateDocumentStatus
+//tener documentos agrupados por estudiante y practica
+router.get(
+  "/grouped",authenticateJwt,DocumentController.getGroupedByStudentPractice
 );
-
-router.patch(
-  "/:documentId/grade",
+//tener mis documentos (estudiante)
+router.get(
+  "/my-documents",
   authenticateJwt,
-  validateBody(gradeDocumentSchema),
-  DocumentController.updateDocumentStatus
+  DocumentController.getMyDocuments
 );
-
-router.delete(
-  "/:documentId",
+//obtener mi promedio de documentos (estudiante)
+router.get(
+  "/my-average",
   authenticateJwt,
-  DocumentController.deleteDocument
+  DocumentController.getMyAverage
 );
+//descargar documento por id
+router.get("/:documentId/download",authenticateJwt,DocumentController.downloadDocument
+);
+//subir documento
+router.post("/upload",authenticateJwt,uploadDocument,validateBody(createDocumentSchema),
+DocumentController.uploadDocument);
+//actualizar estado del documento
+router.patch("/:documentId/status",authenticateJwt,validateBody(updateDocumentSchema),
+  DocumentController.updateDocumentStatus);
+//eliminar documento
+router.delete("/:documentId",authenticateJwt,DocumentController.deleteDocument);
 
 export default router;

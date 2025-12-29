@@ -29,11 +29,13 @@ export async function loginService(user) {
       return [null, createErrorMessage("password", "La contraseña es incorrecta")];
     }
 
-    if (userFound.rol === 'usuario' && userFound.status !== 'approved') {
+    // Prevent login while account is pending approval
+    if (userFound.status !== "approved") {
       return [null, createErrorMessage("status", "Cuenta pendiente de aprobación")];
     }
 
     const payload = {
+      id: userFound.id,
       nombreCompleto: userFound.nombreCompleto,
       email: userFound.email,
       rut: userFound.rut,
