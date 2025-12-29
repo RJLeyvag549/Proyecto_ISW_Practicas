@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
-import api from '../services/root.service';
-import { closeApplication } from '../services/practiceApplication.service';
-import Swal from 'sweetalert2';
-import '../styles/studentDocuments.css';
+import { useState, useEffect, useCallback } from "react";
+import api from "../services/root.service";
+import { closeApplication } from "../services/practiceApplication.service";
+import Swal from "sweetalert2";
+import "../styles/studentDocuments.css";
 
 //pagina de documentos para administrador/coordinador (revisar documentos de estudiantes)
 const StudentDocumentsPage = () => {
@@ -17,10 +17,10 @@ const StudentDocumentsPage = () => {
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.get('/documents/grouped');
+      const response = await api.get("/documents/grouped");
       setGroupedStudents(response.data?.data || []);
     } catch {
-      Swal.fire('Error', 'No se pudieron cargar los documentos', 'error');
+      Swal.fire("Error", "No se pudieron cargar los documentos", "error");
     } finally {
       setLoading(false);
     }
@@ -34,51 +34,29 @@ const StudentDocumentsPage = () => {
     student.practices.forEach((p) => {
       p.documents.forEach((d) => {
         acc.total += 1;
-        if (d.status === 'approved') acc.approved += 1;
-        if (d.status === 'pending') acc.pending += 1;
-        if (d.status === 'rejected') acc.rejected += 1;
+        if (d.status === "approved") acc.approved += 1;
+        if (d.status === "pending") acc.pending += 1;
+        if (d.status === "rejected") acc.rejected += 1;
       });
     });
     return acc;
   }, { total: 0, approved: 0, pending: 0, rejected: 0 });
 
-  // eliminar documento
-  const handleDelete = async (id) => {
-    const result = await Swal.fire({
-      title: 'Eliminar documento',
-      text: '¿Está seguro?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#6cc4c2',
-      cancelButtonColor: '#ef4444',
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await api.delete(`/documents/${id}`);
-        fetchDocuments();
-        Swal.fire('Eliminado', 'Documento eliminado', 'success');
-      } catch {
-        Swal.fire('Error', 'No se pudo eliminar', 'error');
-      }
-    }
-  };
-
   // descargar documento
   const handleDownload = async (id, fileName) => {
     try {
       const response = await api.get(`/documents/${id}/download`, {
-        responseType: 'blob'
+        responseType: "blob"
       });
       const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = url;
-      link.setAttribute('download', fileName);
+      link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
       link.parentNode.removeChild(link);
     } catch {
-      Swal.fire('Error', 'No se pudo descargar', 'error');
+      Swal.fire("Error", "No se pudo descargar", "error");
     }
   };
 
@@ -86,10 +64,10 @@ const StudentDocumentsPage = () => {
   const handleReview = (doc) => {
     setSelectedDoc(doc);
     setReviewData({ 
-      status: doc.status || 'pending', 
+      status: doc.status || "pending", 
       grade: doc.grade || null, 
       weight: doc.weight || 0,
-      comments: doc.comments || ''
+      comments: doc.comments || ""
     });
     setShowModal(true);
   };
@@ -103,32 +81,32 @@ const StudentDocumentsPage = () => {
         status: reviewData.status,
         grade: reviewData.grade ? parseFloat(reviewData.grade) : null,
         weight: reviewData.weight ? parseFloat(reviewData.weight) : 0,
-        comments: reviewData.comments || '',
+        comments: reviewData.comments || "",
       });
 
-      Swal.fire('Éxito', 'Documento actualizado', 'success');
+      Swal.fire("Éxito", "Documento actualizado", "success");
       setShowModal(false);
       fetchDocuments();
     } catch {
-      Swal.fire('Error', 'No se pudo actualizar', 'error');
+      Swal.fire("Error", "No se pudo actualizar", "error");
     }
   };
 
   // cerrar practica cuando el peso total sea 100%
   const handleClosePractice = async (practiceApplicationId, average) => {
     const result = await Swal.fire({
-      title: 'Cerrar Práctica',
+      title: "Cerrar Práctica",
       html: `
         <p>¿Está seguro de cerrar esta práctica?</p>
         <p style="margin-top: 10px;"><strong>Promedio final: ${average}</strong></p>
         <p style="color: #666; font-size: 14px; margin-top: 5px;">Esta acción no se puede deshacer.</p>
       `,
-      icon: 'question',
+      icon: "question",
       showCancelButton: true,
-      confirmButtonColor: '#6cc4c2',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, cerrar práctica',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: "#6cc4c2",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: "Sí, cerrar práctica",
+      cancelButtonText: "Cancelar"
     });
 
     if (!result.isConfirmed) return;
@@ -137,66 +115,66 @@ const StudentDocumentsPage = () => {
       const response = await closeApplication(practiceApplicationId);
       
       if (response.error) {
-        Swal.fire('Error', response.error, 'error');
+        Swal.fire("Error", response.error, "error");
         return;
       }
 
       Swal.fire({
-        title: '¡Práctica cerrada!',
+        title: "¡Práctica cerrada!",
         html: `
           <p>La práctica ha sido cerrada exitosamente.</p>
           <p style="margin-top: 10px;"><strong>Promedio final: ${response.data?.finalAverage || average}</strong></p>
-          <p style="margin-top: 5px;"><strong>Resultado: ${response.data?.finalResult === 'approved' ? 'Aprobada' : 'Reprobada'}</strong></p>
+          <p style="margin-top: 5px;"><strong>Resultado: ${response.data?.finalResult === "approved" ? "Aprobada" : "Reprobada"}</strong></p>
         `,
-        icon: 'success',
-        confirmButtonColor: '#6cc4c2'
+        icon: "success",
+        confirmButtonColor: "#6cc4c2"
       });
       
       fetchDocuments();
     } catch (error) {
-      console.error('Error al cerrar práctica:', error);
-      Swal.fire('Error', 'No se pudo cerrar la práctica', 'error');
+      console.error("Error al cerrar práctica:", error);
+      Swal.fire("Error", "No se pudo cerrar la práctica", "error");
     }
   };
 
   // obtener clase css segun el estado
   const getStatusBadgeClass = (status) => {
     const statusMap = {
-      pending: 'status-pending',
-      approved: 'status-approved',
-      rejected: 'status-rejected'
+      pending: "status-pending",
+      approved: "status-approved",
+      rejected: "status-rejected"
     };
-    return statusMap[status] || 'status-pending';
+    return statusMap[status] || "status-pending";
   };
 
   // obtener color segun el estado
   const getStatusColor = (status) => {
     const colors = {
-      pending: '#f59e0b',
-      approved: '#10b981',
-      rejected: '#ef4444',
+      pending: "#f59e0b",
+      approved: "#10b981",
+      rejected: "#ef4444",
     };
-    return colors[status] || '#f59e0b';
+    return colors[status] || "#f59e0b";
   };
 
   // obtener nombre en espanol del tipo de documento
   const getDocumentTypeName = (type) => {
     const map = {
-      PROGRESS_REPORT: 'Informe de Avance',
-      FINAL_REPORT: 'Informe Final',
-      PERFORMANCE_EVALUATION: 'Desempeño',
+      PROGRESS_REPORT: "Informe de Avance",
+      FINAL_REPORT: "Informe Final",
+      PERFORMANCE_EVALUATION: "Desempeño",
     };
-    return map[type] || type || 'Sin tipo';
+    return map[type] || type || "Sin tipo";
   };
 
   // obtener color segun el tipo de documento
   const getDocumentTypeColor = (type) => {
     const map = {
-      PROGRESS_REPORT: '#3b82f6',
-      FINAL_REPORT: '#8b5cf6',
-      PERFORMANCE_EVALUATION: '#ec4899',
+      PROGRESS_REPORT: "#3b82f6",
+      FINAL_REPORT: "#8b5cf6",
+      PERFORMANCE_EVALUATION: "#ec4899",
     };
-    return map[type] || '#6b7280';
+    return map[type] || "#6b7280";
   };
 
   if (loading) {
@@ -329,13 +307,6 @@ const StudentDocumentsPage = () => {
                               title="Descargar"
                             >
                               <i className="fa-solid fa-download"></i>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(doc.id)}
-                              className="btn-icon btn-danger"
-                              title="Eliminar"
-                            >
-                              <i className="fa-solid fa-trash"></i>
                             </button>
                           </div>
                         </div>

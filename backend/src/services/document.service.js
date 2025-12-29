@@ -266,11 +266,30 @@ export const DocumentService = {
     Object.assign(document, payload);
     return documentRepository.save(document);
   },
-//eliminar documento
-  async deleteDocument(documentId) {
+//eliminar documento (solo estudiantes, sus propios documentos, en estado pending o rejected)
+  async deleteDocument(documentId, userId) {
+    const document = await documentRepository.findOne({ 
+      where: { id: documentId },
+      relations: ['uploader']
+    });
+
+    if (!document) {
+      throw new Error("Documento no encontrado");
+    }
+
+    // Validar que sea su documento
+    if (document.uploadedBy !== userId) {
+      throw new Error("No puedes eliminar documentos de otros usuarios");
+    }
+    
+    // Validar que esté en estado pendiente o rechazado
+    if (document.status !== "pending" && document.status !== "rejected") {
+      throw new Error("Solo puedes eliminar documentos en estado pendiente o rechazado");
+    }
+
     const result = await documentRepository.delete(documentId);
     if (result.affected === 0) {
-      throw new Error("Documento no encontrado");
+      throw new Error("Error al eliminar el documento");
     }
     return { success: true };
   },

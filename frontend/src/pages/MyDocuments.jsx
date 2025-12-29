@@ -79,6 +79,36 @@ const MyDocuments = () => {
     }
   };
 
+  // eliminar documento (solo si está en pendiente o rechazado)
+  const handleDelete = async (id, status) => {
+    if (status !== "pending" && status !== "rejected") {
+      Swal.fire("No permitido", "Solo puedes eliminar documentos en estado pendiente o rechazado", "warning");
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Eliminar documento",
+      text: "¿Estás seguro de eliminar este documento?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#6cc4c2",
+      cancelButtonColor: "#ef4444",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar"
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await api.delete(`/documents/${id}`);
+        Swal.fire("Eliminado", "Documento eliminado exitosamente", "success");
+        fetchData();
+      } catch (err) {
+        const msg = err?.response?.data?.message || "No se pudo eliminar el documento";
+        Swal.fire("Error", msg, "error");
+      }
+    }
+  };
+
   // subir nuevo documento
   const handleUpload = async (e) => {
     e.preventDefault();
@@ -376,6 +406,14 @@ const MyDocuments = () => {
                       >
                         Descargar
                       </button>
+                      {(doc.status === "pending" || doc.status === "rejected") && (
+                        <button
+                          onClick={() => handleDelete(doc.id, doc.status)}
+                          className="btn-delete"
+                        >
+                          Eliminar
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

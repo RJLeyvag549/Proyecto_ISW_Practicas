@@ -253,10 +253,12 @@
     padding: 1rem;
     background: #f9fafb;
     border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 0.5rem;
 }
 
 .btn-download {
-    width: 100%;
+    flex: 1;
     padding: 0.7rem;
     background: #6cc4c2;
     color: white;
@@ -270,6 +272,23 @@
 
 .btn-download:hover {
     background: #5ab3b1;
+}
+
+.btn-delete {
+    flex: 1;
+    padding: 0.7rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-delete:hover {
+    background: #dc2626;
 }
 
 .loading {

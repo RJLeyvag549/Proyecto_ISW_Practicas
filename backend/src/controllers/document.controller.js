@@ -59,7 +59,12 @@ export const DocumentController = {
 //eliminar documento
   async deleteDocument(req, res) {
     try {
-      await DocumentService.deleteDocument(req.params.documentId);
+      // Solo los estudiantes pueden eliminar documentos
+      if (req.user?.rol !== "estudiante") {
+        return handleErrorClient(res, 403, "Solo los estudiantes pueden eliminar documentos");
+      }
+      
+      await DocumentService.deleteDocument(req.params.documentId, req.user.id);
       return handleSuccess(res, 200, "Documento eliminado exitosamente");
     } catch (error) {
       return handleErrorServer(res, 500, error.message);
