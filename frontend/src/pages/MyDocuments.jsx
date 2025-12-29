@@ -19,7 +19,7 @@ const MyDocuments = () => {
     return (
       doc?.practiceApplication?.internship?.title ||
       doc?.practiceApplication?.internshipExternal?.companyName ||
-      (doc?.practiceApplicationId ? `Práctica #${doc.practiceApplicationId}` : "Práctica")
+      (doc?.practiceApplicationId ? `Práctica #${doc.practiceApplicationId}` : "Practica")
     );
   };
 
@@ -46,17 +46,17 @@ const MyDocuments = () => {
       try {
         const res = await api.get("/practiceApplications/my");
         const list = Array.isArray(res.data?.data) ? res.data.data : [];
-        console.log("Prácticas del estudiante:", list);
+        console.log("Practicas del estudiante:", list);
         // solo practicas aceptadas y no cerradas
         const enabled = list.filter((a) => a.status === "accepted" && !a.isClosed);
-        console.log("Prácticas filtradas (aceptadas y no cerradas):", enabled);
+        console.log("Practicas filtradas (aceptadas y no cerradas):", enabled);
         setApplications(enabled);
         if (enabled.length > 0) {
           setPracticeId(String(enabled[0].id));
         }
       } catch (error) {
-        console.error("Error cargando prácticas:", error);
-        Swal.fire("Error", "No se pudieron cargar tus prácticas", "error");
+        console.error("Error cargando practicas:", error);
+        Swal.fire("Error", "No se pudieron cargar tus practicas", "error");
         setApplications([]);
       }
     })();
@@ -79,7 +79,7 @@ const MyDocuments = () => {
     }
   };
 
-  // eliminar documento (solo si está en pendiente o rechazado)
+  // eliminar documento (solo si esta en pendiente o rechazado)
   const handleDelete = async (id, status) => {
     if (status !== "pending" && status !== "rejected") {
       Swal.fire("No permitido", "Solo puedes eliminar documentos en estado pendiente o rechazado", "warning");
@@ -88,12 +88,12 @@ const MyDocuments = () => {
 
     const result = await Swal.fire({
       title: "Eliminar documento",
-      text: "¿Estás seguro de eliminar este documento?",
+      text: "¿Estas seguro de eliminar este documento?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#6cc4c2",
       cancelButtonColor: "#ef4444",
-      confirmButtonText: "Sí, eliminar",
+      confirmButtonText: "Si, eliminar",
       cancelButtonText: "Cancelar"
     });
 
@@ -117,11 +117,11 @@ const MyDocuments = () => {
       return;
     }
     if (!practiceId) {
-      Swal.fire("Práctica requerida", "Selecciona la práctica destino", "warning");
+      Swal.fire("Practica requerida", "Selecciona la practica destino", "warning");
       return;
     }
     if (docType === "PROGRESS_REPORT" && !period.trim()) {
-      Swal.fire("Período requerido", "Ingresa el período del informe de avance", "warning");
+      Swal.fire("Periodo requerido", "Ingresa el periodo del informe de avance", "warning");
       return;
     }
 
@@ -238,20 +238,20 @@ const MyDocuments = () => {
         <h3>Subir Documento</h3>
         <form className="upload-form" onSubmit={handleUpload}>
           <div className="form-row">
-            <label>Práctica</label>
+            <label>Practica</label>
             <select
               value={practiceId}
               onChange={(e) => setPracticeId(e.target.value)}
               disabled={applications.length === 0 || uploading}
             >
               {applications.length === 0 ? (
-                <option value="">No tienes prácticas aceptadas</option>
+                <option value="">No tienes practicas aceptadas</option>
               ) : (
                 <>
-                  <option value="">Selecciona una práctica</option>
+                  <option value="">Selecciona una practica</option>
                   {applications.map((a) => (
                     <option key={a.id} value={a.id}>
-                      #{a.id} - {a.internship?.title || a.internshipExternal?.companyName || "Práctica"}
+                      #{a.id} - {a.internship?.title || a.internshipExternal?.companyName || "Practica"}
                     </option>
                   ))}
                 </>
@@ -270,7 +270,7 @@ const MyDocuments = () => {
 
           {docType === "PROGRESS_REPORT" && (
             <div className="form-row">
-              <label>Período</label>
+              <label>Periodo</label>
               <input
                 type="text"
                 placeholder="Ej: Semana 1-2, Mes 1, etc."
@@ -324,7 +324,7 @@ const MyDocuments = () => {
 
       {documents.length === 0 ? (
         <div className="empty-state">
-          <p>No has subido documentos todavía</p>
+          <p>No has subido documentos todavia</p>
         </div>
       ) : (
         <div className="practice-groups">
@@ -372,7 +372,7 @@ const MyDocuments = () => {
 
                       {doc.period && (
                         <div className="info-row">
-                          <span className="info-label">Período:</span>
+                          <span className="info-label">Periodo:</span>
                           <span className="info-value">{doc.period}</span>
                         </div>
                       )}
@@ -380,12 +380,12 @@ const MyDocuments = () => {
                       {doc.status === "approved" && (
                         <>
                           <div className="info-row grade-row">
-                            <span className="info-label">Calificación:</span>
+                            <span className="info-label">Calificacion:</span>
                             <span className="grade-value">{doc.grade || "-"}</span>
                           </div>
 
                           <div className="info-row">
-                            <span className="info-label">Ponderación:</span>
+                            <span className="info-label">Ponderacion:</span>
                             <span className="weight-value">{doc.weight || 0}%</span>
                           </div>
                         </>
@@ -393,7 +393,7 @@ const MyDocuments = () => {
 
                       {doc.comments && (
                         <div className="feedback-section">
-                          <span className="feedback-label">Retroalimentación:</span>
+                          <span className="feedback-label">Retroalimentacion:</span>
                           <p className="feedback-text">{doc.comments}</p>
                         </div>
                       )}
