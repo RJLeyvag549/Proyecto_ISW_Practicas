@@ -3,6 +3,7 @@ import Swal from 'sweetalert2';
 import axios from '@services/root.service.js';
 import { deleteOwnApplication, updateOwnApplication, uploadAttachmentsFiles } from '@services/practiceApplication.service.js';
 import { getUserProfile } from '@services/profile.service.js';
+import ProfileViewModal from './ProfileViewModal.jsx';
 import '../styles/applications.css';
 
 const getStatusInfo = (status) => {

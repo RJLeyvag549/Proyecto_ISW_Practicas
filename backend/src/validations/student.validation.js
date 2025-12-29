@@ -7,10 +7,10 @@ export const studentRegisterValidation = Joi.object({
     "any.required": "El nombre completo es requerido",
   }),
   rut: Joi.string()
-    .pattern(/^[0-9]{7,8}-[0-9kK]{1}$/)
+    .pattern(/^(\d{1,2}\.\d{3}\.\d{3}|\d{7,8})-[\dkK]$/)
     .required()
     .messages({
-      "string.pattern.base": "El formato del RUT no es válido",
+      "string.pattern.base": "El formato del RUT no es válido (Ej: 12.345.678-9 o 12345678-9)",
       "string.empty": "El RUT es requerido",
       "any.required": "El RUT es requerido",
     }),

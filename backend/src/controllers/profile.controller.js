@@ -18,9 +18,18 @@ import {
 
 export async function getProfile(req, res) {
   try {
-    // Si viene userId en params, usarlo (para admin/supervisor viendo perfil de estudiante)
+    // Si viene userId en params, usarlo (para admin/coordinador viendo perfil de estudiante)
     // Si no, usar el id del usuario autenticado
     const userId = req.params.userId ? parseInt(req.params.userId) : req.user.id;
+    
+    // Verificar permisos: el usuario puede ver su propio perfil, o ser admin/coordinador
+    const isOwnProfile = userId === req.user.id;
+    const isAdminOrCoordinator = req.user.rol === "administrador" || req.user.rol === "coordinador";
+    
+    if (!isOwnProfile && !isAdminOrCoordinator) {
+      return handleErrorClient(res, 403, "No tienes permiso para ver este perfil");
+    }
+    
     const [profile, serviceError] = await getOrCreateProfile(userId);
 
     if (serviceError) {

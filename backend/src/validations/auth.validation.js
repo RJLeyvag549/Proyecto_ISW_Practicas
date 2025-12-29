@@ -50,7 +50,7 @@ export const registerValidation = Joi.object({
     .min(9)
     .max(12)
     .required()
-    .pattern(/^(?:(?:[1-9]\d{0}|[1-2]\d{1})(\.\d{3}){2}|[1-9]\d{6}|[1-2]\d{7}|29\.999\.999|29999999)-[\dkK]$/)
+    .pattern(/^(\d{1,2}\.\d{3}\.\d{3}|\d{7,8})-[\dkK]$/)
     .messages({
       "string.empty": "El rut no puede estar vacío.",
       "string.base": "El rut debe ser de tipo string.",
